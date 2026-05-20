@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "src/app/api/leads/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "redirects": [
+    {
+      "source": "/politica-de-privacidade",
+      "destination": "/privacidade",
+      "permanent": true
+    }
+  ]
+}

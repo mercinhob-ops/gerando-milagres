@@ -1,65 +1,121 @@
-import Image from "next/image";
+import { Button } from "@/components/design-system/button";
+import { Section } from "@/components/design-system/section";
+import { Container } from "@/components/design-system/container";
+import { Heading, Subheading } from "@/components/design-system/heading";
+import { BodyText } from "@/components/design-system/body-text";
+
+const brandColors = [
+  { name: "Lilás", hex: "#B39DDB", bg: "bg-[#B39DDB]" },
+  { name: "Roxo Suave", hex: "#9575CD", bg: "bg-[#9575CD]" },
+  { name: "Nude", hex: "#F5E6D3", bg: "bg-[#F5E6D3]", border: true },
+  { name: "Branco", hex: "#FFFFFF", bg: "bg-white", border: true },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-white">
+      {/* Hero canary */}
+      <section
+        className="flex min-h-screen flex-col items-center justify-center text-center px-4"
+        style={{ background: "linear-gradient(160deg, #F5E6D3 0%, #D1C4E9 50%, #ffffff 100%)" }}
+      >
+        <div className="max-w-2xl mx-auto space-y-6">
+          <p className="font-sans text-sm font-semibold tracking-widest text-soft-purple uppercase">
+            Em breve
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Heading
+            as="h1"
+            size="h1"
+            className="text-gray-900"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Gerando Milagres
+          </Heading>
+          <Subheading className="text-gray-600 max-w-lg mx-auto">
+            Um programa de 3 meses para preparar seu corpo para ser um ambiente
+            mais fértil e preparado para gerar vida.
+          </Subheading>
+          <div className="flex flex-wrap gap-3 justify-center pt-4">
+            <Button variant="primary" size="lg">
+              Quero preparar meu corpo
+            </Button>
+            <Button variant="secondary" size="lg">
+              Saiba mais
+            </Button>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Paleta de cores */}
+      <Section className="bg-white">
+        <Container>
+          <Heading as="h2" size="h3" className="text-gray-800 mb-8 text-center">
+            Identidade Visual
+          </Heading>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            {brandColors.map((color) => (
+              <div key={color.name} className="text-center">
+                <div
+                  className={`h-20 rounded-xl ${color.bg} ${color.border ? "border border-gray-200" : ""} mb-2`}
+                />
+                <BodyText variant="caption" className="font-semibold">
+                  {color.name}
+                </BodyText>
+                <BodyText variant="caption" className="font-mono">
+                  {color.hex}
+                </BodyText>
+              </div>
+            ))}
+          </div>
+
+          {/* Tipografia */}
+          <Heading as="h2" size="h3" className="text-gray-800 mb-6 text-center">
+            Tipografia
+          </Heading>
+          <div className="space-y-4 max-w-2xl mx-auto">
+            <div>
+              <BodyText variant="caption" className="mb-1">Playfair Display — Headline</BodyText>
+              <Heading as="h1" size="h1">Prepare seu corpo</Heading>
+            </div>
+            <div>
+              <BodyText variant="caption" className="mb-1">Playfair Display — Subheading</BodyText>
+              <Heading as="h2" size="h2">O Método Gerando Milagres</Heading>
+            </div>
+            <div>
+              <BodyText variant="caption" className="mb-1">Inter — Corpo de texto</BodyText>
+              <BodyText variant="lg">
+                Camilla é farmacêutica e viveu perdas gestacionais. Essa
+                experiência transformou sua visão sobre fertilidade.
+              </BodyText>
+            </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Botões */}
+      <Section className="bg-nude">
+        <Container>
+          <Heading as="h2" size="h3" className="text-gray-800 mb-8 text-center">
+            Componentes
+          </Heading>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button variant="primary">Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="primary" size="sm">Small</Button>
+            <Button variant="primary" size="lg">Large</Button>
+          </div>
+        </Container>
+      </Section>
+
+      {/* Rodapé canary */}
+      <footer className="border-t border-gray-100 py-6 text-center">
+        <BodyText variant="caption">
+          Gerando Milagres · Página de preview interno ·{" "}
+          <a href="/dev/design-tokens" className="underline hover:text-lilac">
+            Design Tokens
+          </a>
+        </BodyText>
+      </footer>
+    </main>
   );
 }
