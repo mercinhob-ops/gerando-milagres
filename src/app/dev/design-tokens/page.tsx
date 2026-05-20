@@ -1,9 +1,9 @@
 const brandColors = [
-  { name: "lilac", hex: "#B39DDB", label: "Lilás Principal", textDark: true },
-  { name: "lilac-light", hex: "#D1C4E9", label: "Lilás Claro", textDark: true },
-  { name: "lilac-dark / soft-purple", hex: "#9575CD", label: "Roxo Suave", textDark: false },
-  { name: "nude", hex: "#F5E6D3", label: "Nude", textDark: true },
-  { name: "nude-dark", hex: "#E8D0B8", label: "Nude Escuro", textDark: true },
+  { name: "salmon", hex: "#C4867A", label: "Salmão", textDark: false },
+  { name: "cream", hex: "#F0E6DC", label: "Cream", textDark: true },
+  { name: "nude", hex: "#E8D0C0", label: "Nude", textDark: true },
+  { name: "brown", hex: "#6B4239", label: "Marrom", textDark: false },
+  { name: "dark-brown", hex: "#4A2E26", label: "Marrom Escuro", textDark: false },
   { name: "white", hex: "#FFFFFF", label: "Branco", textDark: true },
 ];
 
@@ -17,10 +17,10 @@ const typographyScale = [
   { tag: "caption", label: "Caption", className: "font-sans text-sm text-gray-500", sample: "* Resultados individuais podem variar. Este programa não garante gestação." },
 ];
 
-const buttonVariants = [
-  { label: "Primary", className: "bg-lilac text-white px-6 py-3 rounded-full font-semibold hover:bg-lilac-dark transition-colors" },
-  { label: "Secondary", className: "border-2 border-lilac text-lilac px-6 py-3 rounded-full font-semibold hover:bg-lilac hover:text-white transition-colors" },
-  { label: "Ghost", className: "text-lilac-dark underline underline-offset-4 px-6 py-3 font-semibold hover:text-soft-purple transition-colors" },
+const buttonVariantsList = [
+  { label: "Primary", className: "bg-salmon text-white px-6 py-3 rounded-full font-semibold hover:bg-brown transition-colors" },
+  { label: "Secondary", className: "border-2 border-salmon text-salmon px-6 py-3 rounded-full font-semibold hover:bg-salmon hover:text-white transition-colors" },
+  { label: "Ghost", className: "text-brown underline underline-offset-4 px-6 py-3 font-semibold hover:text-dark-brown transition-colors" },
 ];
 
 export default function DesignTokensPage() {
@@ -60,7 +60,7 @@ export default function DesignTokensPage() {
         </h2>
         <div className="space-y-8">
           {typographyScale.map((item) => (
-            <div key={item.tag} className="border-l-2 border-lilac pl-4">
+            <div key={item.tag} className="border-l-2 border-salmon pl-4">
               <p className="text-xs text-gray-400 mb-1 font-mono">
                 {item.label} — <span className="text-gray-500">{item.className}</span>
               </p>
@@ -76,7 +76,7 @@ export default function DesignTokensPage() {
           Botões
         </h2>
         <div className="flex flex-wrap gap-4 items-center">
-          {buttonVariants.map((btn) => (
+          {buttonVariantsList.map((btn) => (
             <div key={btn.label} className="text-center">
               <button className={btn.className}>
                 Quero preparar meu corpo
@@ -93,14 +93,14 @@ export default function DesignTokensPage() {
           Gradientes
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-24 rounded-2xl" style={{ background: "linear-gradient(135deg, #B39DDB, #F5E6D3)" }}>
+          <div className="h-24 rounded-2xl" style={{ background: "linear-gradient(135deg, #F0E6DC, #E8D0C0)" }}>
             <div className="p-4 h-full flex items-end">
-              <p className="text-xs font-mono text-white drop-shadow-sm">lilac → nude</p>
+              <p className="text-xs font-mono text-brown drop-shadow-sm">cream → nude</p>
             </div>
           </div>
-          <div className="h-24 rounded-2xl" style={{ background: "linear-gradient(135deg, #9575CD, #B39DDB)" }}>
+          <div className="h-24 rounded-2xl" style={{ background: "linear-gradient(135deg, #6B4239, #C4867A)" }}>
             <div className="p-4 h-full flex items-end">
-              <p className="text-xs font-mono text-white drop-shadow-sm">soft-purple → lilac</p>
+              <p className="text-xs font-mono text-white drop-shadow-sm">brown → salmon</p>
             </div>
           </div>
         </div>

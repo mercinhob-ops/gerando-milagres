@@ -11,12 +11,12 @@ describe("Button", () => {
 
   it("aplica variante primary por padrão", () => {
     render(<Button>Entrar</Button>);
-    expect(screen.getByRole("button")).toHaveClass("bg-lilac");
+    expect(screen.getByRole("button")).toHaveClass("bg-salmon");
   });
 
   it("aplica variante secondary", () => {
     render(<Button variant="secondary">Saiba mais</Button>);
-    expect(screen.getByRole("button")).toHaveClass("border-lilac");
+    expect(screen.getByRole("button")).toHaveClass("border-salmon");
   });
 
   it("aplica variante ghost", () => {
@@ -93,8 +93,8 @@ describe("Heading", () => {
   });
 
   it("aceita className adicional", () => {
-    render(<Heading className="text-lilac">Título</Heading>);
-    expect(screen.getByRole("heading")).toHaveClass("text-lilac");
+    render(<Heading className="text-salmon">Título</Heading>);
+    expect(screen.getByRole("heading")).toHaveClass("text-salmon");
   });
 });
 

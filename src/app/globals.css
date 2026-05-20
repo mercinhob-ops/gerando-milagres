@@ -5,13 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Brand colors — Gerando Milagres */
-  --color-lilac: #B39DDB;
-  --color-lilac-light: #D1C4E9;
-  --color-lilac-dark: #9575CD;
-  --color-soft-purple: #9575CD;
-  --color-nude: #F5E6D3;
-  --color-nude-dark: #E8D0B8;
+  /* Brand colors — Camilla Freitas */
+  --color-salmon: #C4867A;
+  --color-cream: #F0E6DC;
+  --color-nude: #E8D0C0;
+  --color-nude-dark: #D4B5A0;
+  --color-brown: #6B4239;
+  --color-dark-brown: #4A2E26;
   --color-brand-white: #FFFFFF;
 
   /* Brand spacing tokens */

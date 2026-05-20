@@ -17,8 +17,8 @@ describe("DesignTokensPage", () => {
 
   it("exibe todas as cores da marca", () => {
     render(<DesignTokensPage />);
-    expect(screen.getByText("Lilás Principal")).toBeInTheDocument();
-    expect(screen.getByText("Roxo Suave")).toBeInTheDocument();
+    expect(screen.getByText("Salmão")).toBeInTheDocument();
+    expect(screen.getByText("Marrom")).toBeInTheDocument();
     expect(screen.getByText("Nude")).toBeInTheDocument();
   });
 

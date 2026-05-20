@@ -35,9 +35,14 @@ describe("HeroSection", () => {
     expect(cta).toHaveAttribute("href", "#inscricao");
   });
 
-  it("exibe eyebrow de programa de fertilidade", () => {
+  it("exibe eyebrow de fertilidade natural e suplementação", () => {
     render(<HeroSection />);
-    expect(screen.getByText(/programa de fertilidade natural/i)).toBeInTheDocument();
+    expect(screen.getByText(/fertilidade natural/i)).toBeInTheDocument();
+  });
+
+  it("exibe credencial da especialista Camilla Freitas", () => {
+    render(<HeroSection />);
+    expect(screen.getByText(/Camilla Freitas — Farmacêutica CRF\/PE 4563/i)).toBeInTheDocument();
   });
 
   it("section tem id='hero'", () => {
