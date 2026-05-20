@@ -2,32 +2,32 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
 
-describe("Home (canary)", () => {
-  it("exibe o nome do produto", () => {
+describe("Home (landing page)", () => {
+  it("exibe headline principal com h1", () => {
     render(<Home />);
-    expect(screen.getByRole("heading", { level: 1, name: /Gerando Milagres/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
   });
 
-  it("exibe a promessa central", () => {
+  it("exibe a promessa central de preparar o corpo para gerar vida", () => {
     render(<Home />);
-    expect(screen.getByText(/preparar seu corpo/i)).toBeInTheDocument();
+    expect(screen.getByText(/preparar seu corpo para gerar vida/i)).toBeInTheDocument();
   });
 
-  it("exibe o CTA principal", () => {
+  it("exibe o CTA principal com copy emocional", () => {
     render(<Home />);
-    expect(screen.getByRole("button", { name: /Quero preparar meu corpo/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Quero preparar meu corpo/i })
+    ).toBeInTheDocument();
   });
 
-  it("exibe swatches de cor da marca", () => {
+  it("CTA principal aponta para âncora #inscricao", () => {
     render(<Home />);
-    expect(screen.getByText("Lilás")).toBeInTheDocument();
-    expect(screen.getByText("Roxo Suave")).toBeInTheDocument();
-    expect(screen.getByText("Nude")).toBeInTheDocument();
+    const cta = screen.getByRole("link", { name: /Quero preparar meu corpo/i });
+    expect(cta).toHaveAttribute("href", "#inscricao");
   });
 
-  it("exibe seção de tipografia com Playfair Display", () => {
+  it("placeholder de inscrição existe na página", () => {
     render(<Home />);
-    expect(screen.getByText(/Identidade Visual/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tipografia/i)).toBeInTheDocument();
+    expect(document.getElementById("inscricao")).toBeInTheDocument();
   });
 });
