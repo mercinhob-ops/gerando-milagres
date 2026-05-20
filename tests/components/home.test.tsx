@@ -20,14 +20,15 @@ describe("Home (landing page)", () => {
     ).toBeInTheDocument();
   });
 
-  it("CTA principal aponta para âncora #inscricao", () => {
+  it("CTA principal é link externo para checkout", () => {
     render(<Home />);
     const cta = screen.getByRole("link", { name: /Quero preparar meu corpo/i });
-    expect(cta).toHaveAttribute("href", "#inscricao");
+    expect(cta).toHaveAttribute("target", "_blank");
+    expect(cta).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("placeholder de inscrição existe na página", () => {
+  it("exibe link de WhatsApp", () => {
     render(<Home />);
-    expect(document.getElementById("inscricao")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /fale pelo WhatsApp/i })).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { siteConfig, whatsappUrl } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
 import { Heading, Subheading } from "@/components/design-system/heading";
 
@@ -42,15 +43,28 @@ export function HeroSection() {
           <span className="w-8 h-px bg-brown/30" aria-hidden="true" />
         </div>
 
-        <div className="pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <a
-            href="#inscricao"
+            href={siteConfig.checkoutUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className={cn(
               buttonVariants({ variant: "primary", size: "lg" }),
               "inline-flex"
             )}
           >
             Quero preparar meu corpo
+          </a>
+          <a
+            href={whatsappUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "lg" }),
+              "inline-flex"
+            )}
+          >
+            ou fale pelo WhatsApp
           </a>
         </div>
       </div>

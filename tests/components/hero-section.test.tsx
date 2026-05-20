@@ -22,17 +22,26 @@ describe("HeroSection", () => {
     expect(screen.getByText(/preparar seu corpo para gerar vida/i)).toBeInTheDocument();
   });
 
-  it("exibe CTA com copy emocional", () => {
+  it("exibe CTA principal com copy emocional", () => {
     render(<HeroSection />);
     expect(
       screen.getByRole("link", { name: /Quero preparar meu corpo/i })
     ).toBeInTheDocument();
   });
 
-  it("CTA aponta para âncora de inscrição", () => {
+  it("CTA principal aponta para URL de checkout externo", () => {
     render(<HeroSection />);
     const cta = screen.getByRole("link", { name: /Quero preparar meu corpo/i });
-    expect(cta).toHaveAttribute("href", "#inscricao");
+    expect(cta).toHaveAttribute("href", "https://pay.kiwify.com.br/uOSEIEm");
+    expect(cta).toHaveAttribute("target", "_blank");
+    expect(cta).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("exibe link de WhatsApp como opção secundária", () => {
+    render(<HeroSection />);
+    const wa = screen.getByRole("link", { name: /fale pelo WhatsApp/i });
+    expect(wa).toHaveAttribute("href", expect.stringContaining("wa.me/5581981396005"));
+    expect(wa).toHaveAttribute("target", "_blank");
   });
 
   it("exibe eyebrow de fertilidade natural e suplementação", () => {
