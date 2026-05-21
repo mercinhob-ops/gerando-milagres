@@ -12,6 +12,7 @@ export default defineConfig({
       NEXT_PUBLIC_CHECKOUT_URL: "https://pay.kiwify.com.br/uOSEIEm",
       NEXT_PUBLIC_WHATSAPP_NUMBER: "5581981396005",
       NEXT_PUBLIC_WHATSAPP_MESSAGE: "Olá! Tenho interesse no programa Gerando Milagres da Dra. Camilla Freitas 🌸",
+      NEXT_PUBLIC_META_PIXEL_ID: "123456789012345",
     },
   },
   resolve: {
