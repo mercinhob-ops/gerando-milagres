@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { siteConfig, whatsappUrl } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
@@ -12,6 +13,19 @@ export function CtaFinalSection() {
       className="bg-[#F0E6DC]"
     >
       <Container className="max-w-2xl text-center">
+        {/* Social proof photo */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-36 h-48 rounded-2xl overflow-hidden shadow-md ring-4 ring-white">
+            <Image
+              src="/images/camilla-family.jpg"
+              alt="Camilla Freitas"
+              fill
+              className="object-cover object-top"
+              sizes="144px"
+            />
+          </div>
+        </div>
+
         {/* Urgency badge */}
         <div className="inline-flex items-center gap-2 bg-salmon/10 border border-salmon/20 rounded-full px-4 py-1.5 mb-8">
           <span className="w-2 h-2 rounded-full bg-salmon animate-pulse" aria-hidden="true" />

@@ -37,9 +37,9 @@ describe("CamillaSection", () => {
     expect(screen.getByText(/suplementação estratégica/i)).toBeInTheDocument();
   });
 
-  it("placeholder de imagem tem role='img' e label da Camilla", () => {
+  it("exibe imagem editorial da Camilla com alt text", () => {
     render(<CamillaSection />);
-    expect(screen.getByRole("img", { name: /foto de camilla freitas/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /camilla freitas/i })).toBeInTheDocument();
   });
 
   it("section tem id='historia'", () => {

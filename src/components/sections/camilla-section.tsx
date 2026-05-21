@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { camillaStory } from "@/data/camilla";
 import { Heading } from "@/components/design-system/heading";
 import { Container } from "@/components/design-system/container";
@@ -13,30 +14,14 @@ export function CamillaSection() {
 
           {/* Photo column */}
           <div className="w-full md:w-2/5 shrink-0">
-            {/*
-              Placeholder editorial — substituir por:
-              <Image src="/camilla.jpg" alt="Camilla Freitas" fill className="object-cover" />
-              quando a foto real estiver disponível em public/camilla.jpg
-            */}
-            <div
-              className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden"
-              style={{
-                background:
-                  "linear-gradient(160deg, #F0E6DC 0%, #C4867A 60%, #6B4239 100%)",
-              }}
-              aria-label="Foto de Camilla Freitas"
-              role="img"
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-end p-6">
-                <div className="text-center text-white/90">
-                  <p className="font-display text-lg font-bold drop-shadow">
-                    {credential.name}
-                  </p>
-                  <p className="font-sans text-xs tracking-wide drop-shadow">
-                    {credential.role}
-                  </p>
-                </div>
-              </div>
+            <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-lg">
+              <Image
+                src="/images/camilla-story.jpg"
+                alt="Camilla Freitas"
+                fill
+                className="object-cover object-top"
+                sizes="(max-width: 768px) 100vw, 40vw"
+              />
             </div>
           </div>
 
