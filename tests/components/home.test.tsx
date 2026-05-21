@@ -16,13 +16,13 @@ describe("Home (landing page)", () => {
   it("exibe o CTA principal com copy emocional", () => {
     render(<Home />);
     expect(
-      screen.getByRole("link", { name: /Quero preparar meu corpo/i })
+      screen.getAllByRole("link", { name: /Quero preparar meu corpo/i })[0]
     ).toBeInTheDocument();
   });
 
   it("CTA principal é link externo para checkout", () => {
     render(<Home />);
-    const cta = screen.getByRole("link", { name: /Quero preparar meu corpo/i });
+    const cta = screen.getAllByRole("link", { name: /Quero preparar meu corpo/i })[0];
     expect(cta).toHaveAttribute("target", "_blank");
     expect(cta).toHaveAttribute("rel", "noopener noreferrer");
   });

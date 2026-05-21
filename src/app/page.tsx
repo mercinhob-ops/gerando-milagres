@@ -1,6 +1,9 @@
 import { HeroSection } from "@/components/sections/hero-section";
 import { IdentifySection } from "@/components/sections/identify-section";
 import { CamillaSection } from "@/components/sections/camilla-section";
+import { MethodSection } from "@/components/sections/method-section";
+import { FaqSection } from "@/components/sections/faq-section";
+import { CtaFinalSection } from "@/components/sections/cta-final-section";
 
 export default function Home() {
   return (
@@ -8,9 +11,9 @@ export default function Home() {
       <HeroSection />
       <IdentifySection />
       <CamillaSection />
-
-      {/* Placeholder anchor — seções futuras (Stories 2.4–2.8) serão adicionadas aqui */}
-      <div id="inscricao" aria-hidden="true" />
+      <MethodSection />
+      <FaqSection />
+      <CtaFinalSection />
     </main>
   );
 }
