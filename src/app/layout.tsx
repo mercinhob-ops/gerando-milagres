@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 import { StickyHeader } from "@/components/ui/sticky-header";
 import { AnalyticsProvider } from "@/components/compliance/analytics-provider";
 
@@ -43,7 +42,6 @@ export default function RootLayout({
         <StickyHeader />
         <AnalyticsProvider>
           {children}
-          <WhatsAppButton />
         </AnalyticsProvider>
       </body>
     </html>
