@@ -37,11 +37,9 @@ describe("HeroSection", () => {
     expect(cta).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("exibe link de WhatsApp como opção secundária", () => {
+  it("exibe apenas o CTA principal (sem link secundário)", () => {
     render(<HeroSection />);
-    const wa = screen.getByRole("link", { name: /fale pelo WhatsApp/i });
-    expect(wa).toHaveAttribute("href", expect.stringContaining("wa.me/5581981396005"));
-    expect(wa).toHaveAttribute("target", "_blank");
+    expect(screen.getAllByRole("link").length).toBe(1);
   });
 
   it("exibe eyebrow de fertilidade natural e suplementação", () => {

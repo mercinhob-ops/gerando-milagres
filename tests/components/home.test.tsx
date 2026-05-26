@@ -27,8 +27,8 @@ describe("Home (landing page)", () => {
     expect(cta).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("exibe link de WhatsApp", () => {
+  it("não exibe links para WhatsApp", () => {
     render(<Home />);
-    expect(screen.getByRole("link", { name: /fale pelo WhatsApp/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument();
   });
 });

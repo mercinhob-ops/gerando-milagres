@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { siteConfig, whatsappUrl } from "@/lib/env";
+import { siteConfig } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
 import { Heading } from "@/components/design-system/heading";
 import { Container } from "@/components/design-system/container";
@@ -57,17 +57,6 @@ export function CtaFinalSection() {
             )}
           >
             Quero preparar meu corpo
-          </a>
-          <a
-            href={whatsappUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "lg" }),
-              "inline-flex"
-            )}
-          >
-            Tire suas dúvidas pelo WhatsApp
           </a>
         </div>
       </Container>

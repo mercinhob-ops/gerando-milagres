@@ -27,11 +27,9 @@ describe("CtaFinalSection", () => {
     expect(cta).toHaveAttribute("target", "_blank");
   });
 
-  it("CTA secundário aponta para WhatsApp", () => {
+  it("exibe apenas o CTA principal (sem link secundário)", () => {
     render(<CtaFinalSection />);
-    const wa = screen.getByRole("link", { name: /tire suas dúvidas pelo whatsapp/i });
-    expect(wa).toHaveAttribute("href", expect.stringContaining("wa.me"));
-    expect(wa).toHaveAttribute("target", "_blank");
+    expect(screen.getAllByRole("link").length).toBe(1);
   });
 
   it("section tem id='inscricao'", () => {
