@@ -80,6 +80,23 @@ export function HeroSection() {
               ou fale pelo WhatsApp
             </a>
           </div>
+
+          {/* Social proof count */}
+          <div className="flex items-center gap-3 justify-center md:justify-start">
+            <div className="flex -space-x-1.5" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-7 h-7 rounded-full bg-[#D4B5A0] border-2 border-white"
+                />
+              ))}
+            </div>
+            <p className="font-sans text-sm text-brown/70">
+              Mais de{" "}
+              <span className="font-semibold text-brown">500 mulheres</span>{" "}
+              já prepararam o corpo
+            </p>
+          </div>
         </div>
 
         {/* Hero image — visible only on md+ */}

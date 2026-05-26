@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { StickyHeader } from "@/components/ui/sticky-header";
 import { AnalyticsProvider } from "@/components/compliance/analytics-provider";
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900">
+        <StickyHeader />
         <AnalyticsProvider>
           {children}
           <WhatsAppButton />
