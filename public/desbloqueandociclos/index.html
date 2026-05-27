@@ -688,25 +688,53 @@ section { padding: 80px 20px; }
   border-radius: 50px;
   margin-bottom: 28px;
 }
-.preco-de {
-  font-size: 16px;
-  color: rgba(240,230,220,0.5);
-  text-decoration: line-through;
-  margin-bottom: 8px;
+.preco-parcela-pre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  color: var(--salmon-light);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  margin-bottom: 0;
 }
 .preco-por {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 72px;
+  font-size: 80px;
   color: var(--white);
   font-weight: 300;
   line-height: 1;
+  margin-bottom: 0;
+}
+.preco-por sup { font-size: 34px; vertical-align: super; }
+.preco-cartao {
+  font-size: 11px;
+  color: rgba(240,230,220,0.5);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+.preco-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(240,230,220,0.2);
+  margin: 0 auto 16px;
+}
+.preco-avista {
+  font-size: 15px;
+  color: rgba(240,230,220,0.65);
   margin-bottom: 4px;
 }
-.preco-por sup { font-size: 32px; vertical-align: super; }
+.preco-avista strong { color: var(--white); font-weight: 600; }
+.preco-de {
+  font-size: 13px;
+  color: rgba(240,230,220,0.35);
+  text-decoration: line-through;
+  margin-bottom: 28px;
+}
 .preco-obs {
-  font-size: 14px;
-  color: rgba(240,230,220,0.6);
-  margin-bottom: 36px;
+  font-size: 13px;
+  color: rgba(240,230,220,0.5);
+  margin-bottom: 32px;
 }
 .btn-comprar {
   display: block;
@@ -934,7 +962,7 @@ footer a { color: rgba(240,230,220,0.5); text-decoration: none; }
     </div>
     <a href="https://pay.kiwify.com.br/AQyRq5m" class="btn-hero" onclick="fbq('track','InitiateCheckout')">
       Quero Desbloquear Meus Ciclos Agora
-      <span class="btn-price">Por apenas R$ 67,00 · Acesso imediato</span>
+      <span class="btn-price">8x de R$9,74 · ou R$67 à vista</span>
     </a>
   </div>
 </section>
@@ -1129,7 +1157,7 @@ footer a { color: rgba(240,230,220,0.5); text-decoration: none; }
 <div class="cta-inline" style="background:var(--white)">
   <a href="https://pay.kiwify.com.br/AQyRq5m" class="btn-cta-inline" onclick="fbq('track','InitiateCheckout')">
     Sim, Quero Desbloquear Meus Ciclos!
-    <small>De R$ 297 por apenas R$ 67 · Oferta por tempo limitado</small>
+    <small>8x de R$9,74 · ou R$67 à vista · Oferta limitada</small>
   </a>
 </div>
 
@@ -1208,9 +1236,8 @@ footer a { color: rgba(240,230,220,0.5); text-decoration: none; }
 <div class="cta-inline">
   <a href="https://pay.kiwify.com.br/AQyRq5m" class="btn-cta-inline" onclick="fbq('track','InitiateCheckout')">
     Quero Transformar Minha Saúde Agora
-    <small>R$ 67,00 · Acesso imediato · 30 dias de garantia</small>
+    <small>8x de R$9,74 · ou R$67 à vista · 30 dias de garantia</small>
   </a>
-  <p style="margin-top:12px;font-size:13px;color:rgba(107,66,57,0.7);letter-spacing:0.02em;">ou 8x de R$9,74 no cartão</p>
 </div>
 
 <!-- BÔNUS -->
@@ -1250,11 +1277,15 @@ footer a { color: rgba(240,230,220,0.5); text-decoration: none; }
 
     <div class="preco-box">
       <div class="preco-badge">Oferta especial de lançamento</div>
-      <p class="preco-de">De R$ 297,00</p>
-      <p class="preco-por"><sup>R$</sup>67</p>
-      <p class="preco-obs">ou 8x de R$9,74 no cartão<br><span style="font-size:12px;opacity:0.6">pagamento único · acesso imediato e vitalício</span></p>
+      <p class="preco-parcela-pre">8× de</p>
+      <p class="preco-por"><sup>R$</sup>9,74</p>
+      <p class="preco-cartao">no cartão de crédito</p>
+      <div class="preco-divider"></div>
+      <p class="preco-avista">ou à vista por <strong>R$ 67,00</strong></p>
+      <p class="preco-de">de R$ 297,00</p>
+      <p class="preco-obs">acesso imediato · vitalício · 30 dias de garantia</p>
       <a href="https://pay.kiwify.com.br/AQyRq5m" class="btn-comprar" onclick="fbq('track','InitiateCheckout')">
-        Quero Acesso Agora por R$ 67
+        Quero Acesso Agora
       </a>
       <div class="preco-seguro">
         🔒 Pagamento 100% seguro · Kiwify
@@ -1339,7 +1370,7 @@ footer a { color: rgba(240,230,220,0.5); text-decoration: none; }
     <p>Mais energia, menos inflamação e o corpo preparado para gerar milagres. Comece hoje.</p>
     <a href="https://pay.kiwify.com.br/AQyRq5m" class="btn-final" onclick="fbq('track','InitiateCheckout')">
       Quero Desbloquear Meus Ciclos
-      <small>R$ 67,00 · Acesso imediato · 30 dias de garantia</small>
+      <small>8x de R$9,74 · ou R$67 à vista · 30 dias de garantia</small>
     </a>
   </div>
 </section>
