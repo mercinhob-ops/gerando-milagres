@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CheckCircle2, Shield, BookOpen, Sparkles, Gift } from "lucide-react";
+import { CheckCircle2, Shield, BookOpen, Sparkles, Gift, Users, MessageCircle } from "lucide-react";
 import { CheckoutCta } from "./checkout-cta";
 
 export const metadata: Metadata = {
@@ -275,7 +275,7 @@ export default function GmNaoTenteSoPage() {
             Acesse pelo celular, tablet ou computador — no seu ritmo, quando quiser.
           </p>
 
-          <ul className="space-y-3 text-left mb-10">
+          <ul className="space-y-3 text-left mb-6">
             {included.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
                 <CheckCircle2
@@ -288,6 +288,25 @@ export default function GmNaoTenteSoPage() {
               </li>
             ))}
           </ul>
+
+          {/* WhatsApp group — destaque visual */}
+          <div className="mb-10 rounded-2xl border border-white/20 bg-white/10 p-5 flex items-start gap-4 text-left">
+            <div className="w-10 h-10 rounded-full bg-green-400/20 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 text-green-300" aria-hidden="true" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-sans font-semibold text-white text-sm">
+                Grupo Exclusivo no WhatsApp
+              </p>
+              <p className="font-sans text-nude/80 text-xs leading-relaxed">
+                Faça parte de um grupo exclusivo com outras mulheres que estão
+                nessa mesma jornada. Compartilhe vivências, tire dúvidas e se
+                sinta acolhida por quem entende o que você está passando.
+                Acesso liberado apenas para quem garantir a vaga —
+                as vagas são limitadas.
+              </p>
+            </div>
+          </div>
 
           <CheckoutCta
             label="Quero ter acesso →"
@@ -448,6 +467,29 @@ export default function GmNaoTenteSoPage() {
               </p>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ─── URGÊNCIA ──────────────────────────────────────────────── */}
+      <section className="py-10 px-6 bg-white">
+        <div className="max-w-2xl mx-auto">
+          <div className="rounded-2xl border-2 border-salmon/30 bg-cream px-6 py-5 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <MessageCircle className="w-5 h-5 text-green-600" aria-hidden="true" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-sans font-bold text-dark-brown text-sm">
+                Vagas limitadas — Grupo Exclusivo no WhatsApp
+              </p>
+              <p className="font-sans text-gray-600 text-xs leading-relaxed">
+                Quem garantir o acesso agora entra diretamente no grupo com
+                outras mulheres que estão nessa mesma jornada — para
+                compartilhar vivências, tirar dúvidas e se sentir acolhida
+                por quem entende o que você está passando.
+                <span className="font-semibold text-brown"> As vagas são limitadas.</span>
+              </p>
+            </div>
           </div>
         </div>
       </section>
