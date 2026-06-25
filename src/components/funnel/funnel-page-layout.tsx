@@ -17,7 +17,7 @@ interface FunnelPageLayoutProps {
   ctaHref: string;
   declineLabel: string;
   declineHref: string;
-  purchaseValue?: number;
+  checkoutValue?: number;
 }
 
 export function FunnelPageLayout({
@@ -33,7 +33,7 @@ export function FunnelPageLayout({
   ctaHref,
   declineLabel,
   declineHref,
-  purchaseValue,
+  checkoutValue,
 }: FunnelPageLayoutProps) {
   return (
     <main
@@ -144,8 +144,8 @@ export function FunnelPageLayout({
 
         </div>
       </div>
-      {purchaseValue !== undefined && (
-        <FunnelEventTracker value={purchaseValue} contentName={badge} />
+      {checkoutValue !== undefined && (
+        <FunnelEventTracker value={checkoutValue} contentName={badge} />
       )}
     </main>
   );

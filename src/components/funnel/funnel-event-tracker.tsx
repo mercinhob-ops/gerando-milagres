@@ -14,7 +14,7 @@ export function FunnelEventTracker({
 }) {
   useEffect(() => {
     trackConversionEvent({
-      eventName: "Purchase",
+      eventName: "InitiateCheckout",
       customData: { value, currency, content_name: contentName },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

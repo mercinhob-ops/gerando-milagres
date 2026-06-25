@@ -30,7 +30,7 @@ export default function Upsell1Page() {
       ctaHref={siteConfig.checkoutUrl}
       declineLabel="Não, obrigada — vou continuar só com o programa"
       declineHref="/downsell-1"
-      purchaseValue={550}
+      checkoutValue={550}
     />
   );
 }
