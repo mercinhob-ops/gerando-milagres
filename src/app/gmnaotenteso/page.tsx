@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CheckCircle2, Shield, BookOpen, Sparkles } from "lucide-react";
+import { CheckCircle2, Shield, BookOpen, Sparkles, Gift } from "lucide-react";
 import { CheckoutCta } from "./checkout-cta";
 
 export const metadata: Metadata = {
   title: "Gerando Milagres — Você não precisa mais tentar sozinha",
   description:
-    "Aulas práticas da Dra. Camilla Freitas sobre fertilidade, alimentação, suplementação e preparação do corpo para gestação saudável. Por apenas R$35 ao mês.",
+    "Materiais e protocolos da Dra. Camilla Freitas sobre fertilidade, alimentação, suplementação e preparação do corpo para gestação saudável.",
   robots: { index: false, follow: false },
 };
 
@@ -30,7 +30,7 @@ const modules = [
 ] as const;
 
 const included = [
-  "Aulas gravadas com a Dra. Camilla — assista no seu ritmo",
+  "Material rico em informações e protocolos que a Dra. Camilla utiliza com suas pacientes",
   "Conteúdo atualizado regularmente com novos temas",
   "Orientações práticas e aplicáveis a partir do primeiro acesso",
   "Estratégias baseadas em literatura científica de fertilidade",
@@ -48,7 +48,6 @@ export default function GmNaoTenteSoPage() {
           background: "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 55%, #ffffff 100%)",
         }}
       >
-        {/* Decorative blobs */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <div className="absolute top-[-8%] right-[-6%] w-[36vw] h-[36vw] rounded-full bg-salmon/20 blur-3xl" />
           <div className="absolute bottom-[-6%] left-[-8%] w-[30vw] h-[30vw] rounded-full bg-nude/70 blur-3xl" />
@@ -68,15 +67,15 @@ export default function GmNaoTenteSoPage() {
             </h1>
 
             <p className="font-sans text-lg md:text-xl text-brown/80 leading-relaxed md:max-w-lg">
-              Acesse aulas práticas sobre fertilidade, alimentação,
-              suplementação e muito mais — com quem já acompanhou mais de
-              500 mulheres nessa jornada.
+              Acesse os materiais e protocolos da Dra. Camilla sobre
+              fertilidade, alimentação, suplementação e muito mais — com
+              quem já acompanhou mais de 500 mulheres nessa jornada.
             </p>
 
             <div className="flex items-center gap-3 text-sm text-brown/60 justify-center md:justify-start">
               <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-salmon/40">
                 <Image
-                  src="/images/camilla-zap.jpg"
+                  src="/images/camilla-zap2.jpg"
                   alt="Dra. Camilla Freitas"
                   fill
                   className="object-cover object-top"
@@ -90,7 +89,7 @@ export default function GmNaoTenteSoPage() {
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3 items-center justify-center md:justify-start">
-              <CheckoutCta label="Quero começar por R$&nbsp;35 →" />
+              <CheckoutCta label="Quero começar agora →" />
               <p className="font-sans text-xs text-brown/50">
                 Garantia de 7 dias · Acesso imediato
               </p>
@@ -100,7 +99,7 @@ export default function GmNaoTenteSoPage() {
           {/* Photo */}
           <div className="hidden md:block relative w-[340px] lg:w-[400px] h-[460px] lg:h-[540px] rounded-3xl overflow-hidden shadow-2xl shrink-0">
             <Image
-              src="/images/camilla-zap.jpg"
+              src="/images/camilla-zap2.jpg"
               alt="Dra. Camilla Freitas — especialista em fertilidade"
               fill
               className="object-cover object-top"
@@ -164,10 +163,10 @@ export default function GmNaoTenteSoPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-4">
-              O que você vai aprender
+              O que você vai receber
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-dark-brown leading-snug">
-              Aulas práticas sobre o que{" "}
+              Protocolos e materiais sobre o que{" "}
               <em className="not-italic text-salmon">realmente importa</em>{" "}
               para a sua fertilidade
             </h2>
@@ -291,14 +290,61 @@ export default function GmNaoTenteSoPage() {
           </ul>
 
           <CheckoutCta
-            label="Quero acessar por R$&nbsp;35 →"
+            label="Quero ter acesso →"
             className="w-full sm:w-auto justify-center"
           />
         </div>
       </section>
 
-      {/* ─── PREÇO ─────────────────────────────────────────────────── */}
+      {/* ─── BÔNUS ─────────────────────────────────────────────────── */}
       <section className="py-20 px-6 bg-white">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-4">
+              Bônus exclusivo
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-dark-brown leading-snug">
+              O que vem junto com o seu acesso
+            </h2>
+          </div>
+
+          <div className="relative rounded-3xl overflow-hidden border-2 border-salmon/30 shadow-lg">
+            {/* Accent bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-salmon via-nude-dark to-salmon" />
+
+            <div className="p-8 md:p-10 bg-cream">
+              <div className="flex items-start gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-salmon/15 flex items-center justify-center shrink-0">
+                  <Gift className="w-7 h-7 text-salmon" aria-hidden="true" />
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <span className="inline-block font-sans text-xs font-bold tracking-widest text-salmon uppercase mb-2">
+                      Bônus incluído
+                    </span>
+                    <h3 className="font-display text-xl md:text-2xl font-bold text-dark-brown leading-snug">
+                      Pack de Infusões de Chás para Fertilidade
+                    </h3>
+                  </div>
+                  <p className="font-sans text-gray-600 text-sm md:text-base leading-relaxed">
+                    Descubra as infusões de chás utilizadas nos protocolos da
+                    Dra. Camilla que potencializam sua fertilidade em até 10x.
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Sparkles className="w-4 h-4 text-salmon shrink-0" aria-hidden="true" />
+                    <span className="font-sans text-xs font-semibold text-brown">
+                      Incluído sem custo adicional no seu acesso
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PREÇO ─────────────────────────────────────────────────── */}
+      <section className="py-20 px-6 bg-cream">
         <div className="max-w-lg mx-auto text-center">
           <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-6">
             Investimento
@@ -307,11 +353,12 @@ export default function GmNaoTenteSoPage() {
             Acompanhamento de especialista por menos que uma consulta particular.
           </h2>
           <p className="font-sans text-gray-500 text-sm mb-10">
-            Enquanto uma consulta isolada custa de R$ 250 a R$ 500, você tem
-            acesso a conteúdo especializado da Dra. Camilla todo mês.
+            Enquanto uma consulta com especialista custa R$&nbsp;550, você tem
+            acesso a todo o conteúdo e protocolos da Dra. Camilla por apenas
+            uma fração disso.
           </p>
 
-          <div className="bg-cream rounded-3xl p-8 md:p-10 shadow-xl border border-nude-dark/40">
+          <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-nude-dark/40">
 
             <div className="flex items-baseline justify-center gap-2 mb-1">
               <span className="font-sans text-lg text-brown/60 font-medium">por apenas</span>
@@ -323,16 +370,15 @@ export default function GmNaoTenteSoPage() {
             </div>
             <p className="font-sans text-brown/60 text-sm mb-8">ao mês</p>
 
-            {/* Value anchors */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
+            {/* Value anchors — 2 colunas */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
               {[
-                { label: "1 consulta\nparticular", value: "R$ 250–500" },
-                { label: "1 kit de\nsuplementos", value: "R$ 200+" },
+                { label: "1 consulta\ncom especialista", value: "R$ 550" },
                 { label: "Gerando\nMilagres", value: "R$ 35/mês", highlight: true },
               ].map(({ label, value, highlight }) => (
                 <div
                   key={label}
-                  className={`rounded-xl p-3 text-center ${highlight ? "bg-salmon text-white" : "bg-white border border-nude-dark/40"}`}
+                  className={`rounded-xl p-3 text-center ${highlight ? "bg-salmon text-white" : "bg-cream border border-nude-dark/40"}`}
                 >
                   <p className={`font-sans text-xs leading-tight whitespace-pre-line mb-1 ${highlight ? "text-white/80" : "text-gray-500"}`}>
                     {label}
@@ -352,7 +398,7 @@ export default function GmNaoTenteSoPage() {
             </div>
 
             <CheckoutCta
-              label="Quero começar agora por R$&nbsp;35 →"
+              label="Quero começar agora →"
               className="w-full justify-center"
             />
           </div>
@@ -360,7 +406,7 @@ export default function GmNaoTenteSoPage() {
       </section>
 
       {/* ─── GARANTIA ──────────────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-cream">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-2xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-10">
 
@@ -421,11 +467,11 @@ export default function GmNaoTenteSoPage() {
           </h2>
           <p className="font-sans text-brown/70 text-lg leading-relaxed max-w-xl mx-auto">
             Mais de 500 mulheres já escolheram parar de tentar sozinhas e
-            passar a ter orientação especializada. Por R$&nbsp;35 ao mês.
+            passar a ter orientação especializada ao seu lado.
           </p>
           <div className="pt-2">
             <CheckoutCta
-              label="Quero começar agora por R$&nbsp;35 →"
+              label="Quero começar agora →"
               className="text-lg px-10 py-5"
             />
           </div>
