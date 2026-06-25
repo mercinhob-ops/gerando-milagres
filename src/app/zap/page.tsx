@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export default function ZapPage() {
   const [nome, setNome] = useState("");
@@ -74,6 +75,36 @@ export default function ZapPage() {
           }}
         />
       </header>
+
+      <section
+        style={{ textAlign: "center", padding: "1.75rem 1rem 0" }}
+      >
+        <Image
+          src="/images/camilla-zap.jpg"
+          alt="Dra. Camilla Freitas"
+          width={320}
+          height={420}
+          style={{
+            objectFit: "cover",
+            borderRadius: 16,
+            display: "block",
+            margin: "0 auto",
+          }}
+          priority
+        />
+        <p
+          style={{
+            marginTop: "0.85rem",
+            fontSize: "0.78rem",
+            letterSpacing: "0.06em",
+            color: "#8B5E52",
+            fontFamily: "sans-serif",
+            fontStyle: "italic",
+          }}
+        >
+          Dra. Camilla Freitas — Farmacêutica · CRF/PE 4563
+        </p>
+      </section>
 
       <section
         style={{
