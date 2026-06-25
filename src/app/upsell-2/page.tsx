@@ -31,6 +31,7 @@ export default function Upsell2Page() {
       ctaHref={siteConfig.checkoutUrl}
       declineLabel="Não, prefiro continuar individualmente"
       declineHref="/downsell-2"
+      purchaseValue={1650}
     />
   );
 }

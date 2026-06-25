@@ -30,6 +30,7 @@ export default function Downsell2Page() {
       ctaHref={siteConfig.checkoutUrl}
       declineLabel="Não, obrigada — vou pensar um pouco mais"
       declineHref="/"
+      purchaseValue={97}
     />
   );
 }

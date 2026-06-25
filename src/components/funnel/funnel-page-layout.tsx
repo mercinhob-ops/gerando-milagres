@@ -2,6 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 import { CheckCircle2, Lock } from "lucide-react";
+import { FunnelEventTracker } from "./funnel-event-tracker";
 
 interface FunnelPageLayoutProps {
   badge: string;
@@ -16,6 +17,7 @@ interface FunnelPageLayoutProps {
   ctaHref: string;
   declineLabel: string;
   declineHref: string;
+  purchaseValue?: number;
 }
 
 export function FunnelPageLayout({
@@ -31,6 +33,7 @@ export function FunnelPageLayout({
   ctaHref,
   declineLabel,
   declineHref,
+  purchaseValue,
 }: FunnelPageLayoutProps) {
   return (
     <main
@@ -141,6 +144,9 @@ export function FunnelPageLayout({
 
         </div>
       </div>
+      {purchaseValue !== undefined && (
+        <FunnelEventTracker value={purchaseValue} contentName={badge} />
+      )}
     </main>
   );
 }

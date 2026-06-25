@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { CookieBanner } from "./cookie-banner";
+import { trackConversionEvent } from "@/lib/meta-conversions";
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const CONSENT_KEY = "gm_cookie_consent";
@@ -26,6 +28,8 @@ export function AnalyticsProvider({
   children: React.ReactNode;
 }) {
   const [consented, setConsented] = useState(getInitialConsent);
+  const [pixelReady, setPixelReady] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     window.trackEvent = (event: string, params?: Record<string, unknown>) => {
@@ -34,6 +38,12 @@ export function AnalyticsProvider({
       }
     };
   }, []);
+
+  // Dispara PageView (client + server) a cada mudança de rota
+  useEffect(() => {
+    if (!pixelReady) return;
+    trackConversionEvent({ eventName: "PageView" });
+  }, [pathname, pixelReady]);
 
   function handleConsent() {
     localStorage.setItem(CONSENT_KEY, "true");
@@ -48,6 +58,7 @@ export function AnalyticsProvider({
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
+          onLoad={() => setPixelReady(true)}
           dangerouslySetInnerHTML={{
             __html: `
               !function(f,b,e,v,n,t,s)
@@ -59,7 +70,6 @@ export function AnalyticsProvider({
               s.parentNode.insertBefore(t,s)}(window,document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init','${PIXEL_ID}');
-              fbq('track','PageView');
             `,
           }}
         />
