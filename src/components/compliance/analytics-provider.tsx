@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { trackConversionEvent } from "@/lib/meta-conversions";
@@ -20,8 +20,8 @@ export function AnalyticsProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [pixelReady, setPixelReady] = useState(false);
   const pathname = usePathname();
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     window.trackEvent = (event: string, params?: Record<string, unknown>) => {
@@ -31,10 +31,16 @@ export function AnalyticsProvider({
     };
   }, []);
 
+  // Pula o mount inicial — PageView do primeiro carregamento é disparado
+  // diretamente no Script inline abaixo, garantindo que fbq já está disponível.
+  // Navegações SPA subsequentes caem aqui via mudança de pathname.
   useEffect(() => {
-    if (!pixelReady) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     trackConversionEvent({ eventName: "PageView" });
-  }, [pathname, pixelReady]);
+  }, [pathname]);
 
   return (
     <>
@@ -43,7 +49,6 @@ export function AnalyticsProvider({
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
-          onLoad={() => setPixelReady(true)}
           dangerouslySetInnerHTML={{
             __html: `
               !function(f,b,e,v,n,t,s)
@@ -55,6 +60,7 @@ export function AnalyticsProvider({
               s.parentNode.insertBefore(t,s)}(window,document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init','${PIXEL_ID}');
+              fbq('track','PageView');
             `,
           }}
         />
