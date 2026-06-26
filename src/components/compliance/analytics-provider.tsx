@@ -3,11 +3,9 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import { CookieBanner } from "./cookie-banner";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-const CONSENT_KEY = "gm_cookie_consent";
 
 declare global {
   interface Window {
@@ -17,17 +15,11 @@ declare global {
   }
 }
 
-function getInitialConsent(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(CONSENT_KEY) === "true";
-}
-
 export function AnalyticsProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [consented, setConsented] = useState(getInitialConsent);
   const [pixelReady, setPixelReady] = useState(false);
   const pathname = usePathname();
 
@@ -39,22 +31,15 @@ export function AnalyticsProvider({
     };
   }, []);
 
-  // Dispara PageView (client + server) a cada mudança de rota
   useEffect(() => {
     if (!pixelReady) return;
     trackConversionEvent({ eventName: "PageView" });
   }, [pathname, pixelReady]);
 
-  function handleConsent() {
-    localStorage.setItem(CONSENT_KEY, "true");
-    setConsented(true);
-  }
-
   return (
     <>
       {children}
-      {!consented && <CookieBanner onAccept={handleConsent} />}
-      {consented && PIXEL_ID && (
+      {PIXEL_ID && (
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
