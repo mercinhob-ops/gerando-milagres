@@ -394,30 +394,19 @@ export default function MapaDaFertilidadePage() {
           <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-nude-dark/40">
 
             {/* Parcelas em destaque */}
-            <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-3">
-              Em até
+            <p className="font-sans text-sm text-brown/60 font-medium mb-1">
+              10x de
             </p>
-            <div className="flex items-baseline justify-center gap-2 mb-1">
-              <span className="font-display text-5xl font-bold text-dark-brown leading-none">
-                10x
-              </span>
-              <span className="font-sans text-xl text-brown/60 font-medium">de</span>
-              <span className="font-display text-5xl font-bold text-dark-brown leading-none">
-                R$&nbsp;23,68
-              </span>
-            </div>
-            <div className="flex items-center justify-center gap-2 my-4">
-              <div className="h-px flex-1 bg-nude-dark/40" />
-              <span className="font-sans text-xs text-gray-400 uppercase tracking-wider px-2">ou</span>
-              <div className="h-px flex-1 bg-nude-dark/40" />
-            </div>
-            <div className="flex items-end justify-center gap-1 mb-1">
-              <span className="font-sans text-lg text-brown/60 font-medium">à vista por</span>
-              <span className="font-display text-5xl font-bold text-dark-brown leading-none">
-                R$&nbsp;197
-              </span>
-            </div>
-            <p className="font-sans text-brown/50 text-xs mt-1 mb-8">
+            <p className="font-display text-6xl font-bold text-salmon leading-none mb-3">
+              R$&nbsp;23,68
+            </p>
+            <p className="font-sans text-sm text-brown/60 font-medium mb-1">
+              ou à vista
+            </p>
+            <p className="font-display text-2xl font-semibold text-brown/70 leading-none mb-1">
+              R$&nbsp;197
+            </p>
+            <p className="font-sans text-brown/50 text-xs mt-3 mb-8">
               pagamento único · acesso imediato · sem mensalidade
             </p>
 
