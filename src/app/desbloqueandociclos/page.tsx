@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Desbloqueando Ciclos — Dra. Camilla Freitas",
@@ -75,7 +76,7 @@ export default function DesbloqueandoCiclosPage() {
         protocolos científicos e suporte humano.
       </p>
 
-      <a
+      <Link
         href="/"
         style={{
           display: "inline-block",
@@ -91,7 +92,7 @@ export default function DesbloqueandoCiclosPage() {
         }}
       >
         Conhecer o Gerando Milagres →
-      </a>
+      </Link>
     </main>
   );
 }

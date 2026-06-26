@@ -4,9 +4,7 @@ import {
   CheckCircle2,
   Shield,
   Sparkles,
-  ChevronDown,
   Lock,
-  Gift,
   FileText,
   Search,
   Map,
@@ -299,7 +297,7 @@ export default function MapaDaFertilidadePage() {
                 className="bg-white/10 border border-white/15 rounded-2xl p-5 flex items-start gap-4"
               >
                 <div className="w-9 h-9 rounded-full bg-salmon/20 flex items-center justify-center shrink-0">
-                  <Gift className="w-4 h-4 text-salmon" aria-hidden="true" />
+                  <Icon className="w-4 h-4 text-salmon" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-sans font-semibold text-white text-sm leading-snug">
