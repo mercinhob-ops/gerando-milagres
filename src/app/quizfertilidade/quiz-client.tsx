@@ -201,6 +201,10 @@ export function QuizClient() {
       eventName: "Lead",
       customData: { content_name: "Quiz Fertilidade" },
     });
+    trackConversionEvent({
+      eventName: "PageView",
+      customData: { content_name: `Quiz Resultado — ${key}` },
+    });
     setResultKey(key);
     setStep("result");
   }
