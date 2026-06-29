@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
@@ -160,6 +160,21 @@ const RESULTS: Record<
   },
 };
 
+const ANALYSIS_BARS = [
+  "Histórico reprodutivo",
+  "Regularidade do ciclo",
+  "Investigação clínica",
+  "Fator emocional",
+  "Perfil de fertilidade",
+] as const;
+
+function getAnalysisMessage(bar: number): string {
+  if (bar === 0) return "Analisando suas respostas...";
+  if (bar <= 2) return "Identificando padrões...";
+  if (bar <= 4) return "Calculando seu perfil...";
+  return "Preparando seu resultado...";
+}
+
 function getResultKey(score: number): ResultKey {
   if (score <= 8) return "D";
   if (score <= 14) return "A";
@@ -169,7 +184,7 @@ function getResultKey(score: number): ResultKey {
 
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
-type Step = "intro" | "questions" | "capture" | "result";
+type Step = "intro" | "questions" | "capture" | "analysis" | "result";
 
 export function QuizClient() {
   const [step, setStep] = useState<Step>("intro");
@@ -178,6 +193,18 @@ export function QuizClient() {
   const [visible, setVisible] = useState(true);
   const [form, setForm] = useState({ name: "", whatsapp: "", email: "" });
   const [resultKey, setResultKey] = useState<ResultKey>("A");
+  const [analysisBar, setAnalysisBar] = useState(0);
+
+  // Animação da tela de análise: preenche 1 barra a cada 550ms e avança ao resultado
+  useEffect(() => {
+    if (step !== "analysis") return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    ANALYSIS_BARS.forEach((_, i) => {
+      timers.push(setTimeout(() => setAnalysisBar(i + 1), (i + 1) * 550));
+    });
+    timers.push(setTimeout(() => setStep("result"), ANALYSIS_BARS.length * 550 + 700));
+    return () => timers.forEach(clearTimeout);
+  }, [step]);
 
   function handleAnswer(pts: number) {
     setVisible(false);
@@ -206,7 +233,8 @@ export function QuizClient() {
       customData: { content_name: `Quiz Resultado — ${key}` },
     });
     setResultKey(key);
-    setStep("result");
+    setAnalysisBar(0);
+    setStep("analysis");
   }
 
   function handleCtaClick() {
@@ -261,7 +289,6 @@ export function QuizClient() {
 
     return (
       <div className="min-h-screen bg-cream flex flex-col">
-        {/* Barra de progresso */}
         <div className="w-full h-1.5 bg-nude">
           <div
             className="h-full bg-salmon transition-all duration-500 ease-out"
@@ -394,6 +421,54 @@ export function QuizClient() {
     );
   }
 
+  // ── ANÁLISE ────────────────────────────────────────────────────────────────
+
+  if (step === "analysis") {
+    return (
+      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-10">
+            <div className="w-14 h-14 rounded-full bg-salmon/15 flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Sparkles className="w-7 h-7 text-salmon" aria-hidden="true" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-dark-brown mb-2">
+              Analisando seu perfil
+            </h2>
+            <p className="font-sans text-brown/60 text-base transition-opacity duration-300">
+              {getAnalysisMessage(analysisBar)}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {ANALYSIS_BARS.map((label, i) => (
+              <div key={label}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-sans text-sm font-medium text-brown/80">
+                    {label}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-sans text-xs font-bold text-salmon transition-opacity duration-300",
+                      i < analysisBar ? "opacity-100" : "opacity-0"
+                    )}
+                  >
+                    ✓
+                  </span>
+                </div>
+                <div className="h-2.5 bg-nude rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-salmon rounded-full transition-all duration-700 ease-out"
+                    style={{ width: i < analysisBar ? "100%" : "0%" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── RESULTADO ──────────────────────────────────────────────────────────────
 
   const res = RESULTS[resultKey];
@@ -401,7 +476,6 @@ export function QuizClient() {
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
       <div className="max-w-lg w-full">
-        {/* Badge do perfil */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-salmon text-white px-5 py-2 rounded-full text-sm font-bold mb-5 uppercase tracking-wider">
             <Sparkles className="w-4 h-4" aria-hidden="true" />
@@ -415,7 +489,6 @@ export function QuizClient() {
           </p>
         </div>
 
-        {/* Card da Dra. Camilla */}
         <div className="bg-white rounded-3xl p-5 flex items-center gap-4 mb-5 border border-nude-dark/30 shadow-sm">
           <div className="relative w-16 h-16 shrink-0">
             <Image
@@ -437,7 +510,6 @@ export function QuizClient() {
           </div>
         </div>
 
-        {/* CTA */}
         <div className="bg-white rounded-3xl p-6 border border-nude-dark/30 shadow-sm">
           <p className="font-sans text-sm text-brown/60 font-medium mb-1">
             Recomendado para você
