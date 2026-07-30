@@ -338,9 +338,15 @@ export default function CasalGmPage() {
           <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-nude-dark/40">
 
             <p className="font-sans text-sm text-brown/60 font-medium mb-1">
-              por apenas
+              2x de
             </p>
             <p className="font-display text-6xl font-bold text-salmon leading-none mb-3">
+              R$&nbsp;28,95
+            </p>
+            <p className="font-sans text-sm text-brown/60 font-medium mb-1">
+              ou à vista
+            </p>
+            <p className="font-display text-2xl font-semibold text-brown/70 leading-none mb-1">
               R$&nbsp;57,90
             </p>
             <p className="font-sans text-brown/50 text-xs mt-3 mb-8">
