@@ -4,7 +4,7 @@ import { trackConversionEvent } from "@/lib/meta-conversions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 
-const CHECKOUT_URL = "https://pay.kiwify.com.br/ML2NO04";
+const CHECKOUT_URL = "https://pay.hotmart.com/D106943069P";
 
 export function CheckoutCta({
   label,
