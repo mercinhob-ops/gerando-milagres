@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { CheckoutCta } from "./checkout-cta";
 import { FaqSection } from "./faq-section";
+import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 
 export const metadata: Metadata = {
   title: "Mapa da Fertilidade — Dra. Camilla Freitas",
@@ -111,6 +112,10 @@ const faqs = [
 export default function MapaDaFertilidadePage() {
   return (
     <div className="overflow-x-hidden">
+      <StickyHeaderCheckout
+        checkoutUrl="https://pay.kiwify.com.br/5IIyMsr"
+        eventValue={197}
+      />
 
       {/* ─── HERO ───────────────────────────────────────────────────── */}
       <section

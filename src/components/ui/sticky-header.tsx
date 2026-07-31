@@ -1,12 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
+import { trackConversionEvent } from "@/lib/meta-conversions";
+import {
+  getStickyHeaderCheckout,
+  getStickyHeaderCheckoutServerSnapshot,
+  subscribeStickyHeaderCheckout,
+} from "./sticky-header-store";
 
-export function StickyHeader() {
+export function StickyHeader({
+  checkoutUrl,
+  eventValue,
+}: {
+  checkoutUrl?: string;
+  eventValue?: number;
+} = {}) {
   const [visible, setVisible] = useState(false);
+  const registeredCheckout = useSyncExternalStore(
+    subscribeStickyHeaderCheckout,
+    getStickyHeaderCheckout,
+    getStickyHeaderCheckoutServerSnapshot
+  );
 
   useEffect(() => {
     function onScroll() {
@@ -15,6 +32,18 @@ export function StickyHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const resolved = checkoutUrl
+    ? { checkoutUrl, eventValue }
+    : (registeredCheckout ?? { checkoutUrl: siteConfig.checkoutUrl, eventValue: undefined });
+
+  function handleClick() {
+    if (resolved.eventValue === undefined) return;
+    trackConversionEvent({
+      eventName: "InitiateCheckout",
+      customData: { value: resolved.eventValue, currency: "BRL" },
+    });
+  }
 
   return (
     <header
@@ -33,9 +62,10 @@ export function StickyHeader() {
 
         {/* CTA */}
         <a
-          href={siteConfig.checkoutUrl}
+          href={resolved.checkoutUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleClick}
           className={cn(
             buttonVariants({ variant: "primary", size: "sm" }),
             "inline-flex shrink-0"

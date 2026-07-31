@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { CheckCircle2, Shield, BookOpen, Sparkles, Gift, Users, MessageCircle } from "lucide-react";
 import { CheckoutCta } from "./checkout-cta";
+import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 
 export const metadata: Metadata = {
   title: "Gerando Milagres — Você não precisa mais tentar sozinha",
@@ -40,6 +41,10 @@ const included = [
 export default function GmNaoTenteSoPage() {
   return (
     <div className="overflow-x-hidden">
+      <StickyHeaderCheckout
+        checkoutUrl="https://pay.kiwify.com.br/OCUj5sd"
+        eventValue={35}
+      />
 
       {/* ─── HERO ───────────────────────────────────────────────────── */}
       <section

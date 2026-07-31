@@ -16,6 +16,7 @@ import {
   Church,
 } from "lucide-react";
 import { CheckoutCta } from "./checkout-cta";
+import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 
 export const metadata: Metadata = {
   title: "Florescer a Dois — Dra. Camilla Freitas",
@@ -98,6 +99,10 @@ const chapters = [
 export default function CasalGmPage() {
   return (
     <div className="overflow-x-hidden">
+      <StickyHeaderCheckout
+        checkoutUrl="https://pay.hotmart.com/D106943069P"
+        eventValue={57.9}
+      />
 
       {/* ─── HERO ───────────────────────────────────────────────────── */}
       <section
