@@ -1,8 +1,6 @@
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/design-system/button";
 import { CheckCircle2, Lock } from "lucide-react";
-import { FunnelEventTracker } from "./funnel-event-tracker";
+import { FunnelCheckoutCta } from "./funnel-checkout-cta";
 
 interface FunnelPageLayoutProps {
   badge: string;
@@ -97,17 +95,12 @@ export function FunnelPageLayout({
                 )}
               </div>
 
-              <a
+              <FunnelCheckoutCta
                 href={ctaHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  buttonVariants({ variant: "primary", size: "lg" }),
-                  "w-full justify-center text-center"
-                )}
-              >
-                {ctaLabel}
-              </a>
+                label={ctaLabel}
+                value={checkoutValue}
+                contentName={badge}
+              />
 
               <div className="flex items-center justify-center gap-1.5 text-gray-400">
                 <Lock className="w-3.5 h-3.5" aria-hidden="true" />
@@ -144,9 +137,6 @@ export function FunnelPageLayout({
 
         </div>
       </div>
-      {checkoutValue !== undefined && (
-        <FunnelEventTracker value={checkoutValue} contentName={badge} />
-      )}
     </main>
   );
 }
