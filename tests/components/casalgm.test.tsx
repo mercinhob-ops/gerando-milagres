@@ -1,8 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, within, act } from "@testing-library/react";
 import CasalGmPage from "@/app/casalgm/page";
 
 describe("CasalGmPage", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renderiza a headline principal do hero", () => {
     render(<CasalGmPage />);
     expect(
@@ -10,10 +14,10 @@ describe("CasalGmPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renderiza todas as 13 seções pedidas", () => {
+  it("renderiza todas as 14 seções pedidas", () => {
     render(<CasalGmPage />);
 
-    expect(screen.getByText(/mais de/i)).toBeInTheDocument();
+    expect(screen.getByText(/casais já transformaram sua jornada/i)).toBeInTheDocument();
     expect(screen.getAllByText(/500 casais/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/esse guia é para vocês se/i)).toBeInTheDocument();
     expect(screen.getByText(/um caminho claro, em 3 etapas/i)).toBeInTheDocument();
@@ -30,7 +34,9 @@ describe("CasalGmPage", () => {
 
   it("todos os CTAs apontam para o checkout Hotmart do Florescer a Dois", () => {
     render(<CasalGmPage />);
-    const links = screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.includes("pay.hotmart.com"));
+    const links = screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href")?.includes("pay.hotmart.com"));
     expect(links.length).toBeGreaterThanOrEqual(3);
     links.forEach((link) => {
       expect(link).toHaveAttribute("href", "https://pay.hotmart.com/D106943069P");
@@ -43,7 +49,9 @@ describe("CasalGmPage", () => {
     window.fbq = fbq;
 
     render(<CasalGmPage />);
-    const links = screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.includes("pay.hotmart.com"));
+    const links = screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href")?.includes("pay.hotmart.com"));
     fireEvent.click(links[0]);
 
     expect(fbq).toHaveBeenCalledWith(
@@ -94,5 +102,23 @@ describe("CasalGmPage", () => {
     render(<CasalGmPage />);
     const link = within(screen.getByRole("contentinfo")).getByText(/política de privacidade/i);
     expect(link).toHaveAttribute("href", "/privacidade");
+  });
+
+  it("o contador de casais anima até 500 quando entra na tela", () => {
+    vi.useFakeTimers();
+    render(<CasalGmPage />);
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByTestId("animated-counter")).toHaveTextContent("500");
+  });
+
+  it("mostra depoimentos com marcação de conteúdo ilustrativo", () => {
+    render(<CasalGmPage />);
+    expect(screen.getByText(/\*depoimentos ilustrativos/i)).toBeInTheDocument();
+    expect(screen.getByText("Maria e João")).toBeInTheDocument();
+    expect(screen.getByText("Recife, PE")).toBeInTheDocument();
   });
 });
