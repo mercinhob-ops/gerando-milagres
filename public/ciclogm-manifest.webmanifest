@@ -1,0 +1,20 @@
+{
+  "name": "CicloGM · Dra. Camilla Freitas",
+  "short_name": "CicloGM",
+  "description": "Registro de temperatura basal e sintomas do ciclo — ferramenta de autoconhecimento da Dra. Camilla Freitas.",
+  "start_url": "/ciclogm",
+  "scope": "/ciclogm",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F0E6DC",
+  "theme_color": "#C4867A",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
