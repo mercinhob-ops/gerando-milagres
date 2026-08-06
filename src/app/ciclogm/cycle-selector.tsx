@@ -29,7 +29,7 @@ export function CycleSelector({
 
   return (
     <section>
-      <h2 className="font-display text-xl font-semibold text-dark-brown mb-3">Ciclos</h2>
+      <h2 className="font-['Georgia',serif] text-xl font-semibold text-dark-brown mb-3">Ciclos</h2>
       <div className="flex items-center gap-2 flex-wrap">
         {cycles.map((cycle) => {
           const active = cycle.id === activeCycleId;
@@ -39,10 +39,10 @@ export function CycleSelector({
               type="button"
               onClick={() => onSelect(cycle.id)}
               aria-pressed={active}
-              className={`text-left rounded-2xl px-4 py-2.5 border transition-colors ${
+              className={`text-left rounded-2xl px-4 py-2.5 border transition-all duration-200 ${
                 active
-                  ? "bg-salmon text-white border-salmon shadow-sm"
-                  : "bg-white text-brown border-nude-dark/40 hover:border-salmon/60"
+                  ? "bg-salmon text-white border-salmon shadow-[0_8px_24px_rgba(196,134,122,0.35)]"
+                  : "bg-white text-brown border-nude-dark/40 hover:border-salmon/60 shadow-[0_4px_12px_rgba(107,66,57,0.06)]"
               }`}
             >
               <p className="font-sans text-sm font-semibold leading-tight">{cycle.name}</p>
@@ -57,7 +57,7 @@ export function CycleSelector({
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-salmon border border-dashed border-salmon/50 rounded-2xl px-4 py-2.5 hover:bg-salmon/10 transition-colors"
+            className="inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-salmon border border-dashed border-salmon/50 rounded-2xl px-4 py-2.5 hover:bg-salmon/10 transition-all duration-200"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             Novo
@@ -71,12 +71,12 @@ export function CycleSelector({
               value={name}
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => event.key === "Enter" && handleCreate()}
-              className="font-sans text-sm text-dark-brown bg-white border border-nude-dark/40 rounded-lg px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-salmon/40"
+              className="font-sans text-sm text-dark-brown bg-white border border-nude-dark/40 rounded-lg px-3 py-2 w-40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-salmon/40 focus:border-salmon/50"
             />
             <button
               type="button"
               onClick={handleCreate}
-              className="font-sans text-sm font-semibold text-white bg-salmon rounded-lg px-3 py-2 hover:bg-salmon/90 transition-colors"
+              className="font-sans text-sm font-semibold text-white bg-salmon rounded-lg px-3 py-2 hover:bg-salmon/90 transition-all duration-200"
             >
               Criar
             </button>

@@ -29,6 +29,28 @@ describe("CicloGmApp", () => {
     expect(screen.getByText(/crf\/pe 4563/i)).toBeInTheDocument();
   });
 
+  it("usa camilla-zap2.jpg na foto da tela de boas-vindas", async () => {
+    await renderApp();
+    const photo = screen.getByAltText(/dra\. camilla freitas/i);
+    expect(photo.getAttribute("src")).toContain("camilla-zap2.jpg");
+  });
+
+  it("mostra um gráfico de exemplo quando o ciclo ainda não tem registros", async () => {
+    await renderApp();
+    start();
+
+    expect(screen.getByText(/exemplo/i)).toBeInTheDocument();
+    const svg = document.querySelector('svg[aria-label*="exemplo" i]');
+    expect(svg).toBeTruthy();
+    expect(svg?.getAttribute("viewBox")).toBe("0 0 720 280");
+
+    fireEvent.change(screen.getByPlaceholderText(/ex: 36.5/i), { target: { value: "36.6" } });
+    fireEvent.click(screen.getByText(/salvar registro/i));
+
+    await screen.findAllByText("36.60");
+    expect(screen.queryByText(/^exemplo$/i)).not.toBeInTheDocument();
+  });
+
   it("cria o primeiro ciclo e vai para a tela principal ao clicar em começar", async () => {
     await renderApp();
     start();

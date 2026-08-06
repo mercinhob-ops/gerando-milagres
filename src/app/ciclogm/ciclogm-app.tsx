@@ -18,6 +18,8 @@ import { TemperatureChart } from "./temperature-chart";
 import { DailyEntryForm } from "./daily-entry-form";
 import { CycleTable } from "./cycle-table";
 
+const GEORGIA = "font-['Georgia',serif]";
+
 function createCycle(name: string) {
   return {
     id: createCycleId(),
@@ -121,7 +123,10 @@ export function CicloGmApp() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div
+      className="min-h-screen"
+      style={{ background: "linear-gradient(180deg, #F0E6DC 0%, #FBF7F4 45%, #F0E6DC 100%)" }}
+    >
       <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-8 print:hidden">
@@ -135,7 +140,7 @@ export function CicloGmApp() {
         {activeCycle && (
           <>
             <section>
-              <h2 className="font-display text-xl font-semibold text-dark-brown mb-3">Gráfico do ciclo</h2>
+              <h2 className={`${GEORGIA} text-xl font-semibold text-dark-brown mb-3`}>Gráfico do ciclo</h2>
               <TemperatureChart
                 records={activeCycle.records}
                 cycleStartDate={activeCycle.startDate}
@@ -155,11 +160,11 @@ export function CicloGmApp() {
 
             <section>
               <div className="flex items-center justify-between gap-3 mb-3">
-                <h2 className="font-display text-xl font-semibold text-dark-brown">Tabela de registro</h2>
+                <h2 className={`${GEORGIA} text-xl font-semibold text-dark-brown`}>Tabela de registro</h2>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 shadow-sm transition-all duration-200 hover:bg-white hover:shadow-md shrink-0"
                 >
                   <Printer className="w-3.5 h-3.5" aria-hidden="true" />
                   Salvar / Imprimir PDF
@@ -182,7 +187,7 @@ export function CicloGmApp() {
       {activeCycle && (
         <div className="hidden print:block px-6 py-6">
           <p className="font-sans text-xs text-brown/60 mb-1">Temperatura Basal · Gerando Milagres</p>
-          <h1 className="font-display text-2xl font-bold text-dark-brown mb-4">{activeCycle.name}</h1>
+          <h1 className={`${GEORGIA} text-2xl font-bold text-dark-brown mb-4`}>{activeCycle.name}</h1>
           <CycleTable records={activeCycle.records} />
           <p className="font-sans text-[10px] text-brown/50 mt-6">
             Ferramenta de autoconhecimento · Dra. Camilla Freitas · CRF/PE 4563. Não substitui orientação profissional.
@@ -195,10 +200,13 @@ export function CicloGmApp() {
 
 function AppHeader() {
   return (
-    <header className="sticky top-0 z-10 bg-white border-b border-nude-dark/40 print:hidden">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-3.5">
-        <p className="font-display text-base font-bold text-dark-brown leading-none">
-          Temperatura Basal <span className="text-salmon font-normal">·</span> Gerando Milagres
+    <header
+      className="sticky top-0 z-10 shadow-sm print:hidden"
+      style={{ background: "linear-gradient(135deg, #4A2E26 0%, #6B4239 100%)" }}
+    >
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
+        <p className={`${GEORGIA} text-base font-bold text-white leading-none`}>
+          Temperatura Basal <span className="text-nude font-normal">·</span> Gerando Milagres
         </p>
       </div>
     </header>
@@ -222,13 +230,13 @@ function AppFooter({
         <button
           type="button"
           onClick={onExport}
-          className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors"
+          className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 shadow-sm transition-all duration-200 hover:bg-white hover:shadow-md"
         >
           <Download className="w-3.5 h-3.5" aria-hidden="true" />
           Fazer backup
         </button>
 
-        <label className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors cursor-pointer">
+        <label className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 shadow-sm transition-all duration-200 hover:bg-white hover:shadow-md cursor-pointer">
           <Upload className="w-3.5 h-3.5" aria-hidden="true" />
           Restaurar backup
           <input type="file" accept="application/json" onChange={onImport} className="hidden" />
@@ -238,7 +246,7 @@ function AppFooter({
           <button
             type="button"
             onClick={onClearCycle}
-            className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-danger border border-danger/30 rounded-lg px-3 py-2 hover:bg-danger/5 transition-colors"
+            className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-danger border border-danger/30 rounded-lg px-3 py-2 transition-all duration-200 hover:bg-danger/5"
           >
             <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
             Limpar este ciclo
@@ -258,24 +266,38 @@ function AppFooter({
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(180deg, #F0E6DC 0%, #FBF7F4 100%)" }}
+    >
+      <div className="relative w-full h-[48vh] min-h-[300px] max-h-[440px] shrink-0">
+        <Image
+          src="/images/camilla-zap2.jpg"
+          alt="Dra. Camilla Freitas"
+          fill
+          className="object-cover object-top"
+          sizes="100vw"
+          priority
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(74,46,38,0.35) 0%, rgba(74,46,38,0.1) 45%, #F0E6DC 100%)",
+          }}
+        />
+        <p
+          className={`${GEORGIA} absolute top-6 inset-x-0 text-center italic text-white text-lg font-bold`}
+          style={{ textShadow: "0 2px 8px rgba(74,46,38,0.5)" }}
+        >
+          Gerando Milagres
+        </p>
+      </div>
+
+      <main className="flex-1 flex items-start justify-center px-6 -mt-10 relative z-10 pb-12">
         <div className="max-w-md w-full text-center space-y-6">
-          <p className="font-display text-sm font-bold text-dark-brown italic">Gerando Milagres</p>
-
-          <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-white shadow-xl">
-            <Image
-              src="/images/camilla-zap.jpg"
-              alt="Dra. Camilla Freitas"
-              fill
-              className="object-cover object-top"
-              sizes="128px"
-              priority
-            />
-          </div>
-
           <div className="space-y-2">
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-dark-brown leading-tight">
+            <h1 className={`${GEORGIA} text-3xl md:text-4xl font-bold text-dark-brown leading-tight`}>
               Temperatura Basal
             </h1>
             <p className="font-sans text-sm font-semibold text-salmon uppercase tracking-wide">
@@ -290,7 +312,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           <button
             type="button"
             onClick={onStart}
-            className="w-full inline-flex items-center justify-center bg-salmon text-white font-sans font-semibold text-base px-6 py-3.5 rounded-xl hover:bg-salmon/90 transition-colors shadow-sm"
+            className="w-full inline-flex items-center justify-center bg-salmon text-white font-sans font-semibold text-base px-6 py-3.5 rounded-xl shadow-[0_8px_24px_rgba(196,134,122,0.4)] transition-all duration-200 hover:bg-salmon/90 hover:shadow-[0_10px_28px_rgba(196,134,122,0.5)] active:scale-[0.98]"
           >
             Começar minha jornada
           </button>

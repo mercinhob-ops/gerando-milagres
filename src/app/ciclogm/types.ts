@@ -32,6 +32,13 @@ export const BLEEDING_LABELS: Record<Bleeding, string> = {
   intenso: "Intenso",
 };
 
+export const BLEEDING_EMOJI: Record<Bleeding, string> = {
+  nenhum: "⚪",
+  leve: "🔴",
+  moderado: "🔵",
+  intenso: "🟣",
+};
+
 export const MUCUS_LABELS: Record<Mucus, string> = {
   seco: "Seco",
   cremoso: "Cremoso",
@@ -39,9 +46,23 @@ export const MUCUS_LABELS: Record<Mucus, string> = {
   elastico: "Elástico",
 };
 
+export const MUCUS_EMOJI: Record<Mucus, string> = {
+  seco: "🌾",
+  cremoso: "🥛",
+  aquoso: "💧",
+  elastico: "🧵",
+};
+
 export const MOOD_LABELS: Record<Mood, string> = {
   otimo: "Ótimo",
   bom: "Bom",
   neutro: "Neutro",
   ruim: "Ruim",
+};
+
+export const MOOD_EMOJI: Record<Mood, string> = {
+  otimo: "😄",
+  bom: "🙂",
+  neutro: "😐",
+  ruim: "😔",
 };

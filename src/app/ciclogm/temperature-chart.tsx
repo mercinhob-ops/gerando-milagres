@@ -13,6 +13,17 @@ const PADDING_BOTTOM = 36;
 const Y_MIN = 36.0;
 const Y_MAX = 37.5;
 
+// Valores neutros só para dar forma ao gráfico quando o ciclo ainda não tem
+// registros reais — sem qualquer padrão bifásico (não deve parecer indicar
+// ovulação), por restrição do CRF/PE 4563.
+const EXAMPLE_POINTS = [
+  { date: "example-1", cycleDay: 1, temperature: 36.4 },
+  { date: "example-2", cycleDay: 2, temperature: 36.5 },
+  { date: "example-3", cycleDay: 3, temperature: 36.3 },
+  { date: "example-4", cycleDay: 4, temperature: 36.5 },
+  { date: "example-5", cycleDay: 5, temperature: 36.4 },
+];
+
 export function TemperatureChart({
   records,
   cycleStartDate,
@@ -22,20 +33,13 @@ export function TemperatureChart({
   cycleStartDate: string;
   onPointClick?: (date: string) => void;
 }) {
-  const points = records
+  const realPoints = records
     .filter((record): record is DailyRecord & { temperature: number } => typeof record.temperature === "number")
     .map((record) => ({ ...record, cycleDay: cycleDayFor(cycleStartDate, record.date) }))
     .sort((a, b) => a.cycleDay - b.cycleDay);
 
-  if (points.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-48 rounded-2xl bg-cream/60 border border-nude-dark/30">
-        <p className="font-sans text-sm text-brown/50 text-center px-6">
-          Nenhuma temperatura registrada neste ciclo ainda.
-        </p>
-      </div>
-    );
-  }
+  const isExample = realPoints.length === 0;
+  const points = isExample ? EXAMPLE_POINTS : realPoints;
 
   const chartWidth = WIDTH - PADDING_LEFT - PADDING_RIGHT;
   const chartHeight = HEIGHT - PADDING_TOP - PADDING_BOTTOM;
@@ -63,12 +67,23 @@ export function TemperatureChart({
   if (xTicks[xTicks.length - 1] !== maxDay) xTicks.push(maxDay);
 
   return (
-    <div className="rounded-2xl bg-white border border-nude-dark/30 p-4 overflow-x-auto">
+    <div className="relative rounded-2xl bg-white border border-nude-dark/30 shadow-[0_8px_24px_rgba(107,66,57,0.08)] p-4 overflow-x-auto min-h-[200px]">
+      {isExample && (
+        <span className="absolute top-3 right-3 z-10 font-sans text-[10px] font-semibold uppercase tracking-widest text-brown/50 bg-cream/90 rounded-full px-2.5 py-1 border border-nude-dark/30">
+          Exemplo
+        </span>
+      )}
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="w-full min-w-[520px]"
+        width={WIDTH}
+        height={HEIGHT}
+        className={`w-full min-w-[520px] min-h-[180px] ${isExample ? "opacity-50" : ""}`}
         role="img"
-        aria-label="Gráfico de temperatura basal por dia do ciclo"
+        aria-label={
+          isExample
+            ? "Gráfico de exemplo — nenhum registro real ainda"
+            : "Gráfico de temperatura basal por dia do ciclo"
+        }
       >
         {yTicks.map((tick) => (
           <g key={tick}>
@@ -113,22 +128,31 @@ export function TemperatureChart({
             fill="#C4867A"
             stroke="#ffffff"
             strokeWidth={1.5}
-            role={onPointClick ? "button" : undefined}
-            tabIndex={onPointClick ? 0 : undefined}
+            role={!isExample && onPointClick ? "button" : undefined}
+            tabIndex={!isExample && onPointClick ? 0 : undefined}
             aria-label={`Dia ${point.cycleDay} · ${point.temperature.toFixed(2)}°C`}
-            className={onPointClick ? "cursor-pointer" : undefined}
-            onClick={() => onPointClick?.(point.date)}
-            onKeyDown={(event) => {
-              if (onPointClick && (event.key === "Enter" || event.key === " ")) {
-                event.preventDefault();
-                onPointClick(point.date);
-              }
-            }}
+            className={!isExample && onPointClick ? "cursor-pointer" : undefined}
+            onClick={isExample ? undefined : () => onPointClick?.(point.date)}
+            onKeyDown={
+              isExample
+                ? undefined
+                : (event) => {
+                    if (onPointClick && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault();
+                      onPointClick(point.date);
+                    }
+                  }
+            }
           >
             <title>{`Dia ${point.cycleDay} · ${point.temperature.toFixed(2)}°C`}</title>
           </circle>
         ))}
       </svg>
+      {isExample && (
+        <p className="font-sans text-xs text-brown/50 text-center mt-1">
+          Assim que você salvar um registro, seu gráfico real aparece aqui.
+        </p>
+      )}
     </div>
   );
 }

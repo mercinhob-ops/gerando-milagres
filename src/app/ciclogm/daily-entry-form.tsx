@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { Thermometer, Save } from "lucide-react";
 import type { Bleeding, DailyRecord, Mood, Mucus } from "./types";
-import { BLEEDING_LABELS, MUCUS_LABELS, MOOD_LABELS } from "./types";
+import { BLEEDING_EMOJI, BLEEDING_LABELS, MOOD_EMOJI, MOOD_LABELS, MUCUS_EMOJI, MUCUS_LABELS } from "./types";
 import { cycleDayFor, todayIso } from "./storage";
 
 const bleedingOptions = Object.keys(BLEEDING_LABELS) as Bleeding[];
 const mucusOptions = Object.keys(MUCUS_LABELS) as Mucus[];
 const moodOptions = Object.keys(MOOD_LABELS) as Mood[];
+
+const fieldClassName =
+  "w-full font-sans text-sm text-dark-brown border border-nude-dark/40 rounded-lg px-3 py-2 bg-cream/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-salmon/40 focus:border-salmon/50";
 
 interface DailyEntryFormProps {
   cycleStartDate: string;
@@ -20,8 +23,8 @@ interface DailyEntryFormProps {
 
 export function DailyEntryForm(props: DailyEntryFormProps) {
   return (
-    <div className="bg-white rounded-2xl border border-nude-dark/30 shadow-sm p-5 md:p-6 space-y-5">
-      <h3 className="font-display text-lg font-semibold text-dark-brown">Registro diário</h3>
+    <div className="bg-white rounded-2xl border border-nude-dark/30 shadow-[0_8px_24px_rgba(107,66,57,0.08)] p-5 md:p-6 space-y-5">
+      <h3 className="font-['Georgia',serif] text-lg font-semibold text-dark-brown">Registro diário</h3>
       {/* Remount fields whenever the selected date changes (typed or via chart click),
           so each date's saved record loads fresh into the form. */}
       <DailyEntryFields key={props.date} {...props} />
@@ -77,7 +80,7 @@ function DailyEntryFields({
             min={1}
             value={cycleDay}
             onChange={(event) => setCycleDay(Number(event.target.value) || 1)}
-            className="w-full font-sans text-sm text-dark-brown border border-nude-dark/40 rounded-lg px-3 py-2 bg-cream/40 focus:outline-none focus:ring-2 focus:ring-salmon/40"
+            className={fieldClassName}
           />
         </div>
 
@@ -88,7 +91,7 @@ function DailyEntryFields({
             value={date}
             max={todayIso()}
             onChange={(event) => onDateChange(event.target.value)}
-            className="w-full font-sans text-sm text-dark-brown border border-nude-dark/40 rounded-lg px-3 py-2 bg-cream/40 focus:outline-none focus:ring-2 focus:ring-salmon/40"
+            className={fieldClassName}
           />
         </div>
 
@@ -106,7 +109,7 @@ function DailyEntryFields({
             placeholder="Ex: 36.5"
             value={temperature}
             onChange={(event) => setTemperature(event.target.value)}
-            className="w-full font-sans text-base text-dark-brown border border-nude-dark/40 rounded-lg px-3 py-2 bg-cream/40 focus:outline-none focus:ring-2 focus:ring-salmon/40"
+            className={`${fieldClassName} text-base`}
           />
         </div>
       </div>
@@ -119,12 +122,13 @@ function DailyEntryFields({
               key={option}
               type="button"
               onClick={() => setBleeding(bleeding === option ? "" : option)}
-              className={`font-sans text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              className={`inline-flex items-center gap-1 font-sans text-xs px-3 py-1.5 rounded-full border transition-all duration-200 ${
                 bleeding === option
-                  ? "bg-salmon text-white border-salmon"
+                  ? "bg-salmon text-white border-salmon shadow-sm"
                   : "bg-cream/50 text-brown border-nude-dark/40 hover:border-salmon/60"
               }`}
             >
+              <span aria-hidden="true">{BLEEDING_EMOJI[option]}</span>
               {BLEEDING_LABELS[option]}
             </button>
           ))}
@@ -139,12 +143,13 @@ function DailyEntryFields({
               key={option}
               type="button"
               onClick={() => setMucus(mucus === option ? "" : option)}
-              className={`font-sans text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              className={`inline-flex items-center gap-1 font-sans text-xs px-3 py-1.5 rounded-full border transition-all duration-200 ${
                 mucus === option
-                  ? "bg-salmon text-white border-salmon"
+                  ? "bg-salmon text-white border-salmon shadow-sm"
                   : "bg-cream/50 text-brown border-nude-dark/40 hover:border-salmon/60"
               }`}
             >
+              <span aria-hidden="true">{MUCUS_EMOJI[option]}</span>
               {MUCUS_LABELS[option]}
             </button>
           ))}
@@ -159,12 +164,13 @@ function DailyEntryFields({
               key={option}
               type="button"
               onClick={() => setMood(mood === option ? "" : option)}
-              className={`font-sans text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              className={`inline-flex items-center gap-1 font-sans text-xs px-3 py-1.5 rounded-full border transition-all duration-200 ${
                 mood === option
-                  ? "bg-salmon text-white border-salmon"
+                  ? "bg-salmon text-white border-salmon shadow-sm"
                   : "bg-cream/50 text-brown border-nude-dark/40 hover:border-salmon/60"
               }`}
             >
+              <span aria-hidden="true">{MOOD_EMOJI[option]}</span>
               {MOOD_LABELS[option]}
             </button>
           ))}
@@ -178,14 +184,14 @@ function DailyEntryFields({
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           placeholder="Anotações livres sobre o dia..."
-          className="w-full font-sans text-sm text-dark-brown border border-nude-dark/40 rounded-lg px-3 py-2 bg-cream/40 focus:outline-none focus:ring-2 focus:ring-salmon/40 resize-none"
+          className={`${fieldClassName} resize-none`}
         />
       </div>
 
       <div className="flex items-center gap-3 pt-1">
         <button
           type="submit"
-          className="inline-flex items-center gap-2 bg-salmon text-white font-sans font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-salmon/90 transition-colors"
+          className="inline-flex items-center gap-2 bg-salmon text-white font-sans font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition-all duration-200 hover:bg-salmon/90 hover:shadow-md active:scale-[0.98]"
         >
           <Save className="w-4 h-4" aria-hidden="true" />
           Salvar registro

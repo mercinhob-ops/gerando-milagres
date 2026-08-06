@@ -2,7 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import type { DailyRecord } from "./types";
-import { BLEEDING_LABELS, MOOD_LABELS, MUCUS_LABELS } from "./types";
+import { BLEEDING_EMOJI, BLEEDING_LABELS, MOOD_EMOJI, MOOD_LABELS, MUCUS_EMOJI, MUCUS_LABELS } from "./types";
 import { formatDatePtBr } from "./storage";
 
 export function CycleTable({
@@ -23,7 +23,7 @@ export function CycleTable({
   }
 
   return (
-    <div className="rounded-2xl bg-white border border-nude-dark/30 shadow-sm overflow-hidden">
+    <div className="rounded-2xl bg-white border border-nude-dark/30 shadow-[0_8px_24px_rgba(107,66,57,0.08)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left" id="ciclogm-history-table">
           <thead>
@@ -55,14 +55,14 @@ export function CycleTable({
                 <td className="font-sans text-sm text-brown px-4 py-3">
                   {record.temperature !== undefined ? record.temperature.toFixed(2) : "—"}
                 </td>
-                <td className="font-sans text-sm text-brown px-4 py-3">
-                  {record.bleeding ? BLEEDING_LABELS[record.bleeding] : "—"}
+                <td className="font-sans text-sm text-brown px-4 py-3 whitespace-nowrap">
+                  {record.bleeding ? `${BLEEDING_EMOJI[record.bleeding]} ${BLEEDING_LABELS[record.bleeding]}` : "—"}
                 </td>
-                <td className="font-sans text-sm text-brown px-4 py-3">
-                  {record.mucus ? MUCUS_LABELS[record.mucus] : "—"}
+                <td className="font-sans text-sm text-brown px-4 py-3 whitespace-nowrap">
+                  {record.mucus ? `${MUCUS_EMOJI[record.mucus]} ${MUCUS_LABELS[record.mucus]}` : "—"}
                 </td>
-                <td className="font-sans text-sm text-brown px-4 py-3">
-                  {record.mood ? MOOD_LABELS[record.mood] : "—"}
+                <td className="font-sans text-sm text-brown px-4 py-3 whitespace-nowrap">
+                  {record.mood ? `${MOOD_EMOJI[record.mood]} ${MOOD_LABELS[record.mood]}` : "—"}
                 </td>
                 <td className="font-sans text-sm text-brown px-4 py-3 max-w-[160px] truncate" title={record.notes}>
                   {record.notes || "—"}
@@ -73,7 +73,7 @@ export function CycleTable({
                       type="button"
                       onClick={() => onDelete(record.date)}
                       aria-label={`Excluir registro do dia ${record.cycleDay ?? formatDatePtBr(record.date)}`}
-                      className="text-gray-400 hover:text-danger transition-colors"
+                      className="text-gray-400 hover:text-danger transition-all duration-200"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
