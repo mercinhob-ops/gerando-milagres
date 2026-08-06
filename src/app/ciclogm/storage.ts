@@ -84,3 +84,35 @@ export function todayIso() {
   const local = new Date(now.getTime() - offset * 60 * 1000);
   return local.toISOString().slice(0, 10);
 }
+
+export function cycleDayFor(startDate: string, date: string): number {
+  const start = new Date(`${startDate}T00:00:00`);
+  const current = new Date(`${date}T00:00:00`);
+  const diffDays = Math.round((current.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  return diffDays + 1;
+}
+
+const MONTH_LABELS = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
+
+export function formatMonthYear(iso: string): string {
+  const [year, month] = iso.split("-").map(Number);
+  return `${MONTH_LABELS[(month ?? 1) - 1]}/${String(year).slice(2)}`;
+}
+
+export function formatDatePtBr(iso: string): string {
+  const [year, month, day] = iso.split("-");
+  return `${day}/${month}/${year}`;
+}

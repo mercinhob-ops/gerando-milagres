@@ -2,15 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { CicloGmApp } from "./ciclogm-app";
 
 export const metadata: Metadata = {
-  title: "CicloGM — Dra. Camilla Freitas",
+  title: "Temperatura Basal — Dra. Camilla Freitas",
   description:
-    "Registre sua temperatura basal e os sinais do seu ciclo com o CicloGM, ferramenta de autoconhecimento da Dra. Camilla Freitas.",
+    "Registre sua temperatura basal e os sinais do seu ciclo — ferramenta de autoconhecimento da Dra. Camilla Freitas.",
   robots: { index: false, follow: false },
   manifest: "/ciclogm-manifest.webmanifest",
-  applicationName: "CicloGM",
+  applicationName: "Temperatura Basal",
   appleWebApp: {
     capable: true,
-    title: "CicloGM",
+    title: "Temp. Basal",
     statusBarStyle: "default",
   },
 };

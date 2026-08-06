@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { Download, Upload, Printer, Plus, X } from "lucide-react";
+import { Download, Upload, Printer, Trash2 } from "lucide-react";
 import type { DailyRecord } from "./types";
 import {
   createCycleId,
@@ -13,11 +13,12 @@ import {
   subscribe,
   todayIso,
 } from "./storage";
+import { CycleSelector } from "./cycle-selector";
 import { TemperatureChart } from "./temperature-chart";
 import { DailyEntryForm } from "./daily-entry-form";
 import { CycleTable } from "./cycle-table";
 
-function createFirstCycle(name: string) {
+function createCycle(name: string) {
   return {
     id: createCycleId(),
     name,
@@ -28,15 +29,13 @@ function createFirstCycle(name: string) {
 
 export function CicloGmApp() {
   const data = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [creatingCycle, setCreatingCycle] = useState(false);
-  const [newCycleName, setNewCycleName] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedDate, setSelectedDate] = useState(todayIso());
 
   if (!data.onboarded) {
     return (
       <WelcomeScreen
         onStart={() => {
-          const firstCycle = createFirstCycle("Ciclo 1");
+          const firstCycle = createCycle("Ciclo 1");
           setCicloData({ cycles: [firstCycle], activeCycleId: firstCycle.id, onboarded: true });
         }}
       />
@@ -66,17 +65,21 @@ export function CicloGmApp() {
     updateActiveCycleRecords((records) => records.filter((record) => record.date !== date));
   }
 
-  function handleCreateCycle() {
-    const name = newCycleName.trim();
-    if (!name) return;
-    const cycle = createFirstCycle(name);
+  function handleCreateCycle(name: string) {
+    const cycle = createCycle(name);
     setCicloData((prev) => ({
       ...prev,
       cycles: [...prev.cycles, cycle],
       activeCycleId: cycle.id,
     }));
-    setNewCycleName("");
-    setCreatingCycle(false);
+  }
+
+  function handleClearCycle() {
+    if (!activeCycle) return;
+    const confirmed = window.confirm(
+      `Isso vai apagar todos os registros do ciclo "${activeCycle.name}". Essa ação não pode ser desfeita. Continuar?`
+    );
+    if (confirmed) updateActiveCycleRecords(() => []);
   }
 
   function handleExport() {
@@ -84,13 +87,9 @@ export function CicloGmApp() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `ciclogm-backup-${todayIso()}.json`;
+    link.download = `temperatura-basal-backup-${todayIso()}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  }
-
-  function handleImportClick() {
-    fileInputRef.current?.click();
   }
 
   function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
@@ -103,7 +102,7 @@ export function CicloGmApp() {
       try {
         const parsed = JSON.parse(String(reader.result));
         if (!isValidData(parsed)) {
-          window.alert("Arquivo inválido. Selecione um backup exportado pelo CicloGM.");
+          window.alert("Arquivo inválido. Selecione um backup exportado por este app.");
           return;
         }
         const confirmed = window.confirm(
@@ -125,128 +124,66 @@ export function CicloGmApp() {
     <div className="min-h-screen bg-cream">
       <AppHeader />
 
-      <main className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-6 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            <select
-              value={activeCycle?.id ?? ""}
-              onChange={(event) => setCicloData((prev) => ({ ...prev, activeCycleId: event.target.value }))}
-              className="font-sans text-sm text-dark-brown font-semibold bg-white border border-nude-dark/40 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-salmon/40"
-              aria-label="Selecionar ciclo"
-            >
-              {data.cycles.map((cycle) => (
-                <option key={cycle.id} value={cycle.id}>
-                  {cycle.name}
-                </option>
-              ))}
-            </select>
-
-            {!creatingCycle ? (
-              <button
-                type="button"
-                onClick={() => setCreatingCycle(true)}
-                className="inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-salmon border border-salmon/40 rounded-lg px-3 py-2 hover:bg-salmon/10 transition-colors"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                Novo ciclo
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Nome do ciclo"
-                  value={newCycleName}
-                  onChange={(event) => setNewCycleName(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && handleCreateCycle()}
-                  className="font-sans text-sm text-dark-brown bg-white border border-nude-dark/40 rounded-lg px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-salmon/40"
-                />
-                <button
-                  type="button"
-                  onClick={handleCreateCycle}
-                  className="font-sans text-sm font-semibold text-white bg-salmon rounded-lg px-3 py-2 hover:bg-salmon/90 transition-colors"
-                >
-                  Criar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCreatingCycle(false);
-                    setNewCycleName("");
-                  }}
-                  aria-label="Cancelar"
-                  className="text-brown/50 hover:text-brown p-2"
-                >
-                  <X className="w-4 h-4" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={handleExport}
-              className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" aria-hidden="true" />
-              Exportar backup
-            </button>
-            <button
-              type="button"
-              onClick={handleImportClick}
-              className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5" aria-hidden="true" />
-              Restaurar backup
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json"
-              onChange={handleImportFile}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors"
-            >
-              <Printer className="w-3.5 h-3.5" aria-hidden="true" />
-              Salvar como PDF
-            </button>
-          </div>
-        </div>
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-8 print:hidden">
+        <CycleSelector
+          cycles={data.cycles}
+          activeCycleId={activeCycle?.id ?? null}
+          onSelect={(cycleId) => setCicloData((prev) => ({ ...prev, activeCycleId: cycleId }))}
+          onCreate={handleCreateCycle}
+        />
 
         {activeCycle && (
           <>
             <section>
-              <h2 className="font-display text-xl font-semibold text-dark-brown mb-3">
-                Temperatura basal — {activeCycle.name}
-              </h2>
-              <TemperatureChart records={activeCycle.records} />
+              <h2 className="font-display text-xl font-semibold text-dark-brown mb-3">Gráfico do ciclo</h2>
+              <TemperatureChart
+                records={activeCycle.records}
+                cycleStartDate={activeCycle.startDate}
+                onPointClick={setSelectedDate}
+              />
             </section>
 
             <section>
-              <DailyEntryForm existingRecords={activeCycle.records} onSave={handleSaveRecord} />
+              <DailyEntryForm
+                cycleStartDate={activeCycle.startDate}
+                existingRecords={activeCycle.records}
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                onSave={handleSaveRecord}
+              />
             </section>
 
             <section>
-              <h2 className="font-display text-xl font-semibold text-dark-brown mb-3">Histórico de registros</h2>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h2 className="font-display text-xl font-semibold text-dark-brown">Tabela de registro</h2>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors shrink-0"
+                >
+                  <Printer className="w-3.5 h-3.5" aria-hidden="true" />
+                  Salvar / Imprimir PDF
+                </button>
+              </div>
               <CycleTable records={activeCycle.records} onDelete={handleDeleteRecord} />
             </section>
           </>
         )}
 
-        <Disclaimer />
+        <AppFooter
+          onExport={handleExport}
+          onImport={handleImportFile}
+          onClearCycle={handleClearCycle}
+          hasActiveCycle={Boolean(activeCycle)}
+        />
       </main>
 
       {/* Print-only view */}
       {activeCycle && (
         <div className="hidden print:block px-6 py-6">
-          <p className="font-sans text-xs text-brown/60 mb-1">Gerando Milagres · Dra. Camilla Freitas</p>
+          <p className="font-sans text-xs text-brown/60 mb-1">Temperatura Basal · Gerando Milagres</p>
           <h1 className="font-display text-2xl font-bold text-dark-brown mb-4">{activeCycle.name}</h1>
-          <CycleTable records={activeCycle.records} onDelete={() => {}} />
+          <CycleTable records={activeCycle.records} />
           <p className="font-sans text-[10px] text-brown/50 mt-6">
             Ferramenta de autoconhecimento · Dra. Camilla Freitas · CRF/PE 4563. Não substitui orientação profissional.
           </p>
@@ -258,16 +195,64 @@ export function CicloGmApp() {
 
 function AppHeader() {
   return (
-    <header className="bg-white border-b border-nude-dark/40 print:hidden">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-        <div>
-          <p className="font-display text-lg font-bold text-dark-brown italic leading-none">Gerando Milagres</p>
-          <p className="font-sans text-xs text-salmon font-semibold tracking-wide uppercase mt-0.5">
-            CicloGM · Dra. Camilla Freitas
-          </p>
-        </div>
+    <header className="sticky top-0 z-10 bg-white border-b border-nude-dark/40 print:hidden">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-3.5">
+        <p className="font-display text-base font-bold text-dark-brown leading-none">
+          Temperatura Basal <span className="text-salmon font-normal">·</span> Gerando Milagres
+        </p>
       </div>
     </header>
+  );
+}
+
+function AppFooter({
+  onExport,
+  onImport,
+  onClearCycle,
+  hasActiveCycle,
+}: {
+  onExport: () => void;
+  onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onClearCycle: () => void;
+  hasActiveCycle: boolean;
+}) {
+  return (
+    <footer className="pt-4 border-t border-nude-dark/30 space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={onExport}
+          className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors"
+        >
+          <Download className="w-3.5 h-3.5" aria-hidden="true" />
+          Fazer backup
+        </button>
+
+        <label className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-brown border border-nude-dark/40 rounded-lg px-3 py-2 hover:bg-white transition-colors cursor-pointer">
+          <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+          Restaurar backup
+          <input type="file" accept="application/json" onChange={onImport} className="hidden" />
+        </label>
+
+        {hasActiveCycle && (
+          <button
+            type="button"
+            onClick={onClearCycle}
+            className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-danger border border-danger/30 rounded-lg px-3 py-2 hover:bg-danger/5 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+            Limpar este ciclo
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <p className="font-sans text-[11px] text-brown/50 text-center leading-relaxed px-4">
+          Seus registros ficam salvos neste aparelho. Faça backup regularmente.
+        </p>
+        <Disclaimer />
+      </div>
+    </footer>
   );
 }
 
@@ -276,6 +261,8 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
     <div className="min-h-screen bg-cream flex flex-col">
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-md w-full text-center space-y-6">
+          <p className="font-display text-sm font-bold text-dark-brown italic">Gerando Milagres</p>
+
           <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-white shadow-xl">
             <Image
               src="/images/camilla-zap.jpg"
@@ -288,15 +275,15 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           </div>
 
           <div className="space-y-2">
-            <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase">
-              Gerando Milagres apresenta
-            </p>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-dark-brown leading-tight">
-              CicloGM
+              Temperatura Basal
             </h1>
-            <p className="font-sans text-brown/70 leading-relaxed">
+            <p className="font-sans text-sm font-semibold text-salmon uppercase tracking-wide">
+              sua jornada começa aqui
+            </p>
+            <p className="font-sans text-brown/70 leading-relaxed pt-2">
               Um espaço simples e acolhedor para registrar sua temperatura basal e os sinais do seu corpo,
-              ciclo a ciclo.
+              ciclo a ciclo — no seu tempo, do seu jeito.
             </p>
           </div>
 

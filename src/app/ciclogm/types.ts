@@ -4,10 +4,12 @@ export type Bleeding = "nenhum" | "leve" | "moderado" | "intenso";
 
 export interface DailyRecord {
   date: string; // "YYYY-MM-DD"
+  cycleDay?: number;
   temperature?: number;
-  mood?: Mood;
-  mucus?: Mucus;
   bleeding?: Bleeding;
+  mucus?: Mucus;
+  mood?: Mood;
+  notes?: string;
 }
 
 export interface Cycle {
@@ -23,11 +25,11 @@ export interface CicloGmData {
   onboarded: boolean;
 }
 
-export const MOOD_LABELS: Record<Mood, string> = {
-  otimo: "Ótimo",
-  bom: "Bom",
-  neutro: "Neutro",
-  ruim: "Ruim",
+export const BLEEDING_LABELS: Record<Bleeding, string> = {
+  nenhum: "Nenhum",
+  leve: "Leve",
+  moderado: "Moderado",
+  intenso: "Intenso",
 };
 
 export const MUCUS_LABELS: Record<Mucus, string> = {
@@ -37,9 +39,9 @@ export const MUCUS_LABELS: Record<Mucus, string> = {
   elastico: "Elástico",
 };
 
-export const BLEEDING_LABELS: Record<Bleeding, string> = {
-  nenhum: "Nenhum",
-  leve: "Leve",
-  moderado: "Moderado",
-  intenso: "Intenso",
+export const MOOD_LABELS: Record<Mood, string> = {
+  otimo: "Ótimo",
+  bom: "Bom",
+  neutro: "Neutro",
+  ruim: "Ruim",
 };

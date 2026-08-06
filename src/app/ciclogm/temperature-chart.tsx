@@ -1,23 +1,31 @@
 "use client";
 
 import type { DailyRecord } from "./types";
+import { cycleDayFor } from "./storage";
 
 const WIDTH = 720;
-const HEIGHT = 260;
+const HEIGHT = 280;
 const PADDING_LEFT = 44;
 const PADDING_RIGHT = 16;
-const PADDING_TOP = 20;
+const PADDING_TOP = 16;
 const PADDING_BOTTOM = 36;
 
-function formatShortDate(iso: string) {
-  const [, month, day] = iso.split("-");
-  return `${day}/${month}`;
-}
+const Y_MIN = 36.0;
+const Y_MAX = 37.5;
 
-export function TemperatureChart({ records }: { records: DailyRecord[] }) {
+export function TemperatureChart({
+  records,
+  cycleStartDate,
+  onPointClick,
+}: {
+  records: DailyRecord[];
+  cycleStartDate: string;
+  onPointClick?: (date: string) => void;
+}) {
   const points = records
     .filter((record): record is DailyRecord & { temperature: number } => typeof record.temperature === "number")
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .map((record) => ({ ...record, cycleDay: cycleDayFor(cycleStartDate, record.date) }))
+    .sort((a, b) => a.cycleDay - b.cycleDay);
 
   if (points.length === 0) {
     return (
@@ -29,31 +37,30 @@ export function TemperatureChart({ records }: { records: DailyRecord[] }) {
     );
   }
 
-  const temps = points.map((point) => point.temperature);
-  const rawMin = Math.min(...temps);
-  const rawMax = Math.max(...temps);
-  const min = Math.floor((rawMin - 0.2) * 10) / 10;
-  const max = Math.ceil((rawMax + 0.2) * 10) / 10;
-  const range = max - min || 1;
-
   const chartWidth = WIDTH - PADDING_LEFT - PADDING_RIGHT;
   const chartHeight = HEIGHT - PADDING_TOP - PADDING_BOTTOM;
+  const range = Y_MAX - Y_MIN;
 
-  const xFor = (index: number) =>
-    points.length === 1
-      ? PADDING_LEFT + chartWidth / 2
-      : PADDING_LEFT + (index / (points.length - 1)) * chartWidth;
+  const maxDay = Math.max(points[points.length - 1].cycleDay, points.length > 1 ? points.length : 1);
+  const dayFor = (day: number) => Math.max(day, 1);
 
-  const yFor = (temp: number) => PADDING_TOP + chartHeight - ((temp - min) / range) * chartHeight;
+  const xFor = (day: number) =>
+    maxDay <= 1 ? PADDING_LEFT + chartWidth / 2 : PADDING_LEFT + ((dayFor(day) - 1) / (maxDay - 1)) * chartWidth;
+
+  const yFor = (temp: number) => {
+    const clamped = Math.min(Math.max(temp, Y_MIN), Y_MAX);
+    return PADDING_TOP + chartHeight - ((clamped - Y_MIN) / range) * chartHeight;
+  };
 
   const linePath = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${xFor(index).toFixed(1)} ${yFor(point.temperature).toFixed(1)}`)
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${xFor(point.cycleDay).toFixed(1)} ${yFor(point.temperature).toFixed(1)}`)
     .join(" ");
 
-  const gridLines = 4;
-  const yTicks = Array.from({ length: gridLines + 1 }, (_, i) => min + (range / gridLines) * i);
-
-  const labelStep = Math.ceil(points.length / 8);
+  const yTicks = [36.0, 36.3, 36.6, 36.9, 37.2, 37.5];
+  const xTickStep = Math.max(1, Math.ceil(maxDay / 10));
+  const xTicks: number[] = [];
+  for (let day = 1; day <= maxDay; day += xTickStep) xTicks.push(day);
+  if (xTicks[xTicks.length - 1] !== maxDay) xTicks.push(maxDay);
 
   return (
     <div className="rounded-2xl bg-white border border-nude-dark/30 p-4 overflow-x-auto">
@@ -61,7 +68,7 @@ export function TemperatureChart({ records }: { records: DailyRecord[] }) {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full min-w-[520px]"
         role="img"
-        aria-label="Gráfico de temperatura basal do ciclo"
+        aria-label="Gráfico de temperatura basal por dia do ciclo"
       >
         {yTicks.map((tick) => (
           <g key={tick}>
@@ -72,50 +79,55 @@ export function TemperatureChart({ records }: { records: DailyRecord[] }) {
               y2={yFor(tick)}
               stroke="#E8D0C0"
               strokeWidth={1}
-              strokeDasharray="4 4"
             />
-            <text
-              x={PADDING_LEFT - 8}
-              y={yFor(tick) + 3}
-              textAnchor="end"
-              fontSize={10}
-              fill="#6B4239"
-              fontFamily="var(--font-inter), sans-serif"
-            >
+            <text x={PADDING_LEFT - 8} y={yFor(tick) + 3} textAnchor="end" fontSize={10} fill="#6B4239">
               {tick.toFixed(1)}
+            </text>
+          </g>
+        ))}
+
+        {xTicks.map((day) => (
+          <g key={day}>
+            <line
+              x1={xFor(day)}
+              x2={xFor(day)}
+              y1={PADDING_TOP}
+              y2={HEIGHT - PADDING_BOTTOM}
+              stroke="#F0E6DC"
+              strokeWidth={1}
+            />
+            <text x={xFor(day)} y={HEIGHT - PADDING_BOTTOM + 18} textAnchor="middle" fontSize={10} fill="#6B4239">
+              {day}
             </text>
           </g>
         ))}
 
         <path d={linePath} fill="none" stroke="#C4867A" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
 
-        {points.map((point, index) => (
+        {points.map((point) => (
           <circle
             key={point.date}
-            cx={xFor(index)}
+            cx={xFor(point.cycleDay)}
             cy={yFor(point.temperature)}
-            r={4}
+            r={5}
             fill="#C4867A"
             stroke="#ffffff"
             strokeWidth={1.5}
-          />
+            role={onPointClick ? "button" : undefined}
+            tabIndex={onPointClick ? 0 : undefined}
+            aria-label={`Dia ${point.cycleDay} · ${point.temperature.toFixed(2)}°C`}
+            className={onPointClick ? "cursor-pointer" : undefined}
+            onClick={() => onPointClick?.(point.date)}
+            onKeyDown={(event) => {
+              if (onPointClick && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                onPointClick(point.date);
+              }
+            }}
+          >
+            <title>{`Dia ${point.cycleDay} · ${point.temperature.toFixed(2)}°C`}</title>
+          </circle>
         ))}
-
-        {points.map((point, index) =>
-          index % labelStep === 0 || index === points.length - 1 ? (
-            <text
-              key={`label-${point.date}`}
-              x={xFor(index)}
-              y={HEIGHT - PADDING_BOTTOM + 18}
-              textAnchor="middle"
-              fontSize={10}
-              fill="#6B4239"
-              fontFamily="var(--font-inter), sans-serif"
-            >
-              {formatShortDate(point.date)}
-            </text>
-          ) : null
-        )}
       </svg>
     </div>
   );
