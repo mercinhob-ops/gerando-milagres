@@ -116,3 +116,27 @@ export function formatDatePtBr(iso: string): string {
   const [year, month, day] = iso.split("-");
   return `${day}/${month}/${year}`;
 }
+
+/**
+ * Sequência de dias consecutivos com registro, contando para trás a partir
+ * da data mais recente registrada (não precisa ser hoje).
+ */
+export function computeStreak(records: DailyRecord[]): number {
+  const uniqueDates = Array.from(new Set(records.map((record) => record.date))).sort().reverse();
+  if (uniqueDates.length === 0) return 0;
+
+  let streak = 1;
+  let cursor = new Date(`${uniqueDates[0]}T00:00:00`);
+
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const expectedPrevious = new Date(cursor);
+    expectedPrevious.setDate(expectedPrevious.getDate() - 1);
+    const expectedIso = expectedPrevious.toISOString().slice(0, 10);
+
+    if (uniqueDates[i] !== expectedIso) break;
+    streak++;
+    cursor = expectedPrevious;
+  }
+
+  return streak;
+}

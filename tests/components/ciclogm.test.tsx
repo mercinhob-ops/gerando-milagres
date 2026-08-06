@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { computeStreak } from "@/app/ciclogm/storage";
 
 async function renderApp() {
   vi.resetModules();
@@ -14,6 +15,12 @@ function start() {
 describe("CicloGmApp", () => {
   beforeEach(() => {
     window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    // Garante que um teste com fake timers que falhe no meio não vaze
+    // timers falsos para os testes seguintes.
+    vi.useRealTimers();
   });
 
   it("mostra a tela de boas-vindas para quem nunca usou o app", async () => {
@@ -125,5 +132,96 @@ describe("CicloGmApp", () => {
     const stored = window.localStorage.getItem("ciclogm:data");
     expect(stored).not.toBeNull();
     expect(JSON.parse(stored ?? "{}").onboarded).toBe(true);
+  });
+
+  it("mostra o primeiro versículo e roda para o próximo após 6 segundos", async () => {
+    vi.useFakeTimers();
+    await renderApp();
+    start();
+
+    expect(screen.getByText(/jeremias 29:11/i)).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(6500);
+    });
+
+    expect(screen.getByText(/isaías 40:31/i)).toBeInTheDocument();
+  });
+
+  it("mostra uma mensagem de incentivo rotativa depois de salvar um registro", async () => {
+    await renderApp();
+    start();
+
+    fireEvent.change(screen.getByPlaceholderText(/ex: 36.5/i), { target: { value: "36.3" } });
+    fireEvent.click(screen.getByText(/salvar registro/i));
+
+    const toast = await screen.findByRole("status");
+    expect(toast.textContent).toMatch(/🌸|✨|💛|🌿|🙏/);
+  });
+
+  it("mostra o indicador de sequência ao salvar o primeiro registro do dia", async () => {
+    await renderApp();
+    start();
+
+    expect(screen.getByText(/registre hoje para começar sua sequência/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/ex: 36.5/i), { target: { value: "36.4" } });
+    fireEvent.click(screen.getByText(/salvar registro/i));
+
+    expect(screen.getByText(/1 dia seguido/i)).toBeInTheDocument();
+  });
+
+  it("mostra o resumo do ciclo com registros, temperatura média, dia do ciclo e variação", async () => {
+    await renderApp();
+    start();
+
+    fireEvent.change(screen.getByPlaceholderText(/ex: 36.5/i), { target: { value: "36.20" } });
+    fireEvent.click(screen.getByText(/salvar registro/i));
+
+    expect(screen.getByText("Registros")).toBeInTheDocument();
+    expect(screen.getByText("Temp. média")).toBeInTheDocument();
+    expect(screen.getAllByText("Dia do ciclo").length).toBeGreaterThan(0);
+    expect(screen.getByText("Variação")).toBeInTheDocument();
+
+    const avgMatches = await screen.findAllByText(/36\.20/);
+    expect(avgMatches.length).toBeGreaterThan(0);
+    expect(screen.getByText("0.00°C")).toBeInTheDocument();
+  });
+
+  it("mantém o rodapé de backup/restaurar/limpar e adiciona o rodapé de marca", async () => {
+    await renderApp();
+    start();
+
+    expect(screen.getByText(/fazer backup/i)).toBeInTheDocument();
+    expect(screen.getByText(/restaurar backup/i)).toBeInTheDocument();
+    expect(screen.getByText(/limpar este ciclo/i)).toBeInTheDocument();
+    expect(screen.getByText(/seu milagre está a caminho/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Gerando Milagres").length).toBeGreaterThan(0);
+  });
+});
+
+describe("computeStreak", () => {
+  it("retorna 0 quando não há registros", () => {
+    expect(computeStreak([])).toBe(0);
+  });
+
+  it("conta 1 quando o dia anterior ao mais recente não tem registro", () => {
+    const records = [
+      { date: "2026-08-01" },
+      { date: "2026-08-02" },
+      { date: "2026-08-03" },
+      { date: "2026-08-05" },
+    ];
+    expect(computeStreak(records)).toBe(1);
+  });
+
+  it("conta a sequência completa quando os dias são realmente consecutivos", () => {
+    const records = [
+      { date: "2026-08-01" },
+      { date: "2026-08-02" },
+      { date: "2026-08-03" },
+      { date: "2026-08-04" },
+    ];
+    expect(computeStreak(records)).toBe(4);
   });
 });

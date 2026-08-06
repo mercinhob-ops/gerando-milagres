@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "next/image";
 import { Download, Upload, Printer, Trash2 } from "lucide-react";
 import type { DailyRecord } from "./types";
 import {
+  computeStreak,
   createCycleId,
   getServerSnapshot,
   getSnapshot,
@@ -17,8 +18,23 @@ import { CycleSelector } from "./cycle-selector";
 import { TemperatureChart } from "./temperature-chart";
 import { DailyEntryForm } from "./daily-entry-form";
 import { CycleTable } from "./cycle-table";
+import { CycleSummary } from "./cycle-summary";
+import { StreakIndicator } from "./streak-indicator";
+import { VerseCarousel } from "./verse-carousel";
+import { EncouragementToast, randomEncouragement } from "./encouragement-toast";
 
 const GEORGIA = "font-['Georgia',serif]";
+
+const FADE_IN_KEYFRAMES = `
+  @keyframes ciclogm-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+function fadeIn(delayMs: number): CSSProperties {
+  return { animation: `ciclogm-fade-in 0.5s ease-out ${delayMs}ms both` };
+}
 
 function createCycle(name: string) {
   return {
@@ -32,6 +48,9 @@ function createCycle(name: string) {
 export function CicloGmApp() {
   const data = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [selectedDate, setSelectedDate] = useState(todayIso());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimeouts = useRef<{ hide?: number; clear?: number }>({});
 
   if (!data.onboarded) {
     return (
@@ -56,11 +75,22 @@ export function CicloGmApp() {
     }));
   }
 
+  function showEncouragement() {
+    if (toastTimeouts.current.hide) window.clearTimeout(toastTimeouts.current.hide);
+    if (toastTimeouts.current.clear) window.clearTimeout(toastTimeouts.current.clear);
+
+    setToastMessage(randomEncouragement());
+    setToastVisible(true);
+    toastTimeouts.current.hide = window.setTimeout(() => setToastVisible(false), 3000);
+    toastTimeouts.current.clear = window.setTimeout(() => setToastMessage(null), 3300);
+  }
+
   function handleSaveRecord(record: DailyRecord) {
     updateActiveCycleRecords((records) => {
       const withoutDate = records.filter((existing) => existing.date !== record.date);
       return [...withoutDate, record];
     });
+    showEncouragement();
   }
 
   function handleDeleteRecord(date: string) {
@@ -122,24 +152,36 @@ export function CicloGmApp() {
     window.print();
   }
 
+  const streak = activeCycle ? computeStreak(activeCycle.records) : 0;
+
   return (
     <div
       className="min-h-screen"
       style={{ background: "linear-gradient(180deg, #F0E6DC 0%, #FBF7F4 45%, #F0E6DC 100%)" }}
     >
+      <style>{FADE_IN_KEYFRAMES}</style>
+
       <AppHeader />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-8 print:hidden">
-        <CycleSelector
-          cycles={data.cycles}
-          activeCycleId={activeCycle?.id ?? null}
-          onSelect={(cycleId) => setCicloData((prev) => ({ ...prev, activeCycleId: cycleId }))}
-          onCreate={handleCreateCycle}
-        />
+        <div style={fadeIn(80)}>
+          <VerseCarousel />
+        </div>
+
+        <div style={fadeIn(160)}>
+          <CycleSelector
+            cycles={data.cycles}
+            activeCycleId={activeCycle?.id ?? null}
+            onSelect={(cycleId) => setCicloData((prev) => ({ ...prev, activeCycleId: cycleId }))}
+            onCreate={handleCreateCycle}
+          />
+        </div>
 
         {activeCycle && (
           <>
-            <section>
+            <StreakIndicator streak={streak} />
+
+            <section style={fadeIn(240)}>
               <h2 className={`${GEORGIA} text-xl font-semibold text-dark-brown mb-3`}>Gráfico do ciclo</h2>
               <TemperatureChart
                 records={activeCycle.records}
@@ -149,6 +191,10 @@ export function CicloGmApp() {
             </section>
 
             <section>
+              <CycleSummary records={activeCycle.records} cycleStartDate={activeCycle.startDate} />
+            </section>
+
+            <section style={fadeIn(320)}>
               <DailyEntryForm
                 cycleStartDate={activeCycle.startDate}
                 existingRecords={activeCycle.records}
@@ -158,7 +204,7 @@ export function CicloGmApp() {
               />
             </section>
 
-            <section>
+            <section style={fadeIn(400)}>
               <div className="flex items-center justify-between gap-3 mb-3">
                 <h2 className={`${GEORGIA} text-xl font-semibold text-dark-brown`}>Tabela de registro</h2>
                 <button
@@ -181,6 +227,8 @@ export function CicloGmApp() {
           onClearCycle={handleClearCycle}
           hasActiveCycle={Boolean(activeCycle)}
         />
+
+        <BrandFooter />
       </main>
 
       {/* Print-only view */}
@@ -194,6 +242,8 @@ export function CicloGmApp() {
           </p>
         </div>
       )}
+
+      <EncouragementToast message={toastMessage} visible={toastVisible} />
     </div>
   );
 }
@@ -202,7 +252,7 @@ function AppHeader() {
   return (
     <header
       className="sticky top-0 z-10 shadow-sm print:hidden"
-      style={{ background: "linear-gradient(135deg, #4A2E26 0%, #6B4239 100%)" }}
+      style={{ background: "linear-gradient(135deg, #4A2E26 0%, #6B4239 100%)", ...fadeIn(0) }}
     >
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
         <p className={`${GEORGIA} text-base font-bold text-white leading-none`}>
@@ -261,6 +311,21 @@ function AppFooter({
         <Disclaimer />
       </div>
     </footer>
+  );
+}
+
+function BrandFooter() {
+  return (
+    <div className="text-center pt-2 pb-4 space-y-1.5">
+      <p className={`${GEORGIA} italic text-base font-bold text-dark-brown`}>Gerando Milagres</p>
+      <p className="font-sans text-xs text-brown/60">
+        Feito com 💛 pela Dra. Camilla Freitas · CRF/PE 4563
+      </p>
+      <p className="font-sans text-sm italic text-salmon">Sua jornada é única. Seu milagre está a caminho.</p>
+      <p className="text-lg" aria-hidden="true">
+        🌸
+      </p>
+    </div>
   );
 }
 
