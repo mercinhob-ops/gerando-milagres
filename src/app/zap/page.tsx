@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const benefits = [
+  "Entenda por que seu corpo ainda não engravidou",
+  "Conheça o protocolo científico da Dra. Camilla",
+  "Saiba como a suplementação certa faz diferença real",
+  "Dê o primeiro passo com quem já ajudou mais de 500 mulheres",
+] as const;
 
 export default function ZapPage() {
   const [nome, setNome] = useState("");
@@ -15,349 +24,132 @@ export default function ZapPage() {
     return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`;
   }
 
+  const message = `Olá, Dra. Camilla! Me chamo ${nome} e quero saber mais sobre o Gerando Milagres. 🌸`;
+  const waLink = `https://wa.me/5581981396005?text=${encodeURIComponent(message)}`;
+  const isValid = nome.trim() !== "" && telefone.replace(/\D/g, "").length >= 10;
+
   function handleEnviar() {
-    if (!nome.trim() || telefone.replace(/\D/g, "").length < 10) return;
+    if (!isValid) return;
     setEnviado(true);
-    const msg = encodeURIComponent(
-      `Olá, Dra. Camilla! Me chamo ${nome} e quero saber mais sobre o Gerando Milagres. 🌸`
-    );
     setTimeout(() => {
-      window.open(`https://wa.me/5581981396005?text=${msg}`, "_blank");
+      window.open(waLink, "_blank");
     }, 1200);
   }
 
-  const waLink = `https://wa.me/5581981396005?text=${encodeURIComponent(
-    `Olá, Dra. Camilla! Me chamo ${nome} e quero saber mais sobre o Gerando Milagres. 🌸`
-  )}`;
-
   return (
     <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 60%, #F0E6DC 100%)",
-        fontFamily: "'Georgia', serif",
-        color: "#4A2E26",
-      }}
+      className="min-h-screen pb-16"
+      style={{ background: "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 55%, #F0E6DC 100%)" }}
     >
-      <header style={{ textAlign: "center", padding: "2.5rem 1rem 0" }}>
-        <p
-          style={{
-            fontSize: "0.75rem",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "#C4867A",
-            marginBottom: "0.4rem",
-            fontFamily: "sans-serif",
-          }}
-        >
+      {/* ─── HERO ───────────────────────────────────────────────────── */}
+      <section className="text-center pt-12 px-6">
+        <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-3">
           Dra. Camilla Freitas · CRF/PE 4563
         </p>
-        <h1
-          style={{
-            fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
-            fontWeight: 700,
-            color: "#4A2E26",
-            lineHeight: 1.2,
-            margin: "0 auto",
-            maxWidth: 560,
-          }}
-        >
-          GERANDO<span style={{ color: "#C4867A" }}> MILAGRES</span>
+        <h1 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-tight max-w-xl mx-auto">
+          GERANDO <span className="text-salmon">MILAGRES</span>
         </h1>
-        <div
-          style={{
-            width: 48,
-            height: 2,
-            background: "#C4867A",
-            margin: "1rem auto",
-            borderRadius: 2,
-          }}
-        />
-      </header>
+        <div className="w-12 h-0.5 bg-salmon mx-auto my-4 rounded-full" />
 
-      <section
-        style={{ textAlign: "center", padding: "1.75rem 1rem 0" }}
-      >
-        <Image
-          src="/images/camilla-zap.jpg"
-          alt="Dra. Camilla Freitas"
-          width={320}
-          height={420}
-          style={{
-            objectFit: "cover",
-            borderRadius: 16,
-            display: "block",
-            margin: "0 auto",
-          }}
-          priority
-        />
-        <p
-          style={{
-            marginTop: "0.85rem",
-            fontSize: "0.78rem",
-            letterSpacing: "0.06em",
-            color: "#8B5E52",
-            fontFamily: "sans-serif",
-            fontStyle: "italic",
-          }}
-        >
+        <div className="relative w-40 h-52 md:w-48 md:h-64 mx-auto rounded-2xl overflow-hidden shadow-2xl mt-4">
+          <Image
+            src="/images/camilla-zap.jpg"
+            alt="Dra. Camilla Freitas"
+            fill
+            className="object-cover object-top"
+            sizes="192px"
+            priority
+          />
+        </div>
+        <p className="font-sans italic text-xs text-brown/70 mt-3 tracking-wide">
           Dra. Camilla Freitas — Farmacêutica · CRF/PE 4563
         </p>
       </section>
 
-      <section
-        style={{
-          maxWidth: 680,
-          margin: "0 auto",
-          padding: "2rem 1.5rem 0",
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "clamp(1.5rem, 4.5vw, 2.2rem)",
-            fontWeight: 700,
-            lineHeight: 1.3,
-            color: "#4A2E26",
-            marginBottom: "1.2rem",
-          }}
-        >
+      {/* ─── HEADLINE + BENEFÍCIOS ──────────────────────────────────── */}
+      <section className="max-w-xl mx-auto px-6 pt-10 text-center">
+        <h2 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-5">
           Seu corpo pode ser o lar do{" "}
-          <em style={{ color: "#C4867A", fontStyle: "italic" }}>milagre</em>{" "}
-          que você espera.
+          <em className="not-italic text-salmon">milagre</em> que você espera.
         </h2>
-        <p
-          style={{
-            fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
-            lineHeight: 1.75,
-            color: "#6B4239",
-            maxWidth: 520,
-            margin: "0 auto 2rem",
-          }}
-        >
+        <p className="font-sans text-base md:text-lg text-brown leading-relaxed max-w-lg mx-auto mb-8">
           Descubra como preparar seu corpo para gerar vida — com protocolos
           científicos, suplementação estratégica e o cuidado humano que você
           merece.
         </p>
 
-        <div
-          style={{
-            background: "rgba(255,255,255,0.55)",
-            borderRadius: 16,
-            padding: "1.5rem 2rem",
-            maxWidth: 480,
-            margin: "0 auto 2.5rem",
-            textAlign: "left",
-            border: "1px solid rgba(196,134,122,0.18)",
-          }}
-        >
-          {[
-            "Entenda por que seu corpo ainda não engravidou",
-            "Conheça o protocolo científico da Dra. Camilla",
-            "Saiba como a suplementação certa faz diferença real",
-            "Dê o primeiro passo com quem já ajudou mais de 500 mulheres",
-          ].map((item, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "0.75rem",
-                marginBottom: i < 3 ? "0.85rem" : 0,
-              }}
-            >
-              <span style={{ color: "#C4867A", flexShrink: 0 }}>✦</span>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "0.95rem",
-                  lineHeight: 1.5,
-                  color: "#4A2E26",
-                  fontFamily: "sans-serif",
-                }}
-              >
-                {item}
-              </p>
-            </div>
-          ))}
+        <div className="bg-white/50 backdrop-blur-md border border-salmon/20 rounded-2xl p-6 text-left shadow-sm max-w-md mx-auto">
+          <ul className="space-y-3">
+            {benefits.map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <Sparkles className="w-4 h-4 text-salmon shrink-0 mt-1" aria-hidden="true" />
+                <p className="font-sans text-sm text-dark-brown leading-relaxed">{item}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section
-        style={{ maxWidth: 480, margin: "0 auto", padding: "0 1.5rem 4rem" }}
-      >
+      {/* ─── FORMULÁRIO ─────────────────────────────────────────────── */}
+      <section className="max-w-md mx-auto px-6 pt-10">
         {!enviado ? (
-          <div
-            style={{
-              background: "rgba(255,255,255,0.7)",
-              borderRadius: 20,
-              padding: "2rem 1.75rem",
-              boxShadow: "0 8px 40px rgba(74,46,38,0.10)",
-              border: "1px solid rgba(196,134,122,0.2)",
-            }}
-          >
-            <p
-              style={{
-                textAlign: "center",
-                fontSize: "1rem",
-                fontWeight: 600,
-                color: "#4A2E26",
-                marginBottom: "1.5rem",
-                fontFamily: "sans-serif",
-              }}
-            >
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl p-7 shadow-[0_8px_40px_rgba(74,46,38,0.1)] border border-salmon/20">
+            <p className="text-center font-sans font-semibold text-dark-brown mb-6">
               Deixe seu contato e a Dra. Camilla fala com você em breve 💬
             </p>
 
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.78rem",
-                fontWeight: 600,
-                color: "#6B4239",
-                marginBottom: "0.4rem",
-                textTransform: "uppercase",
-                fontFamily: "sans-serif",
-              }}
-            >
+            <label className="block font-sans text-xs font-semibold text-brown uppercase mb-1.5">
               Seu nome
             </label>
             <input
               type="text"
               placeholder="Como posso te chamar?"
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.85rem 1rem",
-                border: "1.5px solid rgba(196,134,122,0.4)",
-                borderRadius: 10,
-                fontSize: "0.95rem",
-                background: "rgba(255,255,255,0.8)",
-                color: "#4A2E26",
-                marginBottom: "1.1rem",
-                outline: "none",
-                fontFamily: "sans-serif",
-                boxSizing: "border-box",
-              }}
+              onChange={(event) => setNome(event.target.value)}
+              className="w-full font-sans text-sm text-dark-brown border border-salmon/40 rounded-lg px-4 py-3 bg-white/80 mb-4 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-salmon/40 focus:border-salmon/60"
             />
 
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.78rem",
-                fontWeight: 600,
-                color: "#6B4239",
-                marginBottom: "0.4rem",
-                textTransform: "uppercase",
-                fontFamily: "sans-serif",
-              }}
-            >
+            <label className="block font-sans text-xs font-semibold text-brown uppercase mb-1.5">
               WhatsApp
             </label>
             <input
               type="tel"
               placeholder="(81) 99999-9999"
               value={telefone}
-              onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
-              style={{
-                width: "100%",
-                padding: "0.85rem 1rem",
-                border: "1.5px solid rgba(196,134,122,0.4)",
-                borderRadius: 10,
-                fontSize: "0.95rem",
-                background: "rgba(255,255,255,0.8)",
-                color: "#4A2E26",
-                marginBottom: "1.1rem",
-                outline: "none",
-                fontFamily: "sans-serif",
-                boxSizing: "border-box",
-              }}
+              onChange={(event) => setTelefone(formatarTelefone(event.target.value))}
+              className="w-full font-sans text-sm text-dark-brown border border-salmon/40 rounded-lg px-4 py-3 bg-white/80 mb-5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-salmon/40 focus:border-salmon/60"
             />
 
             <button
+              type="button"
               onClick={handleEnviar}
-              disabled={
-                !nome.trim() || telefone.replace(/\D/g, "").length < 10
-              }
-              style={{
-                width: "100%",
-                padding: "1rem",
-                background:
-                  nome.trim() && telefone.replace(/\D/g, "").length >= 10
-                    ? "#C4867A"
-                    : "#d4a89a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 12,
-                fontSize: "1rem",
-                fontWeight: 700,
-                cursor:
-                  nome.trim() && telefone.replace(/\D/g, "").length >= 10
-                    ? "pointer"
-                    : "not-allowed",
-                fontFamily: "sans-serif",
-                marginTop: "0.5rem",
-              }}
+              disabled={!isValid}
+              className={cn(
+                "w-full font-sans font-bold text-base text-white rounded-xl py-3.5 transition-all duration-200",
+                isValid
+                  ? "bg-salmon shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:bg-salmon/90 hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] hover:-translate-y-0.5 cursor-pointer"
+                  : "bg-salmon/40 cursor-not-allowed"
+              )}
             >
               Quero falar com a Dra. Camilla →
             </button>
 
-            <p
-              style={{
-                textAlign: "center",
-                fontSize: "0.72rem",
-                color: "#6B4239",
-                marginTop: "0.75rem",
-                fontFamily: "sans-serif",
-                opacity: 0.75,
-              }}
-            >
+            <p className="text-center font-sans text-xs text-brown/70 mt-3">
               Resposta em até 5 min · Dados protegidos pela LGPD
             </p>
           </div>
         ) : (
-          <div
-            style={{
-              background: "rgba(255,255,255,0.7)",
-              borderRadius: 20,
-              padding: "2.5rem 1.75rem",
-              textAlign: "center",
-              boxShadow: "0 8px 40px rgba(74,46,38,0.10)",
-              border: "1px solid rgba(196,134,122,0.2)",
-            }}
-          >
-            <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl p-10 text-center shadow-[0_8px_40px_rgba(74,46,38,0.1)] border border-salmon/20">
+            <p className="text-4xl mb-3" aria-hidden="true">
               🌸
-            </div>
-            <h3
-              style={{
-                fontSize: "1.2rem",
-                fontWeight: 700,
-                color: "#4A2E26",
-                marginBottom: "0.5rem",
-                fontFamily: "sans-serif",
-              }}
-            >
+            </p>
+            <h3 className="font-['Georgia',serif] text-xl font-bold text-dark-brown mb-2">
               Tudo certo, {nome.split(" ")[0]}!
             </h3>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "#6B4239",
-                fontFamily: "sans-serif",
-                lineHeight: 1.6,
-              }}
-            >
+            <p className="font-sans text-sm text-brown leading-relaxed">
               Estamos te levando ao WhatsApp da Dra. Camilla. Se não abrir
               automaticamente,{" "}
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "#C4867A" }}
-              >
+              <a href={waLink} target="_blank" rel="noreferrer" className="text-salmon font-semibold underline">
                 toque aqui
               </a>
               .
@@ -365,19 +157,15 @@ export default function ZapPage() {
           </div>
         )}
 
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "0.78rem",
-            color: "#6B4239",
-            marginTop: "1.5rem",
-            fontFamily: "sans-serif",
-            opacity: 0.8,
-          }}
-        >
+        <p className="text-center font-sans text-xs text-brown/80 mt-6">
           ✦ Mais de 500 mulheres já prepararam o corpo com o método ✦
         </p>
       </section>
+
+      {/* ─── FOOTER SIMPLES ─────────────────────────────────────────── */}
+      <footer className="text-center mt-14 px-6">
+        <p className="font-sans text-xs text-brown/50">Dra. Camilla Freitas · CRF/PE 4563</p>
+      </footer>
     </main>
   );
 }

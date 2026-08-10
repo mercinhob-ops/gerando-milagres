@@ -9,21 +9,22 @@ interface FaqEntry {
   answer: string;
 }
 
-export function FaqSection({ items }: { items: readonly FaqEntry[] }) {
+export function FaqAccordion({ items }: { items: readonly FaqEntry[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="divide-y divide-nude-dark" role="list">
+    <div className="bg-white rounded-2xl border border-nude-dark/30 shadow-sm px-6 divide-y divide-nude-dark/30">
       {items.map((item, i) => {
         const isOpen = openIndex === i;
         return (
-          <div key={i} role="listitem">
+          <div key={item.question}>
             <button
+              type="button"
               onClick={() => setOpenIndex(isOpen ? null : i)}
               aria-expanded={isOpen}
               className="w-full flex items-center justify-between py-5 text-left gap-4 group cursor-pointer"
             >
-              <span className="font-sans font-semibold text-base md:text-lg text-gray-800 group-hover:text-brown transition-colors">
+              <span className="font-sans font-semibold text-base text-dark-brown group-hover:text-salmon transition-colors">
                 {item.question}
               </span>
               <ChevronDown
@@ -41,9 +42,7 @@ export function FaqSection({ items }: { items: readonly FaqEntry[] }) {
               )}
             >
               <div className="overflow-hidden">
-                <p className="font-sans text-gray-600 leading-relaxed pb-5 pr-8">
-                  {item.answer}
-                </p>
+                <p className="font-sans text-gray-600 leading-relaxed pb-5 pr-8">{item.answer}</p>
               </div>
             </div>
           </div>
