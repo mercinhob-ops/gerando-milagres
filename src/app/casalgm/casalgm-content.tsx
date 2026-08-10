@@ -101,24 +101,28 @@ const testimonials = [
   {
     names: "Maria e João",
     city: "Recife, PE",
+    photo: "/images/casal-1.jpg",
     message:
       "Depois de 8 meses tentando, o guia da Dra. Camilla nos ajudou a entender que fertilidade é coisa de casal mesmo. Fizemos os exames juntos e hoje estamos grávidos!",
   },
   {
     names: "Ana e Pedro",
     city: "São Paulo, SP",
+    photo: "/images/casal-2.jpg",
     message:
       'A parte da conexão do casal mudou tudo pra gente. Com a orientação da Dra. Camilla, o sexo deixou de ser "tarefa" e virou encontro de novo.',
   },
   {
     names: "Camila e Rafael",
     city: "Belo Horizonte, MG",
+    photo: "/images/casal-3.jpg",
     message:
       "Eu não sabia nem por onde começar com os exames. A Dra. Camilla explicou tudo de um jeito simples e acolhedor no guia. Hoje sabemos exatamente o que fazer.",
   },
   {
     names: "Juliana e Marcos",
     city: "Curitiba, PR",
+    photo: "/images/casal-4.jpg",
     message:
       "A parte da fé junto com a ciência foi o que mais tocou a gente. Com o acompanhamento da Dra. Camilla, nos sentimos amparados em cada etapa dessa jornada.",
   },
@@ -664,7 +668,7 @@ function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {testimonials.map(({ names, city, message }, i) => (
+          {testimonials.map(({ names, city, photo, message }) => (
             <div
               key={names}
               className="bg-white border-l-4 border-salmon rounded-2xl p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg"
@@ -676,7 +680,7 @@ function TestimonialsSection() {
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
                   <Image
-                    src={i % 2 === 0 ? "/images/casal-1.jpg" : "/images/casal-5.jpg"}
+                    src={photo}
                     alt="Casal atendido pela Dra. Camilla"
                     fill
                     className="object-cover"

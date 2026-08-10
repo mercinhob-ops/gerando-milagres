@@ -122,6 +122,29 @@ describe("CasalGmPage", () => {
     expect(screen.getByText("Recife, PE")).toBeInTheDocument();
   });
 
+  it("cada depoimento usa uma foto de casal diferente, sem repetição", () => {
+    render(<CasalGmPage />);
+
+    const expectedPhotos = [
+      { name: "Maria e João", photo: "casal-1.jpg" },
+      { name: "Ana e Pedro", photo: "casal-2.jpg" },
+      { name: "Camila e Rafael", photo: "casal-3.jpg" },
+      { name: "Juliana e Marcos", photo: "casal-4.jpg" },
+    ];
+
+    const usedPhotos = new Set<string>();
+
+    expectedPhotos.forEach(({ name, photo }) => {
+      const card = screen.getByText(name).closest("div.border-l-4");
+      expect(card).not.toBeNull();
+      const img = card!.querySelector("img");
+      expect(img?.getAttribute("src")).toContain(`%2Fimages%2F${photo}`);
+      usedPhotos.add(photo);
+    });
+
+    expect(usedPhotos.size).toBe(4);
+  });
+
   it("usa fotos reais de casais (não placeholders do Unsplash)", () => {
     const { container } = render(<CasalGmPage />);
 
