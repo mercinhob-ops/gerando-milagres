@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ChevronDown, Stethoscope, Salad, Sparkles, Users, CheckCircle2, Check } from "lucide-react";
+import { ChevronDown, Stethoscope, Salad, Sparkles, CheckCircle2, Check } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
@@ -12,6 +12,21 @@ const PRICE_VALUE = 57.9;
 const PRODUCT_NAME = "Florescer a Dois";
 
 const TICKER_TEXT = "FLORESCER A DOIS • FERTILIDADE DO CASAL • DRA. CAMILLA FREITAS CRF/PE 4563 • ".repeat(4);
+
+// Fotos reais de casais atendidos pela Dra. Camilla.
+const socialProofPhotos = [
+  { src: "/images/casal-2.jpg", alt: "Casal atendido pela Dra. Camilla" },
+  { src: "/images/casal-3.jpg", alt: "Casal atendido pela Dra. Camilla" },
+  { src: "/images/casal-4.jpg", alt: "Casal atendido pela Dra. Camilla" },
+  { src: "/images/casal-5.jpg", alt: "Casal atendido pela Dra. Camilla" },
+  { src: "/images/casal-1.jpg", alt: "Casal atendido pela Dra. Camilla" },
+] as const;
+
+const heroPolaroids = [
+  { src: "/images/casal-1.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: -8 },
+  { src: "/images/casal-4.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 6 },
+  { src: "/images/casal-1.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 4 },
+] as const;
 
 const forWhoPoints = [
   "Estão tentando engravidar há meses sem resultado",
@@ -305,17 +320,25 @@ function CheckoutCta({ label, className }: { label: string; className?: string }
   );
 }
 
-function Polaroid({ className, rotate }: { className?: string; rotate: number }) {
+function Polaroid({
+  className,
+  rotate,
+  src,
+  alt,
+}: {
+  className?: string;
+  rotate: number;
+  src: string;
+  alt: string;
+}) {
   return (
     <div
       className={cn("bg-white p-2 pb-6 rounded-sm shadow-2xl", className)}
       style={{ "--float-rotate": `${rotate}deg`, animation: "casalgm-float 5s ease-in-out infinite" } as React.CSSProperties}
-      aria-hidden="true"
     >
-      <div
-        className="w-full aspect-square rounded-sm"
-        style={{ background: "linear-gradient(135deg, #C4867A 0%, #E8D0C0 100%)" }}
-      />
+      <div className="relative w-full aspect-square rounded-sm overflow-hidden">
+        <Image src={src} alt={alt} fill className="object-cover" sizes="120px" />
+      </div>
     </div>
   );
 }
@@ -374,9 +397,24 @@ function HeroSection() {
             />
           </div>
 
-          <Polaroid rotate={-8} className="absolute -top-6 -left-10 w-24 hidden sm:block" />
-          <Polaroid rotate={6} className="absolute top-1/3 -right-8 w-24 hidden sm:block" />
-          <Polaroid rotate={4} className="absolute -bottom-6 left-6 w-24 hidden sm:block" />
+          <Polaroid
+            rotate={heroPolaroids[0].rotate}
+            src={heroPolaroids[0].src}
+            alt={heroPolaroids[0].alt}
+            className="absolute -top-6 -left-10 w-24 hidden sm:block"
+          />
+          <Polaroid
+            rotate={heroPolaroids[1].rotate}
+            src={heroPolaroids[1].src}
+            alt={heroPolaroids[1].alt}
+            className="absolute top-1/3 -right-8 w-24 hidden sm:block"
+          />
+          <Polaroid
+            rotate={heroPolaroids[2].rotate}
+            src={heroPolaroids[2].src}
+            alt={heroPolaroids[2].alt}
+            className="absolute -bottom-6 left-6 w-24 hidden sm:block"
+          />
         </div>
       </div>
     </section>
@@ -444,14 +482,18 @@ function SocialProofSection() {
         </p>
 
         <div className="grid grid-cols-5 gap-3 md:gap-4 mb-6">
-          {Array.from({ length: 5 }, (_, i) => i).map((i) => (
+          {socialProofPhotos.map((photo) => (
             <div
-              key={i}
-              className="aspect-square rounded-2xl shadow-sm flex items-center justify-center transition-transform duration-300 hover:scale-105"
-              style={{ background: "linear-gradient(135deg, #C4867A 0%, #E8D0C0 100%)" }}
-              aria-hidden="true"
+              key={photo.src}
+              className="relative aspect-square rounded-2xl shadow-sm overflow-hidden transition-transform duration-300 hover:scale-105"
             >
-              <Users className="w-6 h-6 md:w-8 md:h-8 text-white/70" />
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 18vw, 140px"
+              />
             </div>
           ))}
         </div>
@@ -622,7 +664,7 @@ function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {testimonials.map(({ names, city, message }) => (
+          {testimonials.map(({ names, city, message }, i) => (
             <div
               key={names}
               className="bg-white border-l-4 border-salmon rounded-2xl p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg"
@@ -631,8 +673,21 @@ function TestimonialsSection() {
               <p className="font-['Georgia',serif] italic text-gray-700 leading-relaxed mb-4">
                 &ldquo;{message}&rdquo;
               </p>
-              <p className="font-sans text-sm font-bold text-dark-brown">{names}</p>
-              <p className="font-sans text-xs text-gray-400">{city}</p>
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src={i % 2 === 0 ? "/images/casal-1.jpg" : "/images/casal-5.jpg"}
+                    alt="Casal atendido pela Dra. Camilla"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                </div>
+                <div>
+                  <p className="font-sans text-sm font-bold text-dark-brown">{names}</p>
+                  <p className="font-sans text-xs text-gray-400">{city}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>

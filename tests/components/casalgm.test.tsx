@@ -121,4 +121,16 @@ describe("CasalGmPage", () => {
     expect(screen.getByText("Maria e João")).toBeInTheDocument();
     expect(screen.getByText("Recife, PE")).toBeInTheDocument();
   });
+
+  it("usa fotos reais de casais (não placeholders do Unsplash)", () => {
+    const { container } = render(<CasalGmPage />);
+
+    const casalPhotos = screen.getAllByAltText(/casal atendido pela dra\. camilla/i);
+    expect(casalPhotos.length).toBeGreaterThanOrEqual(8); // 3 polaroids + 5 grid + 4 depoimentos
+    casalPhotos.forEach((img) => {
+      expect(img.getAttribute("src")).toContain("%2Fimages%2Fcasal-");
+    });
+
+    expect(container.innerHTML).not.toContain("unsplash.com");
+  });
 });
