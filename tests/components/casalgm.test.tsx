@@ -145,6 +145,20 @@ describe("CasalGmPage", () => {
     expect(usedPhotos.size).toBe(4);
   });
 
+  it("os 3 polaroids do hero usam fotos diferentes, sem repetição", () => {
+    const { container } = render(<CasalGmPage />);
+
+    const polaroidImgs = container.querySelectorAll(".aspect-square.rounded-sm.overflow-hidden img");
+    expect(polaroidImgs.length).toBe(3);
+
+    const srcs = Array.from(polaroidImgs).map((img) => img.getAttribute("src"));
+    expect(srcs[0]).toContain("%2Fimages%2Fcasal-2.jpg");
+    expect(srcs[1]).toContain("%2Fimages%2Fcasal-3.jpg");
+    expect(srcs[2]).toContain("%2Fimages%2Fcasal-5.jpg");
+
+    expect(new Set(srcs).size).toBe(3);
+  });
+
   it("usa fotos reais de casais (não placeholders do Unsplash)", () => {
     const { container } = render(<CasalGmPage />);
 

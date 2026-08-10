@@ -23,9 +23,9 @@ const socialProofPhotos = [
 ] as const;
 
 const heroPolaroids = [
-  { src: "/images/casal-1.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: -8 },
-  { src: "/images/casal-4.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 6 },
-  { src: "/images/casal-1.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 4 },
+  { src: "/images/casal-2.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: -8 },
+  { src: "/images/casal-3.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 6 },
+  { src: "/images/casal-5.jpg", alt: "Casal atendido pela Dra. Camilla", rotate: 4 },
 ] as const;
 
 const forWhoPoints = [
