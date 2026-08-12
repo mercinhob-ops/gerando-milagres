@@ -5,7 +5,7 @@ import DesbloqueandoCiclosPage from "@/app/desbloqueandociclos/page";
 describe("DesbloqueandoCiclosPage", () => {
   it("renderiza a headline principal do hero", () => {
     render(<DesbloqueandoCiclosPage />);
-    expect(screen.getByRole("heading", { name: /desbloqueando.*ciclos/is })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /desbloqueando\s*ciclos/i })).toBeInTheDocument();
   });
 
   it("todos os CTAs apontam para o checkout Kiwify correto", () => {

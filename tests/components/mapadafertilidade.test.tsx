@@ -5,7 +5,7 @@ import MapaDaFertilidadePage from "@/app/mapadafertilidade/page";
 describe("MapaDaFertilidadePage", () => {
   it("renderiza a headline principal do hero", () => {
     render(<MapaDaFertilidadePage />);
-    expect(screen.getByRole("heading", { name: /mapa da.*fertilidade/is })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /mapa da\s*fertilidade/i })).toBeInTheDocument();
   });
 
   it("todos os CTAs apontam para o checkout Kiwify correto", () => {
