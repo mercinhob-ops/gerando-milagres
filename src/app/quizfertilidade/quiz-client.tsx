@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Sparkles } from "lucide-react";
@@ -118,6 +118,58 @@ function firstNameOf(fullName: string): string {
   return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
+/* ─────────────────────────── Sistema de pontuação ─────────────────────────── */
+
+const SCORE_WEIGHTS: Record<Question["id"], Record<string, number>> = {
+  time_trying: { lt6m: 1, "6m_1y": 2, "1_2y": 3, gt2y: 4 },
+  exams: { both: 1, her: 2, him: 2, none: 4 },
+  worry: { where_to_start: 3, diagnosis: 4, age: 3, tried_everything: 4 },
+  partner: { very_present: 1, supports_unsure: 2, not_talked: 3, want_more_together: 2 },
+  need: { understand_body: 2, practical_plan: 2, connection: 3, science_faith: 2 },
+};
+
+const SCORE_MIN = Object.values(SCORE_WEIGHTS).reduce((total, options) => total + Math.min(...Object.values(options)), 0);
+const SCORE_MAX = Object.values(SCORE_WEIGHTS).reduce((total, options) => total + Math.max(...Object.values(options)), 0);
+
+function computeScore(answers: Answers): number {
+  const rawSum = (Object.keys(SCORE_WEIGHTS) as Question["id"][]).reduce((total, id) => {
+    const value = answers[id];
+    return total + (value ? (SCORE_WEIGHTS[id][value] ?? 0) : 0);
+  }, 0);
+
+  const normalized = ((rawSum - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100;
+  return Math.min(100, Math.max(0, Math.round(normalized)));
+}
+
+type Zone = "green" | "yellow" | "red";
+
+function zoneFromScore(score: number): Zone {
+  if (score <= 33) return "green";
+  if (score <= 66) return "yellow";
+  return "red";
+}
+
+const ZONE_CONFIG: Record<Zone, { label: string; badgeClass: string; message: string }> = {
+  green: {
+    label: "Zona Tranquila",
+    badgeClass: "bg-success/15 text-success border-success/30",
+    message:
+      "Vocês estão em uma boa base — mas ainda existe uma janela importante para agir e aumentar as chances.",
+  },
+  yellow: {
+    label: "Zona de Atenção",
+    badgeClass: "bg-warning/15 text-warning border-warning/30",
+    message:
+      "Vocês estão na zona de atenção — o momento pede um plano estruturado antes que o tempo pese mais contra vocês.",
+  },
+  red: {
+    label: "Zona de Alerta",
+    badgeClass: "bg-danger/15 text-danger border-danger/30",
+    message:
+      "Vocês estão na zona de alerta — cada ciclo sem um plano claro reduz as chances. É hora de agir com direção.",
+  },
+};
+
 /* ─────────────────────────────── Estado ─────────────────────────────── */
 
 type Screen = "intro" | "question" | "capture" | "result";
@@ -184,6 +236,7 @@ export function QuizClient() {
   const currentQuestion = QUESTIONS[questionIndex];
   const bullets = buildDiagnosisBullets(answers);
   const displayName = firstNameOf(name) || "Vocês";
+  const score = computeScore(answers);
 
   return (
     <main
@@ -220,7 +273,7 @@ export function QuizClient() {
             />
           )}
 
-          {screen === "result" && <ResultScreen displayName={displayName} bullets={bullets} />}
+          {screen === "result" && <ResultScreen displayName={displayName} bullets={bullets} score={score} />}
         </FadeStep>
       </div>
     </main>
@@ -269,6 +322,132 @@ function ProgressBar({
       <p className="font-sans text-xs text-brown/60 mt-2 text-right">
         Pergunta {current} de {total}
       </p>
+    </div>
+  );
+}
+
+/* ────────────────────────── Gráfico animado de pontuação ────────────────────────── */
+
+const GAUGE_CENTER_X = 100;
+const GAUGE_CENTER_Y = 110;
+const GAUGE_RADIUS = 85;
+const GAUGE_STROKE = 16;
+
+const GAUGE_COLORS = {
+  green: "#2f6f54",
+  yellow: "#9a6a1f",
+  red: "#a64040",
+} as const;
+
+function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
+  const angleRad = (angleDeg * Math.PI) / 180;
+  return { x: cx + r * Math.cos(angleRad), y: cy - r * Math.sin(angleRad) };
+}
+
+function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+  const start = polarPoint(cx, cy, r, startAngle);
+  const end = polarPoint(cx, cy, r, endAngle);
+  const largeArcFlag = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
+
+function useMountedAfterFrame() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return mounted;
+}
+
+function useCountUp(target: number, durationMs: number) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let frameId: number;
+    let startTime: number | null = null;
+
+    function tick(now: number) {
+      if (startTime === null) startTime = now;
+      const progress = Math.min((now - startTime) / durationMs, 1);
+      setValue(Math.round(progress * target));
+      if (progress < 1) frameId = requestAnimationFrame(tick);
+    }
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [target, durationMs]);
+
+  return value;
+}
+
+function ScoreGauge({ score, zone }: { score: number; zone: Zone }) {
+  const mounted = useMountedAfterFrame();
+  const displayScore = useCountUp(mounted ? score : 0, 1200);
+  const rotation = mounted ? 1.8 * score - 90 : -90;
+
+  return (
+    <div className="w-full max-w-[280px] mx-auto">
+      <svg viewBox="0 0 200 130" className="w-full h-auto" role="img" aria-label={`Pontuação: ${score} de 100`}>
+        <path
+          d={describeArc(GAUGE_CENTER_X, GAUGE_CENTER_Y, GAUGE_RADIUS, 180, 120)}
+          stroke={GAUGE_COLORS.green}
+          strokeWidth={GAUGE_STROKE}
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d={describeArc(GAUGE_CENTER_X, GAUGE_CENTER_Y, GAUGE_RADIUS, 120, 60)}
+          stroke={GAUGE_COLORS.yellow}
+          strokeWidth={GAUGE_STROKE}
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d={describeArc(GAUGE_CENTER_X, GAUGE_CENTER_Y, GAUGE_RADIUS, 60, 0)}
+          stroke={GAUGE_COLORS.red}
+          strokeWidth={GAUGE_STROKE}
+          strokeLinecap="round"
+          fill="none"
+        />
+        <g
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transformOrigin: `${GAUGE_CENTER_X}px ${GAUGE_CENTER_Y}px`,
+            transition: "transform 1.4s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        >
+          <line
+            x1={GAUGE_CENTER_X}
+            y1={GAUGE_CENTER_Y}
+            x2={GAUGE_CENTER_X}
+            y2={GAUGE_CENTER_Y - GAUGE_RADIUS + 22}
+            stroke="#4A2E26"
+            strokeWidth={4}
+            strokeLinecap="round"
+          />
+        </g>
+        <circle cx={GAUGE_CENTER_X} cy={GAUGE_CENTER_Y} r={9} fill="#4A2E26" stroke="white" strokeWidth={3} />
+      </svg>
+
+      <div className="flex items-center justify-between px-1 -mt-2">
+        <span className="font-sans text-[10px] font-bold text-success uppercase tracking-wide">Tranquilo</span>
+        <span className="font-sans text-[10px] font-bold text-warning uppercase tracking-wide">Atenção</span>
+        <span className="font-sans text-[10px] font-bold text-danger uppercase tracking-wide">Alerta</span>
+      </div>
+
+      <p className="font-['Georgia',serif] text-4xl font-bold text-dark-brown text-center mt-1">{displayScore}%</p>
+
+      <span
+        className={cn(
+          "inline-flex items-center justify-center gap-2 border rounded-full px-4 py-1.5 mt-2 font-sans text-xs font-bold uppercase tracking-widest mx-auto w-fit",
+          ZONE_CONFIG[zone].badgeClass
+        )}
+      >
+        {ZONE_CONFIG[zone].label}
+      </span>
     </div>
   );
 }
@@ -437,7 +616,17 @@ function CaptureScreen({
   );
 }
 
-function ResultScreen({ displayName, bullets }: { displayName: string; bullets: string[] }) {
+function ResultScreen({
+  displayName,
+  bullets,
+  score,
+}: {
+  displayName: string;
+  bullets: string[];
+  score: number;
+}) {
+  const zone = zoneFromScore(score);
+
   return (
     <div className="text-center space-y-8">
       <span className="inline-flex items-center gap-2 bg-salmon/15 border border-salmon/30 rounded-full px-4 py-1.5 font-sans text-xs font-bold text-salmon uppercase tracking-widest">
@@ -447,6 +636,13 @@ function ResultScreen({ displayName, bullets }: { displayName: string; bullets: 
       <h1 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-tight">
         {displayName}, descobrimos o que pode estar impedindo vocês
       </h1>
+
+      <div className="bg-white rounded-2xl border border-nude-dark/30 shadow-sm p-6 space-y-4">
+        <ScoreGauge score={score} zone={zone} />
+        <p className="font-sans text-sm md:text-base text-brown/90 leading-relaxed max-w-sm mx-auto">
+          {ZONE_CONFIG[zone].message}
+        </p>
+      </div>
 
       <ul className="space-y-3 text-left bg-white rounded-2xl border border-nude-dark/30 shadow-sm p-6">
         {bullets.map((bullet) => (
