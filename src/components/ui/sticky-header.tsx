@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
@@ -18,6 +19,7 @@ export function StickyHeader({
   checkoutUrl?: string;
   eventValue?: number;
 } = {}) {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const registeredCheckout = useSyncExternalStore(
     subscribeStickyHeaderCheckout,
@@ -44,6 +46,8 @@ export function StickyHeader({
       customData: { value: resolved.eventValue, currency: "BRL" },
     });
   }
+
+  if (pathname?.startsWith("/quizfertilidade")) return null;
 
   return (
     <header
