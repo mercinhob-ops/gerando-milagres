@@ -1,536 +1,503 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Sparkles } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/design-system/button";
 
-// ─── PERGUNTAS ────────────────────────────────────────────────────────────────
+const CASALGM_URL = "/casalgm";
+const TOTAL_QUESTIONS = 5;
 
-const questions = [
-  {
-    text: "Qual é a sua idade?",
-    options: [
-      { label: "Menos de 30 anos", score: 0 },
-      { label: "30 a 34 anos", score: 1 },
-      { label: "35 a 39 anos", score: 2 },
-      { label: "40 anos ou mais", score: 3 },
-    ],
-  },
-  {
-    text: "Há quanto tempo você está tentando engravidar?",
-    options: [
-      { label: "Menos de 6 meses", score: 0 },
-      { label: "6 a 12 meses", score: 1 },
-      { label: "1 a 2 anos", score: 2 },
-      { label: "Mais de 2 anos", score: 3 },
-    ],
-  },
-  {
-    text: "Você já teve perdas gestacionais (abortos)?",
-    options: [
-      { label: "Nunca tive", score: 0 },
-      { label: "1 perda", score: 1 },
-      { label: "2 perdas", score: 2 },
-      { label: "3 ou mais perdas", score: 3 },
-    ],
-  },
-  {
-    text: "Você sabe quando ovula?",
-    options: [
-      { label: "Sim, acompanho com clareza", score: 0 },
-      { label: "Acho que sei, mas tenho dúvidas", score: 1 },
-      { label: "Não sei ao certo", score: 2 },
-      { label: "Não ovulo regularmente", score: 3 },
-    ],
-  },
-  {
-    text: "Você tem algum diagnóstico?",
-    options: [
-      { label: "Nenhum diagnóstico", score: 0 },
-      { label: "Não sei / nunca investiguei", score: 1 },
-      { label: "Resistência à insulina ou mioma", score: 2 },
-      { label: "SOP ou endometriose", score: 3 },
-    ],
-  },
-  {
-    text: "O espermograma do seu parceiro está normal?",
-    options: [
-      { label: "Sim, está normal", score: 0 },
-      { label: "Parcialmente alterado", score: 1 },
-      { label: "Não sei / ele nunca fez", score: 2 },
-      { label: "Não tenho parceiro fixo", score: 2 },
-    ],
-  },
-  {
-    text: "Quando você fez seus últimos exames de fertilidade?",
-    options: [
-      { label: "Nos últimos 6 meses", score: 0 },
-      { label: "Há menos de 1 ano", score: 1 },
-      { label: "Há mais de 1 ano", score: 2 },
-      { label: "Nunca fiz", score: 3 },
-    ],
-  },
-  {
-    text: "Qual é sua maior preocupação hoje?",
-    options: [
-      { label: "Não sei por onde começar a investigar", score: 1 },
-      { label: "Tenho medo de ter algum problema escondido", score: 2 },
-      { label: "Me preocupo com a minha idade", score: 2 },
-      { label: "Já tentei muita coisa e nada funcionou", score: 3 },
-    ],
-  },
-  {
-    text: "Como você se sente na sua jornada de fertilidade?",
-    options: [
-      { label: "Confiante e otimista", score: 0 },
-      { label: "Ansiosa, mas com esperança", score: 1 },
-      { label: "Frustrada e cansada", score: 2 },
-      { label: "Sem esperança, quase desistindo", score: 3 },
-    ],
-  },
-  {
-    text: "O que você mais precisa agora?",
-    options: [
-      { label: "Aprender mais sobre fertilidade", score: 0 },
-      { label: "Entender o que investigar", score: 1 },
-      { label: "Um plano personalizado para o meu caso", score: 2 },
-      { label: "Me sentir acompanhada por alguém especializado", score: 3 },
-    ],
-  },
-] as const;
+/* ─────────────────────────── Conteúdo do quiz ─────────────────────────── */
 
-// ─── RESULTADOS ───────────────────────────────────────────────────────────────
-
-type ResultKey = "D" | "A" | "B" | "C";
-
-const RESULTS: Record<
-  ResultKey,
-  {
-    profile: string;
-    headline: string;
-    copy: string;
-    cta: string;
-    url: string;
-    product: string;
-    price: string;
-    numericPrice: number;
-  }
-> = {
-  D: {
-    profile: "Buscadora de Conhecimento",
-    headline: "Você está no início de uma jornada importante",
-    copy: "Você ainda está descobrindo seu corpo e sua fertilidade. O melhor caminho agora é ter acesso a informações de qualidade, num ambiente acolhedor, com mulheres que estão na mesma jornada.",
-    cta: "Quero entrar na Comunidade",
-    url: "https://pay.kiwify.com.br/OCUj5sd",
-    product: "Comunidade Gerando Milagres",
-    price: "R$35/mês",
-    numericPrice: 35,
-  },
-  A: {
-    profile: "Exploradora da Fertilidade",
-    headline: "Existem fatores que você ainda não investigou",
-    copy: "Você tem dúvidas importantes e ainda não tem clareza sobre o que pode estar impedindo sua gravidez. O Mapa da Fertilidade vai te mostrar exatamente o que investigar e quais próximos passos seguir.",
-    cta: "Quero meu Mapa da Fertilidade",
-    url: "https://pay.kiwify.com.br/5IIyMsr",
-    product: "Mapa da Fertilidade",
-    price: "R$197",
-    numericPrice: 197,
-  },
-  B: {
-    profile: "Investigadora Estratégica",
-    headline: "Você já tem sinais importantes que precisam de atenção",
-    copy: "Seu perfil indica fatores específicos que merecem uma análise estratégica. Uma consulta com a Dra. Camilla pode mudar completamente sua direção e te economizar meses de tentativas.",
-    cta: "Quero minha Consulta Estratégica",
-    url: "https://wa.me/5581981396005?text=Ol%C3%A1%20Dra.%20Camilla%2C%20fiz%20o%20quiz%20de%20fertilidade%20e%20quero%20marcar%20minha%20Consulta%20Estrat%C3%A9gica%21",
-    product: "Consulta Estratégica",
-    price: "R$550",
-    numericPrice: 550,
-  },
-  C: {
-    profile: "Jornada Avançada",
-    headline: "Sua jornada pede um acompanhamento próximo e personalizado",
-    copy: "Você já passou por muito. Perdas, diagnósticos, exames, tentativas. Você não precisa mais tentar sozinha — precisa de um plano personalizado e de alguém do seu lado em cada etapa.",
-    cta: "Quero meu Plano Personalizado",
-    url: "https://wa.me/5581981396005?text=Ol%C3%A1%20Dra.%20Camilla%2C%20fiz%20o%20quiz%20de%20fertilidade%20e%20tenho%20interesse%20no%20Plano%20Semente%21",
-    product: "Plano Semente",
-    price: "R$997",
-    numericPrice: 997,
-  },
+type Question = {
+  id: "time_trying" | "exams" | "worry" | "partner" | "need";
+  question: string;
+  options: { value: string; label: string }[];
 };
 
-const ANALYSIS_BARS = [
-  "Histórico reprodutivo",
-  "Regularidade do ciclo",
-  "Investigação clínica",
-  "Fator emocional",
-  "Perfil de fertilidade",
-] as const;
+const QUESTIONS: Question[] = [
+  {
+    id: "time_trying",
+    question: "Há quanto tempo vocês tentam engravidar?",
+    options: [
+      { value: "lt6m", label: "Menos de 6 meses" },
+      { value: "6m_1y", label: "6 meses a 1 ano" },
+      { value: "1_2y", label: "1 a 2 anos" },
+      { value: "gt2y", label: "Mais de 2 anos" },
+    ],
+  },
+  {
+    id: "exams",
+    question: "Vocês já fizeram exames de fertilidade?",
+    options: [
+      { value: "both", label: "Sim, os dois" },
+      { value: "her", label: "Só ela" },
+      { value: "him", label: "Só ele" },
+      { value: "none", label: "Ainda não fizemos" },
+    ],
+  },
+  {
+    id: "worry",
+    question: "O que mais preocupa vocês?",
+    options: [
+      { value: "where_to_start", label: "Não saber por onde começar" },
+      { value: "diagnosis", label: "Ter diagnóstico (SOP, endometriose, miomas)" },
+      { value: "age", label: "A questão da idade" },
+      { value: "tried_everything", label: "Já tentamos tudo e nada funcionou" },
+    ],
+  },
+  {
+    id: "partner",
+    question: "Como está a participação do parceiro?",
+    options: [
+      { value: "very_present", label: "Muito presente" },
+      { value: "supports_unsure", label: "Apoia, mas não sabe como ajudar" },
+      { value: "not_talked", label: "Ainda não conversamos muito" },
+      { value: "want_more_together", label: "Gostaríamos de fazer mais juntos" },
+    ],
+  },
+  {
+    id: "need",
+    question: "O que vocês mais precisam agora?",
+    options: [
+      { value: "understand_body", label: "Entender como o corpo funciona" },
+      { value: "practical_plan", label: "Ter um plano prático" },
+      { value: "connection", label: "Melhorar conexão e intimidade" },
+      { value: "science_faith", label: "Unir ciência e fé" },
+    ],
+  },
+];
 
-function getAnalysisMessage(bar: number): string {
-  if (bar === 0) return "Analisando suas respostas...";
-  if (bar <= 2) return "Identificando padrões...";
-  if (bar <= 4) return "Calculando seu perfil...";
-  return "Preparando seu resultado...";
+type Answers = Partial<Record<Question["id"], string>>;
+
+const BULLETS_BY_TIME: Record<string, string> = {
+  lt6m: "Vocês ainda estão no início — o momento certo para organizar o processo antes que a ansiedade tome conta.",
+  "6m_1y":
+    "Entre 6 meses e 1 ano tentando é o momento ideal para investigar com calma, sem alarme e sem perder tempo.",
+  "1_2y":
+    "Depois de 1 a 2 anos tentando, o corpo e a mente do casal já pedem um plano mais estruturado — não só mais tentativas.",
+  gt2y: "Mais de 2 anos tentando pode significar que faltou um passo importante: entender o que realmente está acontecendo, juntos.",
+};
+
+const BULLETS_BY_WORRY: Record<string, string> = {
+  where_to_start:
+    "Não saber por onde começar é o maior ladrão de tempo nessa jornada — vocês precisam de um caminho claro, não de mais informação solta.",
+  diagnosis:
+    "Diagnósticos como SOP, endometriose ou miomas pedem um plano específico de preparo do corpo — não só desejo de engravidar.",
+  age: "A questão da idade pesa mais na cabeça do que deveria — com o preparo certo, o tempo pode estar mais a favor de vocês do que parece.",
+  tried_everything:
+    "Quando parece que 'já tentamos tudo', geralmente falta alinhar corpo, mente e casal na mesma direção — não mais uma tentativa isolada.",
+};
+
+const BULLETS_BY_NEED: Record<string, string> = {
+  understand_body:
+    "Entender como o corpo de vocês dois funciona muda a forma como cada tentativa é feita — de adivinhação para direção.",
+  practical_plan:
+    "Vocês não precisam de mais teoria, precisam de um plano prático que os dois consigam seguir juntos, semana a semana.",
+  connection:
+    "Reconectar como casal — não só como parceiros de tentativa — é a parte que muitos pulam e sentem falta depois.",
+  science_faith:
+    "Unir ciência e fé é exatamente o que falta para vocês caminharem com confiança, sem abrir mão de nenhum dos dois.",
+};
+
+function buildDiagnosisBullets(answers: Answers): string[] {
+  return [
+    BULLETS_BY_TIME[answers.time_trying ?? ""] ?? BULLETS_BY_TIME.lt6m,
+    BULLETS_BY_WORRY[answers.worry ?? ""] ?? BULLETS_BY_WORRY.where_to_start,
+    BULLETS_BY_NEED[answers.need ?? ""] ?? BULLETS_BY_NEED.understand_body,
+  ];
 }
 
-function getResultKey(score: number): ResultKey {
-  if (score <= 8) return "D";
-  if (score <= 14) return "A";
-  if (score <= 20) return "B";
-  return "C";
+function firstNameOf(fullName: string): string {
+  const trimmed = fullName.trim();
+  const first = trimmed.split(/\s+/)[0] ?? "";
+  return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
-// ─── COMPONENTE ───────────────────────────────────────────────────────────────
+/* ─────────────────────────────── Estado ─────────────────────────────── */
 
-type Step = "intro" | "questions" | "capture" | "analysis" | "result";
+type Screen = "intro" | "question" | "capture" | "result";
 
 export function QuizClient() {
-  const [step, setStep] = useState<Step>("intro");
-  const [currentQ, setCurrentQ] = useState(0);
-  const [score, setScore] = useState(0);
-  const [visible, setVisible] = useState(true);
-  const [form, setForm] = useState({ name: "", whatsapp: "", email: "" });
-  const [resultKey, setResultKey] = useState<ResultKey>("A");
-  const [analysisBar, setAnalysisBar] = useState(0);
+  const [screen, setScreen] = useState<Screen>("intro");
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Answers>({});
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Animação da tela de análise: preenche 1 barra a cada 550ms e avança ao resultado
-  useEffect(() => {
-    if (step !== "analysis") return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    ANALYSIS_BARS.forEach((_, i) => {
-      timers.push(setTimeout(() => setAnalysisBar(i + 1), (i + 1) * 550));
-    });
-    timers.push(setTimeout(() => setStep("result"), ANALYSIS_BARS.length * 550 + 700));
-    return () => timers.forEach(clearTimeout);
-  }, [step]);
+  const stepKey = screen === "question" ? `question-${questionIndex}` : screen;
 
-  function handleAnswer(pts: number) {
-    setVisible(false);
-    setTimeout(() => {
-      const newScore = score + pts;
-      if (currentQ === questions.length - 1) {
-        setScore(newScore);
-        setStep("capture");
-      } else {
-        setScore(newScore);
-        setCurrentQ((q) => q + 1);
-      }
-      setVisible(true);
-    }, 220);
+  function goToIntroCta() {
+    setScreen("question");
+    setQuestionIndex(0);
   }
 
-  function handleCapture(e: React.FormEvent) {
-    e.preventDefault();
-    const key = getResultKey(score);
+  function selectOption(questionId: Question["id"], value: string) {
+    setAnswers((current) => ({ ...current, [questionId]: value }));
+
+    window.setTimeout(() => {
+      const nextIndex = questionIndex + 1;
+      if (nextIndex < TOTAL_QUESTIONS) {
+        setQuestionIndex(nextIndex);
+      } else {
+        setScreen("capture");
+      }
+    }, 180);
+  }
+
+  function goBack() {
+    if (screen !== "question") return;
+    if (questionIndex === 0) {
+      setScreen("intro");
+      return;
+    }
+    setQuestionIndex((i) => i - 1);
+  }
+
+  function handleCaptureSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (trimmedName.length < 2) {
+      setFormError("Digite seu nome, por favor.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setFormError("Digite um e-mail válido.");
+      return;
+    }
+
+    setFormError(null);
     trackConversionEvent({
       eventName: "Lead",
-      customData: { content_name: "Quiz Fertilidade" },
+      customData: { content_name: "Quiz Fertilidade — Florescer a Dois" },
     });
-    trackConversionEvent({
-      eventName: "PageView",
-      customData: { content_name: `Quiz Resultado — ${key}` },
-    });
-    setResultKey(key);
-    setAnalysisBar(0);
-    setStep("analysis");
+    setScreen("result");
   }
 
-  function handleCtaClick() {
-    const res = RESULTS[resultKey];
-    trackConversionEvent({
-      eventName: "InitiateCheckout",
-      customData: {
-        value: res.numericPrice,
-        currency: "BRL",
-        content_name: res.product,
-      },
-    });
-  }
+  const currentQuestion = QUESTIONS[questionIndex];
+  const bullets = buildDiagnosisBullets(answers);
+  const displayName = firstNameOf(name) || "Vocês";
 
-  // ── INTRO ──────────────────────────────────────────────────────────────────
+  return (
+    <main
+      className="min-h-screen"
+      style={{ background: "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 55%, #F0E6DC 100%)" }}
+    >
+      <style>{`
+        @keyframes quiz-fade-step {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
-  if (step === "intro") {
-    return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full text-center">
-          <div className="inline-flex items-center gap-2 bg-salmon/10 text-salmon px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
-            <Sparkles className="w-4 h-4" aria-hidden="true" />
-            Quiz gratuito · 3 minutos
-          </div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-dark-brown leading-tight mb-4">
-            Descubra o que pode estar impedindo sua gravidez
-          </h1>
-          <p className="font-sans text-brown/70 text-base leading-relaxed mb-8">
-            Responda 10 perguntas e descubra qual é o próximo passo certo para a
-            sua jornada de fertilidade — com base no seu perfil único.
-          </p>
-          <button
-            onClick={() => setStep("questions")}
-            className="w-full bg-salmon hover:bg-salmon/90 text-white font-semibold text-lg py-4 px-8 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
-          >
-            Começar agora
-            <ArrowRight className="w-5 h-5" aria-hidden="true" />
-          </button>
-          <p className="font-sans text-brown/50 text-sm mt-4">
-            Grátis · Sem cadastro · Resultado imediato
-          </p>
+      {screen === "question" && (
+        <ProgressBar current={questionIndex + 1} total={TOTAL_QUESTIONS} onBack={goBack} />
+      )}
+
+      <div className="w-full max-w-xl mx-auto px-6 py-12 md:py-16">
+        <FadeStep stepKey={stepKey}>
+          {screen === "intro" && <IntroScreen onStart={goToIntroCta} />}
+
+          {screen === "question" && currentQuestion && (
+            <QuestionScreen question={currentQuestion} onSelect={selectOption} />
+          )}
+
+          {screen === "capture" && (
+            <CaptureScreen
+              name={name}
+              email={email}
+              error={formError}
+              onNameChange={setName}
+              onEmailChange={setEmail}
+              onSubmit={handleCaptureSubmit}
+            />
+          )}
+
+          {screen === "result" && <ResultScreen displayName={displayName} bullets={bullets} />}
+        </FadeStep>
+      </div>
+    </main>
+  );
+}
+
+/* ─────────────────────────── Peças reutilizáveis ─────────────────────────── */
+
+function FadeStep({ children, stepKey }: { children: ReactNode; stepKey: string }) {
+  return (
+    <div key={stepKey} style={{ animation: "quiz-fade-step 0.4s ease-out" }}>
+      {children}
+    </div>
+  );
+}
+
+function ProgressBar({
+  current,
+  total,
+  onBack,
+}: {
+  current: number;
+  total: number;
+  onBack: () => void;
+}) {
+  const percent = (current / total) * 100;
+
+  return (
+    <div className="w-full max-w-xl mx-auto px-6 pt-8">
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Voltar"
+          className="shrink-0 font-sans text-sm text-brown/60 hover:text-salmon transition-colors cursor-pointer"
+        >
+          ←
+        </button>
+        <div className="flex-1 h-2 rounded-full bg-white/60 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-salmon transition-all duration-500 ease-out"
+            style={{ width: `${percent}%` }}
+          />
         </div>
       </div>
-    );
-  }
+      <p className="font-sans text-xs text-brown/60 mt-2 text-right">
+        Pergunta {current} de {total}
+      </p>
+    </div>
+  );
+}
 
-  // ── PERGUNTAS ──────────────────────────────────────────────────────────────
+/* ─────────────────────────────── Telas ─────────────────────────────── */
 
-  if (step === "questions") {
-    const q = questions[currentQ];
-    const progress = ((currentQ + 1) / questions.length) * 100;
+function IntroScreen({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="text-center space-y-7">
+      <p className="font-['Georgia',serif] italic text-lg font-bold text-dark-brown">Gerando Milagres</p>
 
-    return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <div className="w-full h-1.5 bg-nude">
-          <div
-            className="h-full bg-salmon transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-            role="progressbar"
-            aria-valuenow={currentQ + 1}
-            aria-valuemin={1}
-            aria-valuemax={questions.length}
+      <div className="relative w-full max-w-[260px] aspect-[4/5] mx-auto">
+        <div
+          className="absolute inset-[6%] rounded-full blur-2xl"
+          style={{ background: "radial-gradient(circle, rgba(196,134,122,0.35) 0%, rgba(196,134,122,0) 70%)" }}
+          aria-hidden="true"
+        />
+        <Image
+          src="/images/camilla-zap2.jpg"
+          alt="Dra. Camilla Freitas"
+          fill
+          className="object-cover object-top rounded-[2.5rem] shadow-2xl relative"
+          sizes="260px"
+          priority
+        />
+      </div>
+
+      <h1 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-[1.15]">
+        Descubra o que pode estar impedindo vocês de engravidarem
+      </h1>
+
+      <p className="font-sans text-base md:text-lg text-brown/80 leading-relaxed max-w-md mx-auto">
+        Responda 5 perguntas rápidas e receba um diagnóstico personalizado para o seu casal.
+      </p>
+
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={onStart}
+          className={cn(
+            buttonVariants({ variant: "primary", size: "lg" }),
+            "bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5 w-full sm:w-auto px-8 py-4 text-base md:text-lg cursor-pointer"
+          )}
+        >
+          Quero descobrir agora →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function QuestionScreen({
+  question,
+  onSelect,
+}: {
+  question: Question;
+  onSelect: (questionId: Question["id"], value: string) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <h2 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug text-center">
+        {question.question}
+      </h2>
+
+      <div className="space-y-3">
+        {question.options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onSelect(question.id, option.value)}
+            className="group w-full flex items-center justify-between gap-3 rounded-2xl border-2 border-nude-dark/40 bg-white px-5 py-4 text-left font-sans text-base text-dark-brown shadow-sm transition-all duration-200 hover:border-salmon hover:bg-salmon/5 hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
+          >
+            <span>{option.label}</span>
+            <ChevronRight
+              className="w-5 h-5 text-salmon shrink-0 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+              aria-hidden="true"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CaptureScreen({
+  name,
+  email,
+  error,
+  onNameChange,
+  onEmailChange,
+  onSubmit,
+}: {
+  name: string;
+  email: string;
+  error: string | null;
+  onNameChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <div className="text-center space-y-7">
+      <div
+        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-md"
+        style={{ background: "linear-gradient(145deg, #F0E6DC, #E8D0C0)" }}
+        aria-hidden="true"
+      >
+        <Sparkles className="w-8 h-8 text-salmon" />
+      </div>
+
+      <h2 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug">
+        Quase lá! Para onde enviamos seu diagnóstico?
+      </h2>
+
+      <form onSubmit={onSubmit} className="space-y-4 text-left max-w-sm mx-auto">
+        <div className="space-y-1.5">
+          <label htmlFor="quiz-name" className="font-sans text-sm font-semibold text-brown/80">
+            Nome
+          </label>
+          <input
+            id="quiz-name"
+            type="text"
+            autoComplete="name"
+            value={name}
+            onChange={(event) => onNameChange(event.target.value)}
+            placeholder="Seu nome"
+            className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
           />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-          <div className="max-w-lg w-full">
-            <p className="font-sans text-salmon text-sm font-semibold tracking-wider uppercase mb-5 text-center">
-              Pergunta {currentQ + 1} de {questions.length}
-            </p>
-
-            <div
-              className={cn(
-                "transition-opacity duration-200",
-                visible ? "opacity-100" : "opacity-0"
-              )}
-            >
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-dark-brown text-center mb-8 leading-snug">
-                {q.text}
-              </h2>
-
-              <div className="flex flex-col gap-3">
-                {q.options.map((opt) => (
-                  <button
-                    key={opt.label}
-                    onClick={() => handleAnswer(opt.score)}
-                    className="w-full text-left bg-white border-2 border-nude-dark/40 hover:border-salmon hover:bg-salmon/5 text-dark-brown font-sans font-medium text-base rounded-2xl px-5 py-4 transition-all duration-150 cursor-pointer"
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="space-y-1.5">
+          <label htmlFor="quiz-email" className="font-sans text-sm font-semibold text-brown/80">
+            E-mail
+          </label>
+          <input
+            id="quiz-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(event) => onEmailChange(event.target.value)}
+            placeholder="seuemail@exemplo.com"
+            className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
+          />
         </div>
-      </div>
-    );
-  }
 
-  // ── CAPTURA ────────────────────────────────────────────────────────────────
-
-  if (step === "capture") {
-    return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-full bg-salmon/15 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-7 h-7 text-salmon" aria-hidden="true" />
-            </div>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-dark-brown mb-2">
-              Quase lá!
-            </h2>
-            <p className="font-sans text-brown/70 text-base leading-relaxed">
-              Preencha seus dados para receber seu resultado personalizado.
-            </p>
-          </div>
-
-          <form onSubmit={handleCapture} className="flex flex-col gap-4">
-            <div>
-              <label
-                htmlFor="quiz-name"
-                className="block font-sans text-sm font-semibold text-brown mb-1.5"
-              >
-                Seu nome
-              </label>
-              <input
-                id="quiz-name"
-                type="text"
-                required
-                placeholder="Como posso te chamar?"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full border-2 border-nude-dark/50 focus:border-salmon bg-white rounded-xl px-4 py-3.5 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="quiz-whatsapp"
-                className="block font-sans text-sm font-semibold text-brown mb-1.5"
-              >
-                WhatsApp
-              </label>
-              <input
-                id="quiz-whatsapp"
-                type="tel"
-                required
-                placeholder="(00) 00000-0000"
-                value={form.whatsapp}
-                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-                className="w-full border-2 border-nude-dark/50 focus:border-salmon bg-white rounded-xl px-4 py-3.5 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="quiz-email"
-                className="block font-sans text-sm font-semibold text-brown mb-1.5"
-              >
-                E-mail
-              </label>
-              <input
-                id="quiz-email"
-                type="email"
-                required
-                placeholder="seu@email.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full border-2 border-nude-dark/50 focus:border-salmon bg-white rounded-xl px-4 py-3.5 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-salmon hover:bg-salmon/90 text-white font-semibold text-lg py-4 px-8 rounded-2xl transition-colors mt-2 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              Ver meu resultado
-              <ArrowRight className="w-5 h-5" aria-hidden="true" />
-            </button>
-          </form>
-
-          <p className="font-sans text-brown/50 text-xs text-center mt-4">
-            Seus dados são protegidos e não serão compartilhados.
+        {error && (
+          <p className="font-sans text-sm text-red-600" role="alert">
+            {error}
           </p>
-        </div>
-      </div>
-    );
-  }
+        )}
 
-  // ── ANÁLISE ────────────────────────────────────────────────────────────────
+        <button
+          type="submit"
+          className={cn(
+            buttonVariants({ variant: "primary", size: "lg" }),
+            "bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5 w-full justify-center px-8 py-4 text-base md:text-lg cursor-pointer"
+          )}
+        >
+          Ver meu diagnóstico →
+        </button>
 
-  if (step === "analysis") {
-    return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-10">
-            <div className="w-14 h-14 rounded-full bg-salmon/15 flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <Sparkles className="w-7 h-7 text-salmon" aria-hidden="true" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark-brown mb-2">
-              Analisando seu perfil
-            </h2>
-            <p className="font-sans text-brown/60 text-base transition-opacity duration-300">
-              {getAnalysisMessage(analysisBar)}
-            </p>
-          </div>
+        <p className="font-sans text-xs text-brown/50 text-center">
+          Seus dados estão seguros e não serão compartilhados.
+        </p>
+      </form>
+    </div>
+  );
+}
 
-          <div className="flex flex-col gap-4">
-            {ANALYSIS_BARS.map((label, i) => (
-              <div key={label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-sans text-sm font-medium text-brown/80">
-                    {label}
-                  </span>
-                  <span
-                    className={cn(
-                      "font-sans text-xs font-bold text-salmon transition-opacity duration-300",
-                      i < analysisBar ? "opacity-100" : "opacity-0"
-                    )}
-                  >
-                    ✓
-                  </span>
-                </div>
-                <div className="h-2.5 bg-nude rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-salmon rounded-full transition-all duration-700 ease-out"
-                    style={{ width: i < analysisBar ? "100%" : "0%" }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── RESULTADO ──────────────────────────────────────────────────────────────
-
-  const res = RESULTS[resultKey];
-
+function ResultScreen({ displayName, bullets }: { displayName: string; bullets: string[] }) {
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
-      <div className="max-w-lg w-full">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-salmon text-white px-5 py-2 rounded-full text-sm font-bold mb-5 uppercase tracking-wider">
-            <Sparkles className="w-4 h-4" aria-hidden="true" />
-            Seu perfil: {res.profile}
-          </div>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-4">
-            {res.headline}
-          </h2>
-          <p className="font-sans text-brown/70 text-base leading-relaxed">
-            {res.copy}
-          </p>
-        </div>
+    <div className="text-center space-y-8">
+      <span className="inline-flex items-center gap-2 bg-salmon/15 border border-salmon/30 rounded-full px-4 py-1.5 font-sans text-xs font-bold text-salmon uppercase tracking-widest">
+        ✨ Seu diagnóstico está pronto!
+      </span>
 
-        <div className="bg-white rounded-3xl p-5 flex items-center gap-4 mb-5 border border-nude-dark/30 shadow-sm">
-          <div className="relative w-16 h-16 shrink-0">
+      <h1 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-tight">
+        {displayName}, descobrimos o que pode estar impedindo vocês
+      </h1>
+
+      <ul className="space-y-3 text-left bg-white rounded-2xl border border-nude-dark/30 shadow-sm p-6">
+        {bullets.map((bullet) => (
+          <li key={bullet} className="flex items-start gap-3">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-salmon/15 flex items-center justify-center mt-0.5">
+              <span className="w-2 h-2 rounded-full bg-salmon" aria-hidden="true" />
+            </span>
+            <p className="font-sans text-sm md:text-base text-brown/90 leading-relaxed">{bullet}</p>
+          </li>
+        ))}
+      </ul>
+
+      <p className="font-['Georgia',serif] italic text-lg text-dark-brown leading-relaxed max-w-md mx-auto">
+        Com base no perfil de vocês, o guia Florescer a Dois foi criado exatamente para casais nessa situação.
+      </p>
+
+      <div className="bg-white/70 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/60 space-y-6">
+        <div className="flex items-center gap-5 text-left">
+          <div className="relative w-24 shrink-0 aspect-[3/4] rounded-xl overflow-hidden shadow-lg rotate-[-3deg]">
             <Image
-              src="/images/camilla-zap.jpg"
-              alt="Dra. Camilla Freitas"
+              src="/images/florescer-a-dois.png"
+              alt="Florescer a Dois — Dra. Camilla Freitas"
               fill
-              className="object-cover rounded-full"
-              sizes="64px"
+              className="object-cover"
+              sizes="96px"
             />
           </div>
           <div>
-            <p className="font-sans font-bold text-dark-brown text-sm">
-              Dra. Camilla Freitas
-            </p>
-            <p className="font-sans text-brown/60 text-sm leading-relaxed mt-0.5">
-              Farmacêutica especialista em fertilidade — preparei este resultado
-              pensando exatamente no seu caso.
-            </p>
+            <p className="font-['Georgia',serif] text-lg font-bold text-dark-brown">Florescer a Dois</p>
+            <p className="font-sans text-sm text-brown/60 mt-1">Guia completo para casais</p>
+            <p className="font-sans text-sm text-brown/60 font-medium mt-3 mb-0.5">2x de</p>
+            <p className="font-['Georgia',serif] text-3xl font-bold text-salmon leading-none">R$ 28,95</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-nude-dark/30 shadow-sm">
-          <p className="font-sans text-sm text-brown/60 font-medium mb-1">
-            Recomendado para você
-          </p>
-          <p className="font-display text-xl font-bold text-dark-brown mb-1">
-            {res.product}
-          </p>
-          <p className="font-sans text-salmon font-bold text-lg mb-5">
-            {res.price}
-          </p>
-          <a
-            href={res.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleCtaClick}
-            className="w-full bg-salmon hover:bg-salmon/90 text-white font-semibold text-lg py-4 px-8 rounded-2xl transition-colors flex items-center justify-center gap-2"
-          >
-            {res.cta}
-            <ArrowRight className="w-5 h-5" aria-hidden="true" />
-          </a>
+        <Link
+          href={CASALGM_URL}
+          className={cn(
+            buttonVariants({ variant: "primary", size: "lg" }),
+            "bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5 w-full justify-center px-8 py-5 text-base md:text-lg"
+          )}
+        >
+          Quero o Florescer a Dois →
+        </Link>
+      </div>
+
+      <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-md">
+          <Image src="/images/camilla-zap.jpg" alt="Dra. Camilla Freitas" fill className="object-cover" sizes="48px" />
         </div>
+        <p className="font-sans text-sm text-brown/70">Dra. Camilla Freitas · CRF/PE 4563</p>
       </div>
     </div>
   );

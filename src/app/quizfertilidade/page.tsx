@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { QuizClient } from "./quiz-client";
 
 export const metadata: Metadata = {
-  title: "Quiz de Fertilidade — Dra. Camilla Freitas",
+  title: "Descubra o que pode estar impedindo vocês de engravidarem — Gerando Milagres",
   description:
-    "Descubra o que pode estar impedindo sua gravidez. Responda 10 perguntas e receba uma recomendação personalizada.",
+    "Responda 5 perguntas rápidas e receba um diagnóstico personalizado para o seu casal, com a Dra. Camilla Freitas.",
   robots: { index: false, follow: false },
 };
 
