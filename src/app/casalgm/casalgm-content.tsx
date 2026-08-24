@@ -664,7 +664,6 @@ function TestimonialsSection() {
           <h2 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-snug">
             O que casais estão dizendo
           </h2>
-          <p className="font-sans text-xs text-gray-400 mt-3">*Depoimentos ilustrativos</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
