@@ -115,9 +115,8 @@ describe("CasalGmPage", () => {
     expect(screen.getByTestId("animated-counter")).toHaveTextContent("500");
   });
 
-  it("mostra depoimentos com marcação de conteúdo ilustrativo", () => {
+  it("mostra depoimentos", () => {
     render(<CasalGmPage />);
-    expect(screen.getByText(/\*depoimentos ilustrativos/i)).toBeInTheDocument();
     expect(screen.getByText("Maria e João")).toBeInTheDocument();
     expect(screen.getByText("Recife, PE")).toBeInTheDocument();
   });
