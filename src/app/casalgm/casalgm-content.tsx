@@ -215,9 +215,6 @@ export function CasalGmContent() {
         <ValueStackSection />
       </FadeInSection>
       <FadeInSection>
-        <PricingSection />
-      </FadeInSection>
-      <FadeInSection>
         <GuaranteeSection />
       </FadeInSection>
       <FadeInSection>
@@ -824,58 +821,7 @@ function ValueStackSection() {
   );
 }
 
-/* ────────────────────────── 11. Preço ────────────────────────── */
-
-function PricingSection() {
-  return (
-    <section className="py-20 px-6" style={{ background: "#EEE4F7" }}>
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-10 lg:gap-14">
-        <div className="shrink-0 w-full max-w-[220px] md:max-w-[240px]">
-          <div className="relative w-full aspect-[3/4] drop-shadow-2xl rounded-2xl overflow-hidden rotate-[-3deg]">
-            <Image
-              src="/images/florescer-a-dois.png"
-              alt="Florescer a Dois — Dra. Camilla Freitas"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 220px, 240px"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 text-center md:text-left w-full max-w-lg">
-          <div className="inline-flex items-center gap-2 bg-white/60 border border-salmon/30 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 rounded-full bg-salmon animate-pulse shrink-0" aria-hidden="true" />
-            <p className="font-sans text-xs font-bold text-salmon uppercase tracking-widest">
-              As vagas para esse guia encerram em breve!
-            </p>
-          </div>
-
-          <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 md:p-10 shadow-xl border border-white/60">
-            <p className="font-sans text-lg text-gray-400 line-through">DE R$ 97,00</p>
-
-            <p className="font-sans text-sm text-brown/60 font-medium mt-3 mb-1">2x de</p>
-            <p className="font-['Georgia',serif] text-6xl font-bold text-salmon leading-none">R$ 28,95</p>
-
-            <span className="inline-block font-sans text-xs font-bold text-success bg-success/10 border border-success/30 rounded-full px-3 py-1 mt-4">
-              economize R$ 39,10
-            </span>
-
-            <p className="font-sans text-base font-bold text-brown mt-4 uppercase tracking-wide">
-              ou R$ 57,90 à vista
-            </p>
-            <p className="font-sans text-brown/50 text-xs mt-2 mb-8">
-              pagamento único · acesso imediato · sem mensalidade
-            </p>
-
-            <CheckoutCta label="Quero garantir minha vaga →" className="w-full justify-center text-base" />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────── 12. Garantia ────────────────────────── */
+/* ────────────────────────── 11. Garantia ────────────────────────── */
 
 function GuaranteeSection() {
   return (
@@ -903,7 +849,7 @@ function GuaranteeSection() {
   );
 }
 
-/* ────────────────────────── 13. FAQ ────────────────────────── */
+/* ────────────────────────── 12. FAQ ────────────────────────── */
 
 function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -958,7 +904,7 @@ function FaqSection() {
   );
 }
 
-/* ────────────────────────── 14. CTA final ────────────────────────── */
+/* ────────────────────────── 13. CTA final ────────────────────────── */
 
 function FinalCtaSection() {
   return (
@@ -989,7 +935,7 @@ function FinalCtaSection() {
   );
 }
 
-/* ────────────────────────── 15. Footer ────────────────────────── */
+/* ────────────────────────── 14. Footer ────────────────────────── */
 
 function FooterSection() {
   function handleBackToTop() {
