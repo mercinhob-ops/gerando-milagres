@@ -68,8 +68,16 @@ describe("CasalGmPage", () => {
     expect(screen.getByText(/valor total/i)).toBeInTheDocument();
     expect(screen.getByText(/r\$242,00/i)).toBeInTheDocument();
     expect(screen.getByText(/mas hoje vocês levam tudo isso por apenas/i)).toBeInTheDocument();
-    expect(screen.getByText(/r\$ 57,90/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/2x de r\$ 28,95 no cartão/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/^2x de$/i)).toBeInTheDocument();
+    expect(screen.getByText(/r\$ 28,95/i)).toBeInTheDocument();
+    expect(screen.getByText(/ou à vista r\$ 57,90/i)).toBeInTheDocument();
+  });
+
+  it("mostra a foto do produto acima do card de preço", () => {
+    render(<CasalGmPage />);
+    const photo = screen.getByAltText(/florescer a dois — dra\. camilla freitas/i);
+    expect(photo).toBeInTheDocument();
+    expect(photo.getAttribute("src")).toContain("%2Fimages%2Fflorescer-a-dois.png");
   });
 
   it("não renderiza mais a antiga seção de preço com urgência (fundo lavanda)", () => {
@@ -77,7 +85,7 @@ describe("CasalGmPage", () => {
     expect(screen.queryByText(/as vagas para esse guia encerram em breve/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/de r\$ 97,00/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/ou r\$ 57,90 à vista/i)).not.toBeInTheDocument();
-    expect(screen.queryByAltText(/florescer a dois — dra\. camilla freitas/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/quero garantir minha vaga/i)).not.toBeInTheDocument();
   });
 
   it("abre e fecha uma pergunta do FAQ ao clicar", () => {
