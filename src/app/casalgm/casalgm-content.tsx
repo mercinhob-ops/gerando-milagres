@@ -806,31 +806,34 @@ function ValueStackSection() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
           <div
-            className="relative w-full aspect-[2/3] overflow-hidden shadow-xl"
-            style={{ maxWidth: "280px", borderRadius: "12px" }}
+            className="relative w-full aspect-[2/3] overflow-hidden shadow-md shrink-0 mx-auto md:mx-0"
+            style={{ maxWidth: "220px", borderRadius: "12px" }}
           >
             <Image
               src="/images/florescer-a-dois.png"
               alt="Florescer a Dois — Dra. Camilla Freitas"
               fill
               className="object-cover"
-              sizes="280px"
+              sizes="220px"
             />
           </div>
-        </div>
 
-        <div className="mt-6 bg-white rounded-2xl shadow-xl border-2 border-salmon p-8 text-center">
-          <p className="font-sans text-xs md:text-sm font-bold text-brown uppercase tracking-wide mb-3">
-            Mas hoje vocês levam tudo isso por apenas
-          </p>
-          <p className="font-sans text-sm text-brown/60 font-medium mb-1">2x de</p>
-          <p className="font-['Georgia',serif] text-5xl md:text-6xl font-bold text-salmon leading-none">
-            R$ 28,95
-          </p>
-          <p className="font-sans text-sm text-brown/60 mt-3 mb-8">ou à vista R$ 57,90</p>
-          <CheckoutCta label="Quero o Florescer a Dois →" className="w-full sm:w-auto justify-center text-base" />
+          <div className="w-full flex-1 bg-white rounded-2xl shadow-xl border-2 border-salmon p-8 text-center">
+            <p className="font-sans text-xs md:text-sm font-bold text-brown uppercase tracking-wide mb-3">
+              Mas hoje vocês levam tudo isso por apenas
+            </p>
+            <p className="font-sans text-sm text-brown/60 font-medium mb-1">2x de</p>
+            <p className="font-['Georgia',serif] text-5xl md:text-6xl font-bold text-salmon leading-none">
+              R$ 28,95
+            </p>
+            <p className="font-sans text-sm text-brown/60 mt-3 mb-8">ou à vista R$ 57,90</p>
+            <CheckoutCta
+              label="Quero o Florescer a Dois →"
+              className="w-full sm:w-auto justify-center text-base"
+            />
+          </div>
         </div>
       </div>
     </section>
