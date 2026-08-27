@@ -69,7 +69,7 @@ describe("CasalGm2Page", () => {
 
   it("abre e fecha uma pergunta do FAQ ao clicar", () => {
     render(<CasalGm2Page />);
-    const question = screen.getByText(/who is flourishing together for\?/i);
+    const question = screen.getByText(/who is blooming together for\?/i);
     const button = question.closest("button");
     expect(button).not.toBeNull();
 

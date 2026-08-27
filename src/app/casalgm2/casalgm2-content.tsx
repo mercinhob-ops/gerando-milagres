@@ -9,10 +9,10 @@ import { buttonVariants } from "@/components/design-system/button";
 
 const CHECKOUT_URL = "CHECKOUT_URL_EN";
 const PRICE_VALUE = 27.0;
-const PRODUCT_NAME = "Flourishing Together — A Practical Guide to Couple's Fertility";
+const PRODUCT_NAME = "Blooming Together — A Practical Guide to Couple's Fertility";
 
 const TICKER_TEXT =
-  "FLOURISHING TOGETHER • COUPLE'S FERTILITY • DR. CAMILLA FREITAS • GERANDO MILAGRES • ".repeat(4);
+  "BLOOMING TOGETHER • COUPLE'S FERTILITY • DR. CAMILLA FREITAS • GERANDO MILAGRES • ".repeat(4);
 
 // Real photos of couples cared for by Dr. Camilla.
 const socialProofPhotos = [
@@ -53,7 +53,7 @@ const howItWorksSteps = [
   {
     number: "3",
     icon: Sparkles,
-    title: "Flourish Together",
+    title: "Bloom Together",
     desc: "Connection, faith, and the next steps to walk united toward pregnancy.",
   },
 ] as const;
@@ -74,7 +74,7 @@ const timelineWeeks = [
   {
     week: "Week 3",
     icon: "🌸",
-    title: "Flourish Together",
+    title: "Bloom Together",
     items: ["Physical movement", "Couple's connection", "Faith and spirituality"],
   },
 ] as const;
@@ -133,14 +133,14 @@ const journeyStages = [
   "Lost and Alone",
   "Seeking Answers",
   "Preparing the Body",
-  "Flourishing Together",
+  "Blooming Together",
   "Positive! 🎉",
 ] as const;
 const CURRENT_STAGE_INDEX = 2;
 
 const faqs = [
   {
-    question: "Who is Flourishing Together for?",
+    question: "Who is Blooming Together for?",
     answer:
       "For couples who are trying to conceive and want to walk this journey together — understanding each other's bodies, the tests you need, and how to prepare, with both science and faith.",
   },
@@ -162,7 +162,7 @@ const faqs = [
   {
     question: "Does my husband need to read it too?",
     answer:
-      "Yes — that's the whole idea! Flourishing Together was created for both of you to take part, understand each other's role in this journey, and walk it together, not just her.",
+      "Yes — that's the whole idea! Blooming Together was created for both of you to take part, understand each other's role in this journey, and walk it together, not just her.",
   },
 ] as const;
 
@@ -761,7 +761,7 @@ function JourneyRulerSection() {
         </div>
 
         <p className="text-center font-sans text-sm text-brown/70 mt-10 max-w-xl mx-auto">
-          You&rsquo;re ready to take the next step. Flourishing Together is the push you&rsquo;ve been waiting for.
+          You&rsquo;re ready to take the next step. Blooming Together is the push you&rsquo;ve been waiting for.
         </p>
       </div>
     </section>
@@ -777,8 +777,8 @@ function PricingSection() {
         <div className="shrink-0 w-full max-w-[220px] md:max-w-[240px]">
           <div className="relative w-full aspect-[3/4] drop-shadow-2xl rounded-2xl overflow-hidden rotate-[-3deg]">
             <Image
-              src="/images/florescer-a-dois.png"
-              alt="Flourishing Together — Dr. Camilla Freitas"
+              src="/images/blooming-together.png"
+              alt="Blooming Together — Dr. Camilla Freitas"
               fill
               className="object-cover"
               sizes="(max-width: 768px) 220px, 240px"
@@ -833,7 +833,7 @@ function GuaranteeSection() {
         <p className="font-sans text-gray-600 leading-relaxed max-w-lg mx-auto">
           If within the first <strong className="text-brown">7 days</strong> you feel this guide isn&rsquo;t right
           for you, we&rsquo;ll refund 100% of your investment. No questions asked, no red tape — the risk is ours,
-          the flourishing is yours.
+          the blooming is yours.
         </p>
       </div>
     </section>
@@ -919,7 +919,7 @@ function FinalCtaSection() {
         </p>
 
         <div className="pt-2">
-          <CheckoutCta label="I Want to Flourish Together →" className="text-lg px-10 py-5" />
+          <CheckoutCta label="I Want to Bloom Together →" className="text-lg px-10 py-5" />
         </div>
       </div>
     </section>
