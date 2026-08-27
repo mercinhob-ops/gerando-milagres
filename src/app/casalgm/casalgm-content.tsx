@@ -137,6 +137,15 @@ const journeyStages = [
 ] as const;
 const CURRENT_STAGE_INDEX = 2;
 
+const valueStackItems = [
+  { label: "Guia Florescer a Dois — 9 capítulos completos", value: "R$97,00" },
+  { label: "Guia de Exames Dela e Dele", value: "R$37,00" },
+  { label: "Protocolo Anti-inflamatório do Casal", value: "R$47,00" },
+  { label: "Pack de Infusões de Chás para Fertilidade", value: "R$27,00" },
+  { label: "Devocional de Fé e Fertilidade", value: "R$17,00" },
+  { label: "Checklist dos Próximos Passos", value: "R$17,00" },
+] as const;
+
 const faqs = [
   {
     question: "Para quem é o Florescer a Dois?",
@@ -201,6 +210,9 @@ export function CasalGmContent() {
       </FadeInSection>
       <FadeInSection>
         <JourneyRulerSection />
+      </FadeInSection>
+      <FadeInSection>
+        <ValueStackSection />
       </FadeInSection>
       <FadeInSection>
         <PricingSection />
@@ -767,7 +779,52 @@ function JourneyRulerSection() {
   );
 }
 
-/* ────────────────────────── 10. Preço ────────────────────────── */
+/* ────────────────────────── 10. Empilhamento de valor ────────────────────────── */
+
+function ValueStackSection() {
+  return (
+    <section className="py-20 px-6 bg-cream">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-10">
+          <p className="font-sans text-xs font-semibold tracking-widest text-salmon uppercase mb-4">
+            Investimento na sua família
+          </p>
+          <h2 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-snug">
+            Quanto vale o sonho de vocês terem um bebê?
+          </h2>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-nude-dark/30 p-6 md:p-8">
+          <div className="divide-y divide-dashed divide-nude-dark/40">
+            {valueStackItems.map((item) => (
+              <div key={item.label} className="flex items-center justify-between gap-4 py-3.5">
+                <p className="font-sans text-sm text-brown/90">{item.label}</p>
+                <p className="font-sans text-sm text-gray-400 line-through shrink-0">{item.value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-4 mt-1 border-t-2 border-dark-brown/20">
+            <p className="font-sans text-base font-bold text-dark-brown">Valor total</p>
+            <p className="font-sans text-base font-bold text-gray-400 line-through">R$242,00</p>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-white rounded-2xl shadow-xl border-2 border-salmon p-8 text-center">
+          <p className="font-sans text-xs md:text-sm font-bold text-brown uppercase tracking-wide mb-3">
+            Mas hoje vocês levam tudo isso por apenas
+          </p>
+          <p className="font-['Georgia',serif] text-5xl md:text-6xl font-bold text-salmon leading-none">
+            R$ 57,90
+          </p>
+          <p className="font-sans text-sm text-brown/60 mt-3 mb-8">2x de R$ 28,95 no cartão</p>
+          <CheckoutCta label="Quero o Florescer a Dois →" className="w-full sm:w-auto justify-center text-base" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────── 11. Preço ────────────────────────── */
 
 function PricingSection() {
   return (
@@ -818,7 +875,7 @@ function PricingSection() {
   );
 }
 
-/* ────────────────────────── 11. Garantia ────────────────────────── */
+/* ────────────────────────── 12. Garantia ────────────────────────── */
 
 function GuaranteeSection() {
   return (
@@ -846,7 +903,7 @@ function GuaranteeSection() {
   );
 }
 
-/* ────────────────────────── 12. FAQ ────────────────────────── */
+/* ────────────────────────── 13. FAQ ────────────────────────── */
 
 function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -901,7 +958,7 @@ function FaqSection() {
   );
 }
 
-/* ────────────────────────── 13. CTA final ────────────────────────── */
+/* ────────────────────────── 14. CTA final ────────────────────────── */
 
 function FinalCtaSection() {
   return (
@@ -932,7 +989,7 @@ function FinalCtaSection() {
   );
 }
 
-/* ────────────────────────── 14. Footer ────────────────────────── */
+/* ────────────────────────── 15. Footer ────────────────────────── */
 
 function FooterSection() {
   function handleBackToTop() {

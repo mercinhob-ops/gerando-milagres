@@ -14,7 +14,7 @@ describe("CasalGmPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renderiza todas as 14 seções pedidas", () => {
+  it("renderiza todas as 15 seções pedidas", () => {
     render(<CasalGmPage />);
 
     expect(screen.getByText(/casais já transformaram sua jornada/i)).toBeInTheDocument();
@@ -25,6 +25,7 @@ describe("CasalGmPage", () => {
     expect(screen.getByText(/o que está incluso/i)).toBeInTheDocument();
     expect(screen.getByText(/o que casais estão dizendo/i)).toBeInTheDocument();
     expect(screen.getByText(/onde vocês estão nessa jornada/i)).toBeInTheDocument();
+    expect(screen.getByText(/quanto vale o sonho de vocês terem um bebê\?/i)).toBeInTheDocument();
     expect(screen.getByText(/as vagas para esse guia encerram em breve/i)).toBeInTheDocument();
     expect(screen.getByText(/garantia de 7 dias — sem riscos/i)).toBeInTheDocument();
     expect(screen.getByText(/perguntas frequentes/i)).toBeInTheDocument();
@@ -64,8 +65,17 @@ describe("CasalGmPage", () => {
   it("mostra a hierarquia de preço com valor riscado e parcelamento", () => {
     render(<CasalGmPage />);
     expect(screen.getByText(/de r\$ 97,00/i)).toBeInTheDocument();
-    expect(screen.getByText(/r\$ 28,95/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/r\$ 28,95/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/ou r\$ 57,90 à vista/i)).toBeInTheDocument();
+  });
+
+  it("mostra a seção de empilhamento de valor antes do preço", () => {
+    render(<CasalGmPage />);
+    expect(screen.getByText(/quanto vale o sonho de vocês terem um bebê\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/guia florescer a dois — 9 capítulos completos/i)).toBeInTheDocument();
+    expect(screen.getByText(/valor total/i)).toBeInTheDocument();
+    expect(screen.getByText(/r\$242,00/i)).toBeInTheDocument();
+    expect(screen.getByText(/mas hoje vocês levam tudo isso por apenas/i)).toBeInTheDocument();
   });
 
   it("abre e fecha uma pergunta do FAQ ao clicar", () => {
