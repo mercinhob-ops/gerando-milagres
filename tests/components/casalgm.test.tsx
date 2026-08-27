@@ -29,7 +29,6 @@ describe("CasalGmPage", () => {
     expect(screen.getByText(/garantia de 7 dias — sem riscos/i)).toBeInTheDocument();
     expect(screen.getByText(/perguntas frequentes/i)).toBeInTheDocument();
     expect(screen.getByText(/não percam mais um ciclo/i)).toBeInTheDocument();
-    expect(screen.getByText(/central de atendimento/i)).toBeInTheDocument();
   });
 
   it("todos os CTAs apontam para o checkout Hotmart do Florescer a Dois", () => {
@@ -90,12 +89,6 @@ describe("CasalGmPage", () => {
     fireEvent.click(screen.getByText(/voltar ao topo/i));
 
     expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
-  });
-
-  it("link do WhatsApp no footer usa o número configurado", () => {
-    render(<CasalGmPage />);
-    const waLink = screen.getByText(/central de atendimento/i).closest("a");
-    expect(waLink).toHaveAttribute("href", expect.stringContaining("wa.me/5581981396005"));
   });
 
   it("link da política de privacidade aponta para /privacidade", () => {

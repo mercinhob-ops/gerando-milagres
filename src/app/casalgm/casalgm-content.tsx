@@ -942,15 +942,6 @@ function FooterSection() {
   return (
     <footer className="py-12 px-6 text-center" style={{ background: "#4A2E26" }}>
       <div className="max-w-2xl mx-auto space-y-5">
-        <a
-          href="https://wa.me/5581981396005"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 font-sans text-sm text-nude/80 hover:text-white transition-colors"
-        >
-          Central de atendimento: contato via WhatsApp +55 (81) 98139-6005
-        </a>
-
         <p className="font-sans text-xs text-nude/50">
           Dra. Camilla Freitas • CRF/PE 4563 • Todos os direitos reservados
         </p>
