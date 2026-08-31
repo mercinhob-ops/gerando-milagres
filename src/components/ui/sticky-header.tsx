@@ -47,7 +47,7 @@ export function StickyHeader({
     });
   }
 
-  if (pathname?.startsWith("/quizfertilidade")) return null;
+  if (pathname?.startsWith("/quizfertilidade") || pathname?.startsWith("/casalgm1")) return null;
 
   return (
     <header

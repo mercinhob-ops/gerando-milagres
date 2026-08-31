@@ -1,8 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { StickyHeader } from "@/components/ui/sticky-header";
 
 describe("StickyHeader", () => {
+  it("não renderiza em /casalgm1", async () => {
+    vi.resetModules();
+    vi.doMock("next/navigation", () => ({ usePathname: () => "/casalgm1" }));
+    const { StickyHeader: StickyHeaderWithMockedPath } = await import("@/components/ui/sticky-header");
+
+    const { container } = render(<StickyHeaderWithMockedPath />);
+    expect(container).toBeEmptyDOMElement();
+
+    vi.doUnmock("next/navigation");
+  });
+
   it("está oculto no scroll inicial (translate-y-full)", () => {
     render(<StickyHeader />);
     const header = screen.getByRole("banner");
