@@ -14,23 +14,29 @@ describe("CasalGm1Page", () => {
     ).toBeInTheDocument();
   });
 
-  it("mostra os dois cards de depoimento em vídeo no hero, lado a lado", () => {
+  it("mostra os 3 embeds do YouTube no hero, com os IDs corretos", () => {
     const { container } = render(<CasalGm1Page />);
-    const videos = container.querySelectorAll("video");
-    expect(videos).toHaveLength(2);
+    const iframes = container.querySelectorAll("iframe");
+    expect(iframes).toHaveLength(3);
 
-    const sources = Array.from(videos).map((v) => v.querySelector("source")?.getAttribute("src"));
-    expect(sources).toContain("/videos/depoimento-1.mp4");
-    expect(sources).toContain("/videos/depoimento-2.mov");
+    const sources = Array.from(iframes).map((f) => f.getAttribute("src"));
+    expect(sources).toContain("https://www.youtube.com/embed/Xjt5GmfbWNs");
+    expect(sources).toContain("https://www.youtube.com/embed/nH7qzyK77qw");
+    expect(sources).toContain("https://www.youtube.com/embed/ToAvtA1b528");
 
-    videos.forEach((video) => {
-      expect(video).toHaveAttribute("controls");
-      expect(video.getAttribute("poster")).toMatch(/^data:image\/svg\+xml/);
+    iframes.forEach((iframe) => {
+      expect(iframe).toHaveAttribute(
+        "allow",
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      );
+      expect(iframe).toHaveAttribute("allowfullscreen");
+      expect(iframe.getAttribute("title")).not.toBeNull();
     });
   });
 
-  it("não mostra mais o placeholder de VSL da Dra. Camilla", () => {
-    render(<CasalGm1Page />);
+  it("não mostra mais vídeo nativo nem o placeholder de VSL da Dra. Camilla", () => {
+    const { container } = render(<CasalGm1Page />);
+    expect(container.querySelectorAll("video")).toHaveLength(0);
     expect(screen.queryByText(/assista ao vídeo da dra\. camilla/i)).not.toBeInTheDocument();
   });
 

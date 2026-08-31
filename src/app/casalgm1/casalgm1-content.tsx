@@ -21,12 +21,10 @@ const heroMosaicPhotos = [
   "/images/casal-5.jpg",
 ] as const;
 
-const VIDEO_POSTER =
-  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='700' viewBox='0 0 400 700'%3E%3Crect width='400' height='700' fill='%23ECECEC'/%3E%3C/svg%3E";
-
-const heroVideoTestimonials = [
-  { src: "/videos/depoimento-1.mp4", type: "video/mp4" },
-  { src: "/videos/depoimento-2.mov", type: "video/quicktime" },
+const heroVideoEmbeds = [
+  { src: "https://www.youtube.com/embed/Xjt5GmfbWNs", title: "Depoimento em vídeo 1", aspectClass: "aspect-[9/16]" },
+  { src: "https://www.youtube.com/embed/nH7qzyK77qw", title: "Depoimento em vídeo 2", aspectClass: "aspect-[9/16]" },
+  { src: "https://www.youtube.com/embed/ToAvtA1b528", title: "Depoimento em vídeo 3", aspectClass: "aspect-video" },
 ] as const;
 
 const reflectionQuestions = [
@@ -310,17 +308,23 @@ function HeroSection() {
           Descubra os pilares essenciais para vocês conquistarem a gravidez que sempre desejaram
         </p>
 
-        <div className="w-full max-w-2xl flex flex-col sm:flex-row gap-4 sm:gap-5">
-          {heroVideoTestimonials.map((video) => (
-            <div key={video.src} className="flex-1 rounded-2xl overflow-hidden shadow-md bg-[#ECECEC]">
-              <video
-                controls
-                poster={VIDEO_POSTER}
-                preload="metadata"
-                className="w-full aspect-[9/16] object-cover"
-              >
-                <source src={video.src} type={video.type} />
-              </video>
+        <div className="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          {heroVideoEmbeds.map((video, index) => (
+            <div
+              key={video.src}
+              className={cn(
+                "relative rounded-2xl overflow-hidden shadow-md",
+                video.aspectClass,
+                index === 2 && "sm:col-span-2 sm:max-w-md sm:mx-auto sm:w-full"
+              )}
+            >
+              <iframe
+                src={video.src}
+                title={video.title}
+                className="absolute inset-0 w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
           ))}
         </div>
