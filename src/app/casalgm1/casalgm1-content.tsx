@@ -10,7 +10,6 @@ import { buttonVariants } from "@/components/design-system/button";
 const CHECKOUT_URL = "https://pay.hotmart.com/D106943069P";
 const PRICE_VALUE = 57.9;
 const PRODUCT_NAME = "Florescer a Dois";
-const WHATSAPP_URL = "https://wa.me/5581981396005";
 
 const NAVY = "#1a3a5c";
 
@@ -162,9 +161,6 @@ export function CasalGm1Content() {
       </FadeInSection>
       <FadeInSection>
         <FaqSection />
-      </FadeInSection>
-      <FadeInSection>
-        <SupportSection />
       </FadeInSection>
       <FooterSection />
     </div>
@@ -688,30 +684,7 @@ function FaqSection() {
   );
 }
 
-/* ────────────────────────── 10. Dúvidas / Suporte ────────────────────────── */
-
-function SupportSection() {
-  return (
-    <section className="py-16 px-6 bg-white">
-      <div className="max-w-xl mx-auto bg-green-50 border border-green-100 rounded-2xl p-8 md:p-10 text-center">
-        <h2 className="font-['Georgia',serif] text-xl md:text-2xl font-bold mb-2" style={{ color: NAVY }}>
-          Ficaram alguma dúvida?
-        </h2>
-        <p className="font-sans text-gray-600 mb-6">Falem com a Dra. Camilla pelo WhatsApp</p>
-        <a
-          href={WHATSAPP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "primary", size: "lg" }), "bg-green-600 hover:bg-green-700 text-white inline-flex")}
-        >
-          💬 FALAR COM SUPORTE
-        </a>
-      </div>
-    </section>
-  );
-}
-
-/* ────────────────────────── 11. Footer ────────────────────────── */
+/* ────────────────────────── 10. Footer ────────────────────────── */
 
 function FooterSection() {
   return (

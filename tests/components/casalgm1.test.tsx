@@ -34,7 +34,6 @@ describe("CasalGm1Page", () => {
     expect(screen.getByText(/recebam conteúdos elaborados pela dra\. camilla/i)).toBeInTheDocument();
     expect(screen.getByText(/garantia de 7 dias — sem riscos/i)).toBeInTheDocument();
     expect(screen.getByText(/perguntas frequentes/i)).toBeInTheDocument();
-    expect(screen.getByText(/ficaram alguma dúvida\?/i)).toBeInTheDocument();
   });
 
   it("todos os CTAs de checkout apontam para o Hotmart do Florescer a Dois", () => {
@@ -75,23 +74,14 @@ describe("CasalGm1Page", () => {
     expect(screen.getByText(/r\$242,00/i)).toBeInTheDocument();
   });
 
-  it("mostra o botão de WhatsApp para suporte, separado do checkout", () => {
+  it("não renderiza mais a seção de dúvidas nem o botão de WhatsApp", () => {
     render(<CasalGm1Page />);
-    const waLink = screen.getByText(/falar com suporte/i).closest("a");
-    expect(waLink).not.toBeNull();
-    expect(waLink).toHaveAttribute("href", "https://wa.me/5581981396005");
-    expect(waLink).toHaveAttribute("target", "_blank");
-  });
-
-  it("não dispara InitiateCheckout ao clicar no botão de WhatsApp", () => {
-    const fbq = vi.fn();
-    window.fbq = fbq;
-
-    render(<CasalGm1Page />);
-    const waLink = screen.getByText(/falar com suporte/i).closest("a")!;
-    fireEvent.click(waLink);
-
-    expect(fbq).not.toHaveBeenCalled();
+    expect(screen.queryByText(/ficaram alguma dúvida\?/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/falar com suporte/i)).not.toBeInTheDocument();
+    const waLinks = screen
+      .queryAllByRole("link")
+      .filter((link) => link.getAttribute("href")?.includes("wa.me"));
+    expect(waLinks).toHaveLength(0);
   });
 
   it("abre e fecha uma pergunta do FAQ ao clicar", () => {
