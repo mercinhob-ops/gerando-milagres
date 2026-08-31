@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ChevronDown, Play, Check, Stethoscope, Salad, Heart, Leaf, ListChecks } from "lucide-react";
+import { ChevronDown, Check, Stethoscope, Salad, Heart, Leaf, ListChecks } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
@@ -19,6 +19,14 @@ const heroMosaicPhotos = [
   "/images/casal-3.jpg",
   "/images/casal-4.jpg",
   "/images/casal-5.jpg",
+] as const;
+
+const VIDEO_POSTER =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='700' viewBox='0 0 400 700'%3E%3Crect width='400' height='700' fill='%23ECECEC'/%3E%3C/svg%3E";
+
+const heroVideoTestimonials = [
+  { src: "/videos/depoimento-1.mp4", type: "video/mp4" },
+  { src: "/videos/depoimento-2.mov", type: "video/quicktime" },
 ] as const;
 
 const reflectionQuestions = [
@@ -302,14 +310,19 @@ function HeroSection() {
           Descubra os pilares essenciais para vocês conquistarem a gravidez que sempre desejaram
         </p>
 
-        {/* Placeholder de VSL — substituir pelo embed do YouTube quando o link estiver disponível */}
-        <div className="w-full max-w-md rounded-2xl bg-[#F0F0F0] border border-gray-200 aspect-video flex flex-col items-center justify-center gap-3 shadow-sm">
-          <span className="w-16 h-16 rounded-full bg-salmon flex items-center justify-center shadow-lg">
-            <Play className="w-7 h-7 text-white fill-white ml-1" aria-hidden="true" />
-          </span>
-          <p className="font-sans text-sm font-semibold" style={{ color: NAVY }}>
-            ▶ Assista ao vídeo da Dra. Camilla
-          </p>
+        <div className="w-full max-w-2xl flex flex-col sm:flex-row gap-4 sm:gap-5">
+          {heroVideoTestimonials.map((video) => (
+            <div key={video.src} className="flex-1 rounded-2xl overflow-hidden shadow-md bg-[#ECECEC]">
+              <video
+                controls
+                poster={VIDEO_POSTER}
+                preload="metadata"
+                className="w-full aspect-[9/16] object-cover"
+              >
+                <source src={video.src} type={video.type} />
+              </video>
+            </div>
+          ))}
         </div>
 
         <CheckoutCta label="Quero o Florescer a Dois →" className="text-base md:text-lg px-8 py-4 mt-2" />

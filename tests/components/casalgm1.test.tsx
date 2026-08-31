@@ -14,9 +14,24 @@ describe("CasalGm1Page", () => {
     ).toBeInTheDocument();
   });
 
-  it("mostra o placeholder de VSL", () => {
+  it("mostra os dois cards de depoimento em vídeo no hero, lado a lado", () => {
+    const { container } = render(<CasalGm1Page />);
+    const videos = container.querySelectorAll("video");
+    expect(videos).toHaveLength(2);
+
+    const sources = Array.from(videos).map((v) => v.querySelector("source")?.getAttribute("src"));
+    expect(sources).toContain("/videos/depoimento-1.mp4");
+    expect(sources).toContain("/videos/depoimento-2.mov");
+
+    videos.forEach((video) => {
+      expect(video).toHaveAttribute("controls");
+      expect(video.getAttribute("poster")).toMatch(/^data:image\/svg\+xml/);
+    });
+  });
+
+  it("não mostra mais o placeholder de VSL da Dra. Camilla", () => {
     render(<CasalGm1Page />);
-    expect(screen.getByText(/assista ao vídeo da dra\. camilla/i)).toBeInTheDocument();
+    expect(screen.queryByText(/assista ao vídeo da dra\. camilla/i)).not.toBeInTheDocument();
   });
 
   it("renderiza todas as seções pedidas", () => {
