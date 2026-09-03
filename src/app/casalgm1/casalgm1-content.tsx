@@ -370,7 +370,7 @@ function ReflectionSection() {
 
         <div className="mt-14 rounded-2xl px-6 py-8 md:px-10 md:py-10 text-center" style={{ background: "#9C5B4E" }}>
           <p className="font-['Georgia',serif] text-xl md:text-2xl font-bold text-white leading-snug max-w-2xl mx-auto mb-6">
-            Se as respostas forem &ldquo;não&rdquo; ou &ldquo;queremos muito isso&rdquo;, então a Dra. Camilla está
+            Se as respostas forem &ldquo;sim&rdquo; ou &ldquo;queremos muito isso&rdquo;, então a Dra. Camilla está
             aqui para ajudar vocês!
           </p>
           <CheckoutCta
