@@ -38,7 +38,7 @@ describe("CasalGmPage", () => {
       .filter((link) => link.getAttribute("href")?.includes("pay.hotmart.com"));
     expect(links.length).toBeGreaterThanOrEqual(3);
     links.forEach((link) => {
-      expect(link).toHaveAttribute("href", "https://pay.hotmart.com/D106943069P");
+      expect(link).toHaveAttribute("href", "https://pay.hotmart.com/D106943069P?checkoutMode=10");
       expect(link).toHaveAttribute("target", "_blank");
     });
   });

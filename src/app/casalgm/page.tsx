@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function CasalGmPage() {
   return (
     <>
-      <StickyHeaderCheckout checkoutUrl="https://pay.hotmart.com/D106943069P" eventValue={57.9} />
+      <StickyHeaderCheckout checkoutUrl="https://pay.hotmart.com/D106943069P?checkoutMode=10" eventValue={57.9} />
       <CasalGmContent />
     </>
   );
