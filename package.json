@@ -9,11 +9,17 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "node scripts/e2e-placeholder.js",
+    "scan:secrets": "node scripts/scan-secrets.js",
+    "check:private-routes": "node scripts/check-private-routes.js",
+    "check:headers": "node -e \"const fs=require('fs');const s=fs.readFileSync('src/lib/production/security-headers.ts','utf8');for (const h of ['Content-Security-Policy','Strict-Transport-Security','X-Content-Type-Options','Referrer-Policy','Permissions-Policy','X-Frame-Options']) { if (!s.includes(h)) process.exit(1); } if (s.includes('unsafe-eval')) process.exit(1); console.log('Security header configuration verified.');\"",
     "test:watch": "vitest",
     "generate:kiwify": "node scripts/generate-kiwify-covers.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.39.0",
@@ -30,6 +36,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.16.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
