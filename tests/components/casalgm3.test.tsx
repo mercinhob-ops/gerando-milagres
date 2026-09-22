@@ -70,9 +70,9 @@ describe("CasalGm3Page", () => {
     expect(screen.getByText(/você marcou 3 itens — não é motivo pra pânico/i)).toBeInTheDocument();
   });
 
-  it("não mostra a seção de resultado/CTA antes da captura de lead", () => {
+  it("não mostra a seção de benefícios/CTA antes da captura de lead", () => {
     render(<CasalGm3Page />);
-    expect(screen.queryByText(/quero o florescer a dois →/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/quero conhecer o caminho →/i)).not.toBeInTheDocument();
     expect(screen.getByText(/quer entender por onde começar\?/i)).toBeInTheDocument();
   });
 
@@ -88,7 +88,7 @@ describe("CasalGm3Page", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(/e-mail válido/i);
   });
 
-  it("ao enviar nome e e-mail válidos: dispara Lead, salva no localStorage e revela o CTA com o nome", () => {
+  it("ao enviar nome e e-mail válidos: dispara Lead, salva no localStorage e revela a seção de benefícios/CTA", () => {
     const fbq = vi.fn();
     window.fbq = fbq;
 
@@ -108,21 +108,33 @@ describe("CasalGm3Page", () => {
     expect(stored).toMatchObject({ name: "Marcos Silva", email: "marcos@exemplo.com" });
 
     expect(
-      screen.getByText(/marcos, o corpo do seu parceiro pode se preparar muito melhor/i)
+      screen.getByText(/você acabou de ver o mapa completo\. mas o caminho é diferente pra cada casal\./i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/quero o florescer a dois →/i)).toBeInTheDocument();
+    expect(screen.getByText(/quero conhecer o caminho →/i)).toBeInTheDocument();
   });
 
-  it("mostra o produto, o preço e a foto da Dra. Camilla no resultado", () => {
+  it("mostra os 6 benefícios, a frase de impacto e a autoridade da Dra. Camilla, sem mencionar preço ou curso", () => {
     render(<CasalGm3Page />);
     fireEvent.change(screen.getByLabelText(/nome completo/i), { target: { value: "Ana Souza" } });
     fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: "ana@exemplo.com" } });
     fireEvent.click(screen.getByRole("button", { name: /quero saber por onde começar/i }));
 
-    expect(screen.getByText("Florescer a Dois")).toBeInTheDocument();
-    expect(screen.getByText(/2x de r\$28,95 ou r\$57,90 à vista/i)).toBeInTheDocument();
-    expect(screen.getByAltText(/florescer a dois — dra\. camilla freitas/i)).toBeInTheDocument();
-    expect(screen.getByAltText(/^dra\. camilla freitas$/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/entender como o corpo dele e o dela funcionam juntos para gerar vida/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/unir ciência e fé — preparar o corpo e fortalecer a esperança juntos/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/existe um caminho mais seguro/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/dra\. camilla freitas — farmacêutica especialista em fertilidade natural · crf\/pe 4563/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/já ajudou mais de 500 casais a prepararem o corpo e conquistarem a gravidez/i)
+    ).toBeInTheDocument();
+
+    expect(screen.queryByText(/r\$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/curso/i)).not.toBeInTheDocument();
   });
 
   it("o CTA final dispara InitiateCheckout e aponta para /casalgm1", () => {
@@ -135,7 +147,7 @@ describe("CasalGm3Page", () => {
     fireEvent.click(screen.getByRole("button", { name: /quero saber por onde começar/i }));
 
     fbq.mockClear();
-    const cta = screen.getByText(/quero o florescer a dois →/i).closest("a");
+    const cta = screen.getByText(/quero conhecer o caminho →/i).closest("a");
     expect(cta).toHaveAttribute("href", "/casalgm1");
 
     fireEvent.click(cta!);

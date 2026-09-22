@@ -88,12 +88,6 @@ const checklistSections = [
 
 const TOTAL_CHECKLIST_ITEMS = checklistSections.reduce((sum, section) => sum + section.items.length, 0);
 
-function firstNameOf(fullName: string): string {
-  const trimmed = fullName.trim();
-  const first = trimmed.split(/\s+/)[0] ?? "";
-  return first.charAt(0).toUpperCase() + first.slice(1);
-}
-
 export function CasalGm3Content() {
   return (
     <div className="overflow-x-hidden bg-white">
@@ -261,7 +255,7 @@ function LeadCaptureSection() {
   }
 
   if (leadCaptured) {
-    return <ResultCtaCard name={name} />;
+    return <BenefitsCtaSection />;
   }
 
   return (
@@ -330,9 +324,16 @@ function LeadCaptureSection() {
   );
 }
 
-function ResultCtaCard({ name }: { name: string }) {
-  const displayName = firstNameOf(name) || "Vocês";
+const benefits = [
+  "Entender como o corpo dele e o dela funcionam juntos para gerar vida",
+  "Saber quais exames os dois precisam fazer e o que cada resultado significa",
+  "Ter um protocolo anti-inflamatório que os dois conseguem seguir no dia a dia",
+  "Melhorar a alimentação, o sono e o estresse — os fatores que mais impactam a fertilidade do casal",
+  "Reconectar a intimidade do casal nessa jornada, tirando o peso da obrigação",
+  "Unir ciência e fé — preparar o corpo e fortalecer a esperança juntos",
+] as const;
 
+function BenefitsCtaSection() {
   function handleCtaClick() {
     trackConversionEvent({
       eventName: "InitiateCheckout",
@@ -342,29 +343,48 @@ function ResultCtaCard({ name }: { name: string }) {
 
   return (
     <section className="px-6 py-12 md:py-16 bg-[#F8F8F8]">
-      <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-8 text-center">
-        <h2 className="font-['Georgia',serif] text-2xl font-bold text-dark-brown leading-snug mb-4">
-          {displayName}, o corpo do seu parceiro pode se preparar muito melhor do que vocês imaginam.
+      <div className="max-w-lg mx-auto text-center">
+        <h2 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-4">
+          Você acabou de ver o mapa completo. Mas o caminho é diferente pra cada casal.
         </h2>
 
         <p className="font-sans text-brown/70 leading-relaxed mb-8">
-          Cada item marcado nesse checklist tem uma explicação e, na maioria dos casos, uma solução. O guia
-          Florescer a Dois foi criado exatamente para casais que querem preparar os dois corpos — ela e ele —
-          para gerar uma vida saudável.
+          Saber que existem hábitos que impactam a fertilidade dele é uma coisa. Saber como os dois ajustam
+          isso juntos, na rotina de vocês, sem estresse e com direção certa, é outra.
         </p>
 
-        <div className="bg-[#F8F8F8] rounded-2xl p-6 mb-6">
-          <div className="relative w-full max-w-[180px] aspect-[2/3] mx-auto rounded-xl overflow-hidden shadow-md mb-4">
+        <ul className="space-y-3 text-left mb-10">
+          {benefits.map((benefit) => (
+            <li key={benefit} className="flex items-start gap-3">
+              <Check className="w-5 h-5 text-salmon shrink-0 mt-0.5" aria-hidden="true" />
+              <span className="font-sans text-sm text-dark-brown/90 leading-snug">{benefit}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="rounded-2xl px-6 py-6 mb-10" style={{ background: "#9C5B4E" }}>
+          <p className="font-['Georgia',serif] text-base md:text-lg font-semibold text-white leading-relaxed">
+            Tentar montar esse quebra-cabeça sozinhos, sem direção, logo na fase mais decisiva da preparação
+            do casal, é um risco que vocês não precisam correr. Existe um caminho mais seguro.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-3 mb-8">
+          <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-sm">
             <Image
-              src="/images/florescer-a-dois.png"
-              alt="Florescer a Dois — Dra. Camilla Freitas"
+              src="/images/camilla-zap2.jpg"
+              alt="Dra. Camilla Freitas"
               fill
-              className="object-cover"
-              sizes="180px"
+              className="object-cover object-top"
+              sizes="80px"
             />
           </div>
-          <p className="font-['Georgia',serif] text-lg font-bold text-dark-brown">Florescer a Dois</p>
-          <p className="font-sans text-sm text-brown/60 mt-1">2x de R$28,95 ou R$57,90 à vista</p>
+          <p className="font-sans text-sm font-bold text-dark-brown">
+            Dra. Camilla Freitas — Farmacêutica especialista em fertilidade natural · CRF/PE 4563
+          </p>
+          <p className="font-sans text-sm text-brown/70">
+            Já ajudou mais de 500 casais a prepararem o corpo e conquistarem a gravidez
+          </p>
         </div>
 
         <Link
@@ -372,24 +392,11 @@ function ResultCtaCard({ name }: { name: string }) {
           onClick={handleCtaClick}
           className={cn(
             buttonVariants({ variant: "primary", size: "lg" }),
-            "bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5 w-full justify-center text-base md:text-lg px-8 py-4 mb-6"
+            "bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5 w-full justify-center text-base md:text-lg px-8 py-4"
           )}
         >
-          Quero o Florescer a Dois →
+          Quero conhecer o caminho →
         </Link>
-
-        <div className="flex items-center justify-center gap-3">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
-            <Image
-              src="/images/camilla-zap.jpg"
-              alt="Dra. Camilla Freitas"
-              fill
-              className="object-cover"
-              sizes="48px"
-            />
-          </div>
-          <p className="font-sans text-sm text-brown/70">Dra. Camilla Freitas · CRF/PE 4563</p>
-        </div>
       </div>
     </section>
   );
