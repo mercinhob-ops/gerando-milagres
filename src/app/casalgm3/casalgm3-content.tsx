@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
@@ -88,49 +88,181 @@ const checklistSections = [
 
 const TOTAL_CHECKLIST_ITEMS = checklistSections.reduce((sum, section) => sum + section.items.length, 0);
 
+const benefits = [
+  "Entender como o corpo dele e o dela funcionam juntos para gerar vida",
+  "Saber quais exames os dois precisam fazer e o que cada resultado significa",
+  "Ter um protocolo anti-inflamatório que os dois conseguem seguir no dia a dia",
+  "Melhorar a alimentação, o sono e o estresse — os fatores que mais impactam a fertilidade do casal",
+  "Reconectar a intimidade do casal nessa jornada, tirando o peso da obrigação",
+  "Unir ciência e fé — preparar o corpo e fortalecer a esperança juntos",
+] as const;
+
 export function CasalGm3Content() {
+  const [leadCaptured, setLeadCaptured] = useState(false);
+
   return (
     <div className="overflow-x-hidden bg-white">
-      <HeaderSection />
-      <ChecklistSection />
-      <LeadCaptureSection />
+      <LeadCaptureGate onCaptured={() => setLeadCaptured(true)} />
+
+      {leadCaptured && (
+        <RevealOnMount>
+          <ChecklistSection />
+          <BenefitsCtaSection />
+        </RevealOnMount>
+      )}
+
       <FooterSection />
     </div>
   );
 }
 
-/* ─────────────────────────────── 1. Header ─────────────────────────────── */
+/* ─────────────────────────── Reusable pieces ─────────────────────────── */
 
-function HeaderSection() {
+function RevealOnMount({ children }: { children: ReactNode }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   return (
-    <header className="px-6 pt-10 pb-8 md:pt-14 md:pb-10 bg-white">
-      <div className="max-w-2xl mx-auto text-center">
+    <div
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─────────────────────────────── Passo 1 — Captura ─────────────────────────────── */
+
+function LeadCaptureGate({ onCaptured }: { onCaptured: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      setError("Digite seu nome, por favor.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Digite um e-mail válido.");
+      return;
+    }
+
+    setError(null);
+
+    try {
+      window.localStorage.setItem(
+        LEAD_STORAGE_KEY,
+        JSON.stringify({ name: trimmedName, email: trimmedEmail, capturedAt: new Date().toISOString() })
+      );
+    } catch {
+      // localStorage indisponível (modo privado, etc.) — não bloqueia o fluxo
+    }
+
+    trackConversionEvent({
+      eventName: "Lead",
+      customData: { content_name: "Checklist Fertilidade Masculina" },
+    });
+
+    onCaptured();
+  }
+
+  return (
+    <section
+      className="min-h-screen flex items-center justify-center px-6 py-12"
+      style={{ background: "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 100%)" }}
+    >
+      <div className="max-w-md w-full text-center">
         <p className="font-['Georgia',serif] italic text-sm font-bold text-dark-brown mb-1">Gerando Milagres</p>
         <p className="font-sans text-xs font-semibold text-brown/60 uppercase tracking-widest mb-6">
           Dra. Camilla Freitas · CRF/PE 4563
         </p>
 
-        <h1 className="font-['Georgia',serif] text-3xl md:text-4xl font-bold text-dark-brown leading-tight mb-4">
-          Checklist da Fertilidade Masculina
+        <div className="relative w-28 h-28 rounded-full overflow-hidden mx-auto mb-6 shadow-md">
+          <Image
+            src="/images/camilla-zap2.jpg"
+            alt="Dra. Camilla Freitas"
+            fill
+            className="object-cover object-top"
+            sizes="112px"
+          />
+        </div>
+
+        <h1 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-3">
+          Descubra se o corpo do seu parceiro está pronto para gerar vida
         </h1>
 
-        <p className="font-['Georgia',serif] italic text-base text-brown/70 leading-relaxed mb-6 max-w-xl mx-auto">
-          Marque os hábitos que fazem parte do seu dia a dia hoje. A maioria é reversível em poucos meses — o
-          corpo agradece cada ajuste.
+        <p className="font-sans text-sm text-brown/70 leading-relaxed mb-8">
+          Preencha seus dados para acessar o Checklist exclusivo da Fertilidade Masculina
         </p>
 
-        <div className="bg-salmon/10 border border-salmon/25 rounded-2xl px-6 py-5">
-          <p className="font-sans text-sm text-dark-brown leading-relaxed">
-            <span aria-hidden="true">🔬</span> Espermatozoides levam cerca de 90 dias para se formar por
-            completo. Ou seja: o que você muda hoje, o seu corpo reflete lá na frente.
-          </p>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 text-left bg-white rounded-2xl shadow-sm p-6">
+          <div className="space-y-1.5">
+            <label htmlFor="casalgm3-name" className="font-sans text-sm font-semibold text-brown/80">
+              Nome completo
+            </label>
+            <input
+              id="casalgm3-name"
+              type="text"
+              autoComplete="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Seu nome completo"
+              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="casalgm3-email" className="font-sans text-sm font-semibold text-brown/80">
+              E-mail
+            </label>
+            <input
+              id="casalgm3-email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="seuemail@exemplo.com"
+              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
+            />
+          </div>
+
+          {error && (
+            <p className="font-sans text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className={cn(
+              buttonVariants({ variant: "primary", size: "lg" }),
+              "bg-salmon hover:bg-salmon/90 w-full justify-center text-base"
+            )}
+          >
+            Quero acessar o checklist →
+          </button>
+        </form>
+
+        <p className="font-sans text-xs text-brown/50 mt-4">Seus dados estão protegidos pela LGPD</p>
       </div>
-    </header>
+    </section>
   );
 }
 
-/* ─────────────────────────────── 2. Checklist ─────────────────────────────── */
+/* ─────────────────────────────── Passo 2 — Checklist ─────────────────────────────── */
 
 function ChecklistSection() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
@@ -152,6 +284,13 @@ function ChecklistSection() {
   return (
     <section className="px-6 py-12 md:py-16 bg-white">
       <div className="max-w-2xl mx-auto">
+        <div className="bg-salmon/10 border border-salmon/25 rounded-2xl px-6 py-5 mb-8">
+          <p className="font-sans text-sm text-dark-brown leading-relaxed">
+            <span aria-hidden="true">🔬</span> Espermatozoides levam cerca de 90 dias para se formar. O que
+            muda hoje, o corpo reflete lá na frente.
+          </p>
+        </div>
+
         <div className="mb-8 rounded-2xl bg-[#F8F8F8] px-6 py-4 text-center">
           <p className="font-sans text-sm font-bold text-dark-brown">
             Você marcou <span className="text-salmon">{checkedCount}</span> de {TOTAL_CHECKLIST_ITEMS} itens
@@ -212,126 +351,7 @@ function ChecklistSection() {
   );
 }
 
-/* ────────────────────────── 3 & 4. Captura de lead + Resultado/CTA ────────────────────────── */
-
-function LeadCaptureSection() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [leadCaptured, setLeadCaptured] = useState(false);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-
-    if (!trimmedName) {
-      setError("Digite seu nome, por favor.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError("Digite um e-mail válido.");
-      return;
-    }
-
-    setError(null);
-
-    try {
-      window.localStorage.setItem(
-        LEAD_STORAGE_KEY,
-        JSON.stringify({ name: trimmedName, email: trimmedEmail, capturedAt: new Date().toISOString() })
-      );
-    } catch {
-      // localStorage indisponível (modo privado, etc.) — não bloqueia o fluxo
-    }
-
-    trackConversionEvent({
-      eventName: "Lead",
-      customData: { content_name: "Checklist Fertilidade Masculina" },
-    });
-
-    setName(trimmedName);
-    setLeadCaptured(true);
-  }
-
-  if (leadCaptured) {
-    return <BenefitsCtaSection />;
-  }
-
-  return (
-    <section className="px-6 py-12 md:py-16 bg-[#F8F8F8]">
-      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-sm p-8">
-        <h2 className="font-['Georgia',serif] text-2xl font-bold text-dark-brown text-center mb-2">
-          Quer entender por onde começar?
-        </h2>
-        <p className="font-sans text-sm text-brown/70 text-center mb-6">
-          Deixe seu contato e a Dra. Camilla mostra o próximo passo para vocês
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="casalgm3-name" className="font-sans text-sm font-semibold text-brown/80">
-              Nome completo
-            </label>
-            <input
-              id="casalgm3-name"
-              type="text"
-              autoComplete="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Seu nome completo"
-              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="casalgm3-email" className="font-sans text-sm font-semibold text-brown/80">
-              E-mail
-            </label>
-            <input
-              id="casalgm3-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="seuemail@exemplo.com"
-              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
-            />
-          </div>
-
-          {error && (
-            <p className="font-sans text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className={cn(
-              buttonVariants({ variant: "primary", size: "lg" }),
-              "bg-salmon hover:bg-salmon/90 w-full justify-center text-base"
-            )}
-          >
-            Quero saber por onde começar →
-          </button>
-        </form>
-
-        <p className="font-sans text-xs text-brown/50 text-center mt-4">
-          Seus dados estão protegidos pela LGPD
-        </p>
-      </div>
-    </section>
-  );
-}
-
-const benefits = [
-  "Entender como o corpo dele e o dela funcionam juntos para gerar vida",
-  "Saber quais exames os dois precisam fazer e o que cada resultado significa",
-  "Ter um protocolo anti-inflamatório que os dois conseguem seguir no dia a dia",
-  "Melhorar a alimentação, o sono e o estresse — os fatores que mais impactam a fertilidade do casal",
-  "Reconectar a intimidade do casal nessa jornada, tirando o peso da obrigação",
-  "Unir ciência e fé — preparar o corpo e fortalecer a esperança juntos",
-] as const;
+/* ─────────────────────────────── Passo 3 — CTA final ─────────────────────────────── */
 
 function BenefitsCtaSection() {
   function handleCtaClick() {
@@ -402,7 +422,7 @@ function BenefitsCtaSection() {
   );
 }
 
-/* ─────────────────────────────── 5. Footer ─────────────────────────────── */
+/* ─────────────────────────────── Footer ─────────────────────────────── */
 
 function FooterSection() {
   return (
