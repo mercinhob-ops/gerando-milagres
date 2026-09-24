@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
@@ -10,7 +10,6 @@ import { buttonVariants } from "@/components/design-system/button";
 
 const PRICE_VALUE = 57.9;
 const PRODUCT_NAME = "Florescer a Dois";
-const LEAD_STORAGE_KEY = "casalgm3_lead";
 
 const checklistSections = [
   {
@@ -98,167 +97,43 @@ const benefits = [
 ] as const;
 
 export function CasalGm3Content() {
-  const [leadCaptured, setLeadCaptured] = useState(false);
-
   return (
     <div className="overflow-x-hidden bg-white">
-      <LeadCaptureGate onCaptured={() => setLeadCaptured(true)} />
-
-      {leadCaptured && (
-        <RevealOnMount>
-          <ChecklistSection />
-          <BenefitsCtaSection />
-        </RevealOnMount>
-      )}
-
+      <HeaderSection />
+      <ChecklistSection />
+      <BenefitsCtaSection />
       <FooterSection />
     </div>
   );
 }
 
-/* ─────────────────────────── Reusable pieces ─────────────────────────── */
+/* ─────────────────────────────── Header ─────────────────────────────── */
 
-function RevealOnMount({ children }: { children: ReactNode }) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
+function HeaderSection() {
   return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────────── Passo 1 — Captura ─────────────────────────────── */
-
-function LeadCaptureGate({ onCaptured }: { onCaptured: () => void }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-
-    if (!trimmedName) {
-      setError("Digite seu nome, por favor.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError("Digite um e-mail válido.");
-      return;
-    }
-
-    setError(null);
-
-    try {
-      window.localStorage.setItem(
-        LEAD_STORAGE_KEY,
-        JSON.stringify({ name: trimmedName, email: trimmedEmail, capturedAt: new Date().toISOString() })
-      );
-    } catch {
-      // localStorage indisponível (modo privado, etc.) — não bloqueia o fluxo
-    }
-
-    trackConversionEvent({
-      eventName: "Lead",
-      customData: { content_name: "Checklist Fertilidade Masculina" },
-    });
-
-    onCaptured();
-  }
-
-  return (
-    <section
-      className="min-h-screen flex items-center justify-center px-6 py-12"
+    <header
+      className="px-6 pt-10 pb-8 md:pt-14 md:pb-10 text-center"
       style={{ background: "linear-gradient(160deg, #F0E6DC 0%, #E8D0C0 100%)" }}
     >
-      <div className="max-w-md w-full text-center">
-        <p className="font-['Georgia',serif] italic text-sm font-bold text-dark-brown mb-1">Gerando Milagres</p>
-        <p className="font-sans text-xs font-semibold text-brown/60 uppercase tracking-widest mb-6">
-          Dra. Camilla Freitas · CRF/PE 4563
-        </p>
+      <p className="font-['Georgia',serif] italic text-sm font-bold text-dark-brown mb-1">Gerando Milagres</p>
+      <p className="font-sans text-xs font-semibold text-brown/60 uppercase tracking-widest mb-6">
+        Dra. Camilla Freitas · CRF/PE 4563
+      </p>
 
-        <div className="relative w-28 h-28 rounded-full overflow-hidden mx-auto mb-6 shadow-md">
-          <Image
-            src="/images/camilla-zap2.jpg"
-            alt="Dra. Camilla Freitas"
-            fill
-            className="object-cover object-top"
-            sizes="112px"
-          />
-        </div>
-
-        <h1 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-3">
-          Descubra se o corpo do seu parceiro está pronto para gerar vida
-        </h1>
-
-        <p className="font-sans text-sm text-brown/70 leading-relaxed mb-8">
-          Preencha seus dados para acessar o Checklist exclusivo da Fertilidade Masculina
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4 text-left bg-white rounded-2xl shadow-sm p-6">
-          <div className="space-y-1.5">
-            <label htmlFor="casalgm3-name" className="font-sans text-sm font-semibold text-brown/80">
-              Nome completo
-            </label>
-            <input
-              id="casalgm3-name"
-              type="text"
-              autoComplete="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Seu nome completo"
-              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="casalgm3-email" className="font-sans text-sm font-semibold text-brown/80">
-              E-mail
-            </label>
-            <input
-              id="casalgm3-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="seuemail@exemplo.com"
-              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
-            />
-          </div>
-
-          {error && (
-            <p className="font-sans text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className={cn(
-              buttonVariants({ variant: "primary", size: "lg" }),
-              "bg-salmon hover:bg-salmon/90 w-full justify-center text-base"
-            )}
-          >
-            Quero acessar o checklist →
-          </button>
-        </form>
-
-        <p className="font-sans text-xs text-brown/50 mt-4">Seus dados estão protegidos pela LGPD</p>
+      <div className="relative w-28 h-28 rounded-full overflow-hidden mx-auto mb-6 shadow-md">
+        <Image
+          src="/images/camilla-zap2.jpg"
+          alt="Dra. Camilla Freitas"
+          fill
+          className="object-cover object-top"
+          sizes="112px"
+        />
       </div>
-    </section>
+
+      <h1 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug max-w-xl mx-auto">
+        Checklist da Fertilidade Masculina
+      </h1>
+    </header>
   );
 }
 
