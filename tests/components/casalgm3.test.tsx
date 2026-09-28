@@ -118,10 +118,10 @@ describe("CasalGm3Page", () => {
     expect(fbq).not.toHaveBeenCalledWith("track", "Lead", expect.anything(), expect.anything());
   });
 
-  it("mostra o footer com direitos reservados e aviso de material educativo", () => {
+  it("mostra o footer com direitos reservados, sem o aviso de material educativo", () => {
     render(<CasalGm3Page />);
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByText(/© 2026 gerando milagres · dra\. camilla freitas · crf\/pe 4563/i)).toBeInTheDocument();
-    expect(within(footer).getByText(/não substitui acompanhamento profissional/i)).toBeInTheDocument();
+    expect(within(footer).queryByText(/não substitui acompanhamento profissional/i)).not.toBeInTheDocument();
   });
 });

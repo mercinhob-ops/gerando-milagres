@@ -302,11 +302,8 @@ function BenefitsCtaSection() {
 function FooterSection() {
   return (
     <footer className="px-6 py-10 text-center bg-white border-t border-gray-100">
-      <p className="font-sans text-xs text-brown/60 mb-1">
+      <p className="font-sans text-xs text-brown/60">
         © 2026 Gerando Milagres · Dra. Camilla Freitas · CRF/PE 4563
-      </p>
-      <p className="font-sans text-xs text-brown/40">
-        Este material é educativo e não substitui acompanhamento profissional
       </p>
     </footer>
   );
