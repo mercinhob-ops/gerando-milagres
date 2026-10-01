@@ -14,7 +14,7 @@ export const ofertaEspecialContent = {
   meta: { title: "Antes de continuar — Ciclos Desbloqueados" },
 
   top: {
-    eyebrow: "Compra confirmada 💛",
+    eyebrow: "Seu primeiro passo está dado 💛",
     headline:
       "Antes de continuar: entender o seu ciclo é o primeiro passo. Mas a sua fertilidade não começa e termina na ovulação.",
     subheadline:

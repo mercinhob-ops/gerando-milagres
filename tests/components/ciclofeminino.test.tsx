@@ -105,7 +105,7 @@ describe("Ofertas pós-compra", () => {
 
   it("oferta-especial: copy pós-compra, 3 materiais, R$ 67 e sem mencionar a próxima oferta ou consulta", () => {
     render(<OfertaEspecialPage />);
-    expect(screen.getByText(/compra confirmada/i)).toBeInTheDocument();
+    expect(screen.getByText(/seu primeiro passo está dado/i)).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 1, name: /não começa e termina na ovulação/i })
     ).toBeInTheDocument();
@@ -136,14 +136,28 @@ describe("Ofertas pós-compra", () => {
     );
   });
 
-  it("suplementacao: recusa leva para /ciclofeminino/obrigada e exibe aviso educacional", () => {
+  it("suplementacao: recusa leva para /ciclofeminino/obrigada preservando token/UTMs", () => {
+    window.history.replaceState({}, "", "/ciclofeminino/suplementacao?token=abc&utm_campaign=x");
     render(<SuplementacaoPage />);
     expect(screen.getByRole("link", { name: /não, obrigada/i })).toHaveAttribute(
       "href",
-      cicloFemininoFunnel.routes.thankYou
+      `${cicloFemininoFunnel.routes.thankYou}?token=abc&utm_campaign=x`
     );
-    expect(screen.getByText(/não substitui consulta/i)).toBeInTheDocument();
     expect(screen.getAllByText(/R\$\s*47,90/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/SIM, QUERO ENTENDER MELHOR A SUPLEMENTAÇÃO/)).toBeInTheDocument();
+  });
+
+  it("suplementacao: copy neutra à decisão anterior, só os nutrientes do material, sem promessas nem consulta", () => {
+    render(<SuplementacaoPage />);
+    expect(screen.getByText(/um último passo antes de continuar/i)).toBeInTheDocument();
+    for (const n of ["Metilfolato", "Vitamina B12", "Vitamina D3", "Mio-inositol", "CoQ10", "Vitamina E"]) {
+      expect(screen.getByText(n)).toBeInTheDocument();
+    }
+    expect(screen.getByText(/avaliação individual ajuda a entender/i)).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/ciclos desbloqueados|R\$\s*67|R\$\s*147|consulta|Dra\./i);
+    expect(text).not.toMatch(/garant\w* (a |sua )?gravidez|cura|aumenta(rá)? (a |sua )?fertilidade/i);
+    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBe(1);
   });
 
   const readyProduct: FunnelProduct = {
