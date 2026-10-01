@@ -50,7 +50,11 @@ export function StickyHeader({
   if (
     pathname?.startsWith("/quizfertilidade") ||
     pathname?.startsWith("/casalgm1") ||
-    pathname?.startsWith("/casalgm3")
+    pathname?.startsWith("/casalgm3") ||
+    // Funil 01: etapas pós-compra nunca mostram o header; a entrada só mostra
+    // quando a própria página registrou seu checkout (nunca o checkout global).
+    pathname?.startsWith("/ciclofeminino/") ||
+    (pathname?.startsWith("/ciclofeminino") && !checkoutUrl && !registeredCheckout)
   )
     return null;
 
