@@ -103,6 +103,22 @@ describe("Ofertas pós-compra", () => {
     expect(allHrefs()).not.toContain(GLOBAL_CHECKOUT);
   });
 
+  it("oferta-especial: copy pós-compra, 3 materiais, R$ 67 e sem mencionar a próxima oferta ou consulta", () => {
+    render(<OfertaEspecialPage />);
+    expect(screen.getByText(/compra confirmada/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /não começa e termina na ovulação/i })
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/conexão íntima/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/fertilidade de dentro para fora/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/R\$\s*67,00/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/SIM, QUERO AMPLIAR MINHA PREPARAÇÃO/)).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/suplementação|R\$\s*47,90|R\$\s*147|consulta/i);
+    expect(text).not.toMatch(/Dra\./);
+    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBe(3);
+  });
+
   it("oferta-especial: dispara UpsellView (custom) e UpsellDecline ao recusar", () => {
     render(<OfertaEspecialPage />);
     expect(window.fbq).toHaveBeenCalledWith(
