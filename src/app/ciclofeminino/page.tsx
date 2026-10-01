@@ -111,24 +111,42 @@ export default function CicloFemininoPage() {
             </div>
 
             <div className="flex items-center gap-3 justify-center md:justify-start pt-2">
-              <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 ring-2 ring-salmon/40">
+              {/* Avatar: recorte do rosto de camilla-hero.jpg (sem arquivo novo) */}
+              <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-salmon/50 md:hidden">
                 <Image
-                  src="/images/camilla-zap.jpg"
-                  alt="Dra. Camilla Freitas"
+                  src="/images/camilla-hero.jpg"
+                  alt="Camilla Freitas"
                   fill
-                  className="object-cover object-top"
-                  sizes="36px"
+                  className="object-cover"
+                  style={{ objectPosition: "47% 30%", transform: "scale(3.3)", transformOrigin: "47% 30%" }}
+                  sizes="140px"
                 />
               </div>
-              <span className="font-sans text-[11px] md:text-xs font-semibold tracking-widest text-salmon uppercase">
-                {c.hero.author}
+              <span className="flex flex-col md:flex-row md:gap-2 text-left font-sans text-[11px] md:text-xs font-semibold tracking-widest uppercase leading-relaxed">
+                <span className="text-nude">{c.hero.authorName}</span>
+                <span className="hidden md:inline text-salmon" aria-hidden="true">·</span>
+                <span className="text-salmon">{c.hero.authorRole}</span>
               </span>
             </div>
           </div>
 
-          {/* Mockup só no desktop: no celular o CTA vem primeiro */}
-          <div className="hidden md:block shrink-0 w-[340px] lg:w-[400px]">
-            <MediaPlaceholder label={c.product.mediaLabel} tone="dark" className="aspect-square w-full" />
+          {/* Foto só no desktop: no celular headline + CTA ocupam a primeira dobra */}
+          <div className="hidden md:block shrink-0 w-[320px] lg:w-[380px]">
+            <div className="relative aspect-[3/4] w-full rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-white/15">
+              <Image
+                src="/images/camilla-hero.jpg"
+                alt="Camilla Freitas, farmacêutica"
+                fill
+                preload
+                className="object-cover"
+                style={{ objectPosition: "45% 42%" }}
+                sizes="(max-width: 1024px) 320px, 380px"
+              />
+              <div
+                className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-dark-brown/70 to-transparent"
+                aria-hidden="true"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -294,48 +312,79 @@ export default function CicloFemininoPage() {
         </div>
       </section>
 
-      {/* ─── GARANTIA (componente existente) ───────────────────────── */}
-      <GuaranteeSection
-        description={
-          <>
-            Se nos primeiros <strong className="text-brown">7 dias</strong> você sentir que o material
-            não é para você, devolvemos 100% do valor.
-          </>
-        }
-      />
-
       {/* ─── 8. AUTORIDADE ─────────────────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-cream">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-14 items-center">
-          <div className="w-full max-w-[240px] md:max-w-none md:w-[280px] shrink-0">
-            <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-xl">
-              <Image
-                src="/images/camilla-zap.jpg"
-                alt="Dra. Camilla Freitas, farmacêutica"
-                fill
-                className="object-cover object-top"
-                sizes="(max-width: 768px) 240px, 280px"
-              />
-            </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center md:text-left md:max-w-2xl mb-8 md:mb-10">
+            <Eyebrow>{c.specialist.eyebrow}</Eyebrow>
+            <p className={`${serif} italic text-xl md:text-3xl text-dark-brown leading-snug`}>
+              {c.specialist.lead}
+            </p>
           </div>
-          <div className="flex-1 space-y-5 text-center md:text-left">
-            <div>
-              <Eyebrow>{c.specialist.eyebrow}</Eyebrow>
-              <H2>{c.specialist.name}</H2>
-              <p className="font-sans text-xs font-semibold tracking-wide text-salmon uppercase mt-2">
-                {c.specialist.role}
-              </p>
+          <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center md:items-start">
+            <div className="w-full max-w-[260px] md:max-w-none md:w-[300px] shrink-0">
+              <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-xl">
+                <Image
+                  src="/images/camilla-zap2.jpg"
+                  alt="Camilla Freitas sorrindo"
+                  fill
+                  className="object-cover"
+                  style={{ objectPosition: "50% 10%" }}
+                  sizes="(max-width: 768px) 260px, 300px"
+                />
+              </div>
             </div>
-            <blockquote className={`${serif} italic text-lg md:text-2xl text-dark-brown leading-relaxed`}>
-              “{c.specialist.quote}”
-            </blockquote>
-            <p className="font-sans text-sm md:text-base text-gray-600 leading-relaxed">{c.specialist.text}</p>
+            <div className="flex-1 space-y-5 text-center md:text-left">
+              <div>
+                <h2 className={`${serif} text-2xl md:text-4xl font-bold text-dark-brown leading-snug`}>
+                  {c.specialist.name}
+                </h2>
+                <ul className="flex flex-wrap gap-2 justify-center md:justify-start mt-3">
+                  {c.specialist.credentials.map((item) => (
+                    <li
+                      key={item}
+                      className="font-sans text-[11px] font-semibold uppercase tracking-wide text-brown bg-white border border-nude-dark/50 rounded-full px-3 py-1"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {c.specialist.paragraphs.map((text, i) => (
+                <p
+                  key={text}
+                  className={`font-sans text-sm md:text-base leading-relaxed ${i === 1 ? "text-dark-brown font-medium" : "text-gray-600"}`}
+                >
+                  {text}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 9. PLANTAR A JORNADA ──────────────────────────────────── */}
-      <section className="py-12 md:py-16 px-5 bg-white">
+      {/* ─── 9. OFERTA FINAL ───────────────────────────────────────── */}
+      <section className="py-16 md:py-24 px-5 text-center" style={darkGradient}>
+        <div className="max-w-2xl mx-auto space-y-6">
+          <H2 dark>{c.finalOffer.heading}</H2>
+          <div className="inline-block bg-white/10 border border-white/15 rounded-2xl px-8 py-5">
+            <p className="font-sans text-sm font-semibold text-nude">{product.name}</p>
+            <p className="font-sans text-xs text-nude/60 mt-1">{c.finalOffer.tagline}</p>
+            <p className={`${serif} text-4xl font-bold text-salmon leading-none mt-3`}>{PRICE}</p>
+          </div>
+          <div>
+            <EntryCheckoutCta
+              product={product}
+              label={c.finalOffer.ctaLabel}
+              className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
+            />
+            <p className="font-sans text-xs text-nude/60 mt-3">Garantia de 7 dias · pagamento seguro</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 10. PLANTAR A JORNADA ─────────────────────────────────── */}
+      <section className="py-12 md:py-16 px-5 bg-cream">
         <div className="max-w-2xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-5" aria-hidden="true">
             <span className="w-3 h-3 rounded-full bg-salmon" />
@@ -349,24 +398,15 @@ export default function CicloFemininoPage() {
         </div>
       </section>
 
-      {/* ─── 10. OFERTA FINAL ──────────────────────────────────────── */}
-      <section className="py-16 md:py-24 px-5 text-center" style={darkGradient}>
-        <div className="max-w-2xl mx-auto space-y-6">
-          <H2 dark>{c.finalOffer.heading}</H2>
-          <div className="inline-block bg-white/10 border border-white/15 rounded-2xl px-8 py-5">
-            <p className="font-sans text-sm font-semibold text-nude">{product.name}</p>
-            <p className={`${serif} text-4xl font-bold text-salmon leading-none mt-2`}>{PRICE}</p>
-          </div>
-          <div>
-            <EntryCheckoutCta
-              product={product}
-              label={c.finalOffer.ctaLabel}
-              className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
-            />
-            <p className="font-sans text-xs text-nude/60 mt-3">Garantia de 7 dias · pagamento seguro</p>
-          </div>
-        </div>
-      </section>
+      {/* ─── GARANTIA (componente existente) ───────────────────────── */}
+      <GuaranteeSection
+        description={
+          <>
+            Se nos primeiros <strong className="text-brown">7 dias</strong> você sentir que o material
+            não é para você, devolvemos 100% do valor.
+          </>
+        }
+      />
 
       {/* ─── 11. FAQ ───────────────────────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-cream">

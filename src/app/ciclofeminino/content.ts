@@ -9,12 +9,11 @@
  * corporais nunca apresentados como diagnóstico ou confirmação de ovulação;
  * sem mencionar próximos produtos, preços ou upsell.
  *
- * Itens que começam com "[CONFIRMAR" ou "[COPY" são pendências e aparecem
- * com contorno tracejado na página.
+ * Pendência atual: mockup do produto (marcador tracejado na página).
  */
 export const cicloFemininoContent = {
   meta: {
-    title: "Ciclo Feminino Descomplicado — Dra. Camilla Freitas",
+    title: "Ciclo Feminino Descomplicado — Camilla Freitas",
     description:
       "Para mulheres que desejam engravidar: aprenda a reconhecer os sinais do seu ciclo e compreender melhor sua janela fértil.",
   },
@@ -26,7 +25,8 @@ export const cicloFemininoContent = {
     subheadline:
       "Aprenda a reconhecer os sinais do seu ciclo, compreender melhor sua janela fértil e dê o primeiro passo para uma preparação mais consciente na sua jornada em busca do positivo.",
     ctaLabel: "QUERO COMEÇAR MINHA PREPARAÇÃO",
-    author: "Dra. Camilla Freitas · CRF/PE 4563",
+    authorName: "Camilla Freitas",
+    authorRole: "Farmacêutica · CRF/PE 4563",
   },
 
   identification: {
@@ -115,18 +115,24 @@ export const cicloFemininoContent = {
     subtitle:
       "O primeiro passo para sair da tentativa no escuro e começar a compreender melhor os sinais do seu ciclo.",
     mediaLabel: "[Imagem: mockup Ciclo Feminino Descomplicado]",
-    note: "Pagamento único",
+    note: "Pagamento único · acesso pela área de membros",
     ctaLabel: "QUERO ENTENDER MELHOR MEU CORPO",
   },
 
-  // Somente informações já existentes no projeto (src/data/camilla.ts e páginas publicadas).
+  // Somente informações já existentes no projeto ou confirmadas pela Camilla:
+  // farmacêutica, CRF/PE 4563, pós-graduada em Fertilidade, atuação especializada
+  // em fertilidade do casal, vivência de perda gestacional.
   specialist: {
     eyebrow: "Quem está por trás deste caminho",
-    name: "Dra. Camilla Freitas",
-    role: "Farmacêutica · CRF/PE 4563",
-    quote: "Eu sei o que é olhar para um resultado negativo e sentir o chão sumir.",
-    text:
-      "Camilla viveu a jornada da tentante por dentro, incluindo a perda de gestações. Como farmacêutica, passou a estudar a fertilidade com os olhos de quem conhece essa dor e criou o método Gerando Milagres a partir dessa vivência.",
+    lead:
+      "Por trás desse caminho existe alguém que entende que fertilidade não cabe apenas em uma previsão de aplicativo.",
+    name: "Camilla Freitas",
+    credentials: ["Farmacêutica · CRF/PE 4563", "Pós-graduada em Fertilidade", "Fertilidade do casal"],
+    paragraphs: [
+      "Camilla Freitas é farmacêutica, CRF/PE 4563, pós-graduada em Fertilidade e atua de forma especializada em fertilidade do casal.",
+      "Sua própria vivência com a perda gestacional também atravessou sua história e ampliou sua conexão com mulheres e casais que vivem a espera pelo positivo.",
+      "Hoje, seu trabalho é ajudar mulheres e casais a compreenderem melhor sua jornada de fertilidade, começando por algo essencial: entender que cada corpo e cada história precisam ser observados com atenção.",
+    ],
   },
 
   journey: {
@@ -137,6 +143,7 @@ export const cicloFemininoContent = {
 
   finalOffer: {
     heading: "Antes de tentar interpretar mais um ciclo no escuro, aprenda o que observar.",
+    tagline: "O primeiro passo da sua preparação para a fertilidade.",
     ctaLabel: "QUERO DAR O PRIMEIRO PASSO",
   },
 
@@ -167,11 +174,11 @@ export const cicloFemininoContent = {
       {
         question: "Como vou receber o material?",
         answer:
-          "[CONFIRMAR: formato do material (PDF, área de membros Kiwify etc.) e como o acesso é enviado após a compra]",
+          "Após a confirmação da compra, você receberá acesso ao conteúdo pela área de membros, onde poderá consultar o material.",
       },
     ],
   },
 
   footerWhatsappMessage:
-    "Olá! Tenho interesse no Ciclo Feminino Descomplicado da Dra. Camilla Freitas 🌸",
+    "Olá! Tenho interesse no Ciclo Feminino Descomplicado da Camilla Freitas 🌸",
 } as const;

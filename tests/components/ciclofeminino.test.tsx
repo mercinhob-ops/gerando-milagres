@@ -76,11 +76,21 @@ describe("/ciclofeminino", () => {
     expect(document.querySelectorAll("[data-checkout-pending]").length).toBeGreaterThanOrEqual(3);
   });
 
-  it("mantém pendências reais identificáveis (mockup e forma de entrega)", () => {
+  it("mantém o mockup como pendência e mostra a entrega pela área de membros", () => {
     render(<CicloFemininoPage />);
     expect(document.querySelectorAll('[data-placeholder="media"]').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText(/como vou receber o material/i).closest("button")!);
-    expect(screen.getByText(/\[CONFIRMAR:/)).toBeInTheDocument();
+    expect(screen.getByText(/acesso ao conteúdo pela área de membros/i)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/\[CONFIRMAR|\[COPY/);
+  });
+
+  it("autoridade usa as credenciais confirmadas e não usa 'Dra.' no conteúdo da página", () => {
+    render(<CicloFemininoPage />);
+    expect(screen.getAllByText(/pós-graduada em Fertilidade/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/fertilidade do casal\.$/i)).toBeInTheDocument();
+    const main = document.body.cloneNode(true) as HTMLElement;
+    main.querySelector("footer")?.remove(); // rodapé é componente compartilhado
+    expect(main.textContent).not.toMatch(/Dra\./);
   });
 });
 
