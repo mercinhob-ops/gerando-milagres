@@ -1,0 +1,52 @@
+/**
+ * Parâmetros de atribuição preservados ao longo do Funil 01.
+ *
+ * - ATTRIBUTION_PARAMS vão para o checkout Kiwify e entre as páginas.
+ * - `token` (contexto do 1 clique da Kiwify) só circula entre páginas
+ *   internas do funil; nunca é enviado ao checkout de entrada nem incluído
+ *   nas URLs data-upsell-url/data-downsell-url (o script oficial da Kiwify
+ *   anexa o próprio token ao redirecionar).
+ *
+ * Nada aqui loga valores.
+ */
+export const ATTRIBUTION_PARAMS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "src",
+  "sck",
+  "fbclid",
+] as const;
+
+export const KIWIFY_CONTEXT_PARAM = "token";
+
+export const FUNNEL_PARAMS = [KIWIFY_CONTEXT_PARAM, ...ATTRIBUTION_PARAMS] as const;
+
+/** Seleciona apenas as chaves permitidas (valores não vazios) de uma query. */
+export function pickParams(search: string, keys: readonly string[]): URLSearchParams {
+  const current = new URLSearchParams(search);
+  const picked = new URLSearchParams();
+  for (const key of keys) {
+    const value = current.get(key);
+    if (value) picked.set(key, value);
+  }
+  return picked;
+}
+
+/**
+ * Anexa parâmetros a uma URL (absoluta ou relativa) sem duplicar:
+ * chaves já presentes na URL de destino são mantidas como estão.
+ */
+export function appendParams(url: string, params: URLSearchParams): string {
+  if ([...params.keys()].length === 0) return url;
+
+  const isAbsolute = /^https?:\/\//i.test(url);
+  const parsed = new URL(url, "https://placeholder.invalid");
+  for (const [key, value] of params) {
+    if (!parsed.searchParams.has(key)) parsed.searchParams.set(key, value);
+  }
+  if (isAbsolute) return parsed.toString();
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+}

@@ -1,10 +1,9 @@
 /**
  * Configuração da página final /ciclofeminino/obrigada.
  *
- * TODO(kiwify): URL real da área de membros — será fornecida na etapa final
- * de integração do funil. Enquanto for `null`, os botões de acesso aparecem
- * inativos com a marcação "Link da área de membros pendente" e NÃO apontam
- * para nenhum destino.
+ * `membersAreaUrl`: URL pública da área de membros da Kiwify (opcional).
+ * Enquanto for `null`, a página orienta o acesso pelo e-mail enviado pela
+ * Kiwify e NÃO exibe botão — nenhum link falso é criado.
  */
 export const obrigadaConfig = {
   membersAreaUrl: null as string | null,

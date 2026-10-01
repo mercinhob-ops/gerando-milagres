@@ -4,39 +4,31 @@
  * A cliente pode ter comprado só o produto inicial ou também uma/ambas as
  * ofertas: nada aqui afirma quais produtos ela tem.
  * Sem preços, sem nova oferta, sem consulta/agendamento, sem WhatsApp ou
- * outros canais. Único próximo passo: acessar a área de membros.
+ * outros canais. Próximo passo: acessar o conteúdo pelo e-mail da Kiwify.
  *
  * As etapas são listas de dados para que novas etapas do funil possam ser
  * adicionadas depois sem reconstruir a página.
  */
 export const obrigadaContent = {
-  meta: { title: "Agora começa a sua preparação — Ciclo Feminino" },
+  meta: { title: "Pronto! Próximos passos — Ciclo Feminino" },
 
   hero: {
-    eyebrow: "Agora começa a sua preparação 💛",
-    headline: "Você deu um passo importante: decidiu compreender melhor a sua própria jornada.",
-    text:
-      "O desejo pelo positivo pode trazer muitas perguntas. A partir de agora, a ideia é trocar parte da ansiedade por conhecimento, observação e uma preparação cada vez mais consciente.",
+    eyebrow: "Pronto 💛",
+    headline: "Seu próximo passo agora é acessar o seu conteúdo.",
+    text: "Seu material será disponibilizado pela Kiwify na área de membros vinculada ao e-mail utilizado na compra.",
   },
 
+  /** Usado somente se membersAreaUrl for configurada em ./config.ts. */
   membersCtaLabel: "ACESSAR MINHA ÁREA DE MEMBROS",
 
   nextSteps: {
     heading: "O que fazer agora",
     steps: [
-      {
-        title: "Acesse sua área de membros",
-        text: "Após a confirmação da compra, os conteúdos adquiridos ficam disponíveis conforme a liberação configurada na plataforma.",
-      },
-      {
-        title: "Comece pelo seu primeiro material",
-        text: "Não tente consumir tudo de uma vez. Comece entendendo o seu ciclo e observando aquilo que acontece no seu próprio corpo.",
-      },
-      {
-        title: "Transforme informação em observação",
-        text: "Faça anotações, registre seus ciclos e leve suas dúvidas para uma avaliação profissional quando precisar compreender aquilo que é específico do seu caso.",
-      },
+      { title: "Verifique o e-mail usado na compra." },
+      { title: "Procure a mensagem de acesso enviada pela Kiwify." },
+      { title: "Entre na área de membros e comece pelo conteúdo que você adquiriu." },
     ],
+    note: "Se não encontrar o e-mail imediatamente, confira também as abas Promoções, Atualizações e Spam.",
   },
 
   message: {

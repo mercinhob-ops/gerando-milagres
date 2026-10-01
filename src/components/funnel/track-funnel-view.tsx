@@ -9,9 +9,12 @@ import {
 } from "@/lib/funnel-tracking";
 
 /**
- * Dispara um único evento de visualização ao montar a página.
+ * Dispara um único evento de visualização por carregamento de página.
  * - kind "view-content" → ViewContent (página de entrada)
  * - kind "upsell-view"  → UpsellView  (ofertas pós-compra)
+ *
+ * Proteção dupla contra repetição: ref local (re-render) + janela de
+ * deduplicação em funnel-tracking (Strict Mode / remount).
  */
 export function TrackFunnelView({
   product,
@@ -29,8 +32,8 @@ export function TrackFunnelView({
   useEffect(() => {
     if (fired.current) return;
     fired.current = true;
-    if (kind === "view-content") trackFunnelViewContent(product, funnelId, step);
-    else trackUpsellView(product, funnelId, step);
+    if (kind === "view-content") void trackFunnelViewContent(product, funnelId, step);
+    else void trackUpsellView(product, funnelId, step);
   }, [product, funnelId, step, kind]);
 
   return null;

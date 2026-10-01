@@ -9,7 +9,7 @@
  * corporais nunca apresentados como diagnóstico ou confirmação de ovulação;
  * sem mencionar próximos produtos, preços ou upsell.
  *
- * Pendência atual: mockup do produto (marcador tracejado na página).
+ * Capa: arte em product.coverImage (config); sem arte, capa tipográfica.
  */
 export const cicloFemininoContent = {
   meta: {
@@ -114,7 +114,6 @@ export const cicloFemininoContent = {
     eyebrow: "O seu primeiro passo",
     subtitle:
       "O primeiro passo para sair da tentativa no escuro e começar a compreender melhor os sinais do seu ciclo.",
-    mediaLabel: "[Imagem: mockup Ciclo Feminino Descomplicado]",
     note: "Pagamento único · acesso pela área de membros",
     ctaLabel: "QUERO ENTENDER MELHOR MEU CORPO",
   },

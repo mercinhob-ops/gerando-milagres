@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { BookOpenCheck, LogIn, NotebookPen } from "lucide-react";
+import { BookOpenCheck, Inbox, LogIn, Mail } from "lucide-react";
 import { buttonVariants } from "@/components/design-system/button";
 import { cn } from "@/lib/utils";
 import { obrigadaContent as c } from "./content";
@@ -13,45 +13,29 @@ export const metadata: Metadata = {
 
 const serif = "font-['Georgia',serif]";
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
-const stepIcons = [LogIn, BookOpenCheck, NotebookPen] as const;
+const stepIcons = [Mail, Inbox, LogIn] as const;
 
 /**
- * Único próximo passo da página. Usa o mesmo destino configurável nos dois
- * pontos (topo e fechamento). Sem URL confirmada, fica inativo e não aponta
- * para lugar nenhum.
+ * Botão da área de membros: só existe se a URL real estiver configurada.
+ * Sem URL, não renderiza nada (o acesso é orientado pelo e-mail da Kiwify).
  */
-function MembersAreaCta({ className }: { className?: string }) {
+function MembersAreaCta() {
   const url = getMembersAreaUrl();
-  const base = cn(
-    buttonVariants({ variant: "primary", size: "lg" }),
-    "w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4 shadow-[0_10px_30px_rgba(196,134,122,0.45)]",
-    className
-  );
-
-  if (url) {
-    return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className={base}>
+  if (!url) return null;
+  return (
+    <div className="pt-2">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          buttonVariants({ variant: "primary", size: "lg" }),
+          "w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4 shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
+        )}
+      >
         {c.membersCtaLabel}
       </a>
-    );
-  }
-
-  return (
-    <span
-      role="button"
-      aria-disabled="true"
-      data-members-url-pending="true"
-      title="URL da área de membros ainda não configurada em src/app/ciclofeminino/obrigada/config.ts"
-      className={cn(
-        base,
-        "flex-col gap-0.5 cursor-not-allowed bg-salmon/80 hover:bg-salmon/80 outline-2 outline-dashed outline-offset-4 outline-amber-500/70"
-      )}
-    >
-      <span>{c.membersCtaLabel}</span>
-      <span className="text-[10px] font-bold uppercase tracking-widest text-white/85">
-        Link da área de membros pendente
-      </span>
-    </span>
+    </div>
   );
 }
 
@@ -75,9 +59,7 @@ export default function ObrigadaPage() {
             {c.hero.headline}
           </h1>
           <p className="font-sans text-[15px] md:text-lg text-gray-600 leading-relaxed">{c.hero.text}</p>
-          <div className="pt-2">
-            <MembersAreaCta />
-          </div>
+          <MembersAreaCta />
         </div>
       </section>
 
@@ -88,24 +70,24 @@ export default function ObrigadaPage() {
             {c.nextSteps.heading}
           </h2>
           <ol className="grid gap-3 md:grid-cols-3 md:gap-5">
-            {c.nextSteps.steps.map(({ title, text }, i) => {
+            {c.nextSteps.steps.map(({ title }, i) => {
               const Icon = stepIcons[i] ?? BookOpenCheck;
               return (
-                <li key={title} className="bg-cream rounded-2xl p-5 md:p-6 flex md:flex-col gap-4">
+                <li key={title} className="bg-cream rounded-2xl p-5 md:p-6 flex md:flex-col gap-4 items-center md:items-start">
                   <div className="relative shrink-0 w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-sm">
                     <Icon className="w-5 h-5 text-salmon" aria-hidden="true" />
                     <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-salmon text-white text-[11px] font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-sans font-bold text-dark-brown">{title}</p>
-                    <p className="font-sans text-sm text-gray-600 leading-relaxed mt-1">{text}</p>
-                  </div>
+                  <p className="font-sans font-semibold text-dark-brown leading-snug">{title}</p>
                 </li>
               );
             })}
           </ol>
+          <p className="font-sans text-sm text-gray-600 text-center mt-6 bg-cream/60 rounded-xl px-4 py-3 max-w-2xl mx-auto">
+            {c.nextSteps.note}
+          </p>
         </div>
       </section>
 
@@ -154,9 +136,7 @@ export default function ObrigadaPage() {
         <div className="max-w-2xl mx-auto space-y-5">
           <h2 className={`${serif} text-2xl md:text-4xl font-bold text-white leading-snug`}>{c.closing.heading}</h2>
           <p className="font-sans text-base md:text-lg text-nude/85 leading-relaxed">{c.closing.text}</p>
-          <div className="pt-2">
-            <MembersAreaCta />
-          </div>
+          <MembersAreaCta />
         </div>
       </section>
 

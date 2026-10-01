@@ -18,6 +18,16 @@ export interface ServerConversionEvent {
   customData?: Record<string, unknown>;
   userEmail?: string | null;
   userPhone?: string | null;
+  /**
+   * Padrão "system_generated" (comportamento original). Use "website"
+   * somente quando houver dados do navegador do comprador (o Meta exige
+   * client_user_agent para eventos website).
+   */
+  actionSource?: "system_generated" | "website";
+  clientUserAgent?: string | null;
+  clientIpAddress?: string | null;
+  /** Unix (s) da transação confirmada; padrão: agora. */
+  eventTime?: number;
 }
 
 /**
@@ -36,14 +46,16 @@ export async function sendServerConversionEvent(event: ServerConversionEvent): P
   const userData: Record<string, string> = {};
   if (event.userEmail) userData.em = hashField(event.userEmail);
   if (event.userPhone) userData.ph = hashField(normalizePhone(event.userPhone));
+  if (event.clientUserAgent) userData.client_user_agent = event.clientUserAgent;
+  if (event.clientIpAddress) userData.client_ip_address = event.clientIpAddress;
 
   const payload = {
     data: [
       {
         event_name: event.eventName,
-        event_time: Math.floor(Date.now() / 1000),
+        event_time: event.eventTime ?? Math.floor(Date.now() / 1000),
         event_source_url: event.eventSourceUrl,
-        action_source: "system_generated",
+        action_source: event.actionSource ?? "system_generated",
         event_id: event.eventId,
         user_data: userData,
         ...(event.customData && { custom_data: event.customData }),

@@ -23,20 +23,21 @@ export interface OfferPageContent {
  * Layout mobile-first das ofertas pós-compra do funil (upsell/oferta 2).
  * Uma coluna no celular com CTA visível cedo; duas colunas no desktop.
  * Sem animações de entrada para não atrasar o carregamento.
+ *
+ * Legado: não é usado pelas páginas atuais do Funil 01 (cada oferta tem
+ * layout próprio). A recusa segue `product.nextPath`.
  */
 export function OfferPageLayout({
   product,
   funnelId,
   step,
   content,
-  declineHref,
   disclaimer,
 }: {
   product: FunnelProduct;
   funnelId: string;
   step: FunnelStep;
   content: OfferPageContent;
-  declineHref: string;
   disclaimer?: ReactNode;
 }) {
   const actions = (
@@ -46,7 +47,6 @@ export function OfferPageLayout({
       step={step}
       acceptLabel={content.acceptLabel}
       declineLabel={content.declineLabel}
-      declineHref={declineHref}
     />
   );
 

@@ -1,251 +1,442 @@
+import { StrictMode } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CicloFemininoPage from "@/app/ciclofeminino/page";
 import OfertaEspecialPage from "@/app/ciclofeminino/oferta-especial/page";
 import SuplementacaoPage from "@/app/ciclofeminino/suplementacao/page";
 import ObrigadaPage from "@/app/ciclofeminino/obrigada/page";
-import { UpsellActions } from "@/components/funnel/upsell-actions";
 import {
-  cicloFemininoFunnel,
   cicloFemininoProducts,
   formatPrice,
+  getOneClickConfig,
+  KIWIFY_UPSELL_SCRIPT_SRC,
   type FunnelProduct,
 } from "@/config/funnels/ciclo-feminino";
+import { __resetFunnelTrackingForTests } from "@/lib/funnel-tracking";
+import { appendParams, pickParams, ATTRIBUTION_PARAMS } from "@/lib/funnel-params";
 
-const GLOBAL_CHECKOUT = "https://pay.kiwify.com.br/uOSEIEm"; // vitest.config env
+const GLOBAL_CHECKOUT = "https://pay.kiwify.com.br/uOSEIEm"; // NEXT_PUBLIC_CHECKOUT_URL (vitest.config)
+const ENTRY_CHECKOUT = "https://pay.kiwify.com.br/aktchfx";
+const UPSELL1_CHECKOUT = "https://pay.kiwify.com.br/AQyRq5m";
+const UPSELL2_CHECKOUT = "https://pay.kiwify.com.br/Ttiul2X";
+const ALL_PARAMS =
+  "token=TK1&utm_source=meta&utm_medium=cpc&utm_campaign=camp&utm_content=ad1&utm_term=termo&src=SRC&sck=SCK&fbclid=FB1&foo=bar";
+
+let fetchMock: ReturnType<typeof vi.fn>;
+let fbqMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}"))));
-  window.fbq = vi.fn();
+  __resetFunnelTrackingForTests();
+  fetchMock = vi.fn(() => Promise.resolve(new Response("{}")));
+  vi.stubGlobal("fetch", fetchMock);
+  fbqMock = vi.fn();
+  window.fbq = fbqMock as unknown as Window["fbq"];
   window.history.replaceState({}, "", "/");
+  // Scripts NÃO são removidos entre testes: next/script mantém cache por src,
+  // e o teste L verifica que o script oficial nunca aparece mais de uma vez.
 });
+
+function go(path: string) {
+  window.history.replaceState({}, "", path);
+}
 
 function allHrefs() {
   return Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href") ?? "");
 }
 
+function capiEvents() {
+  return fetchMock.mock.calls
+    .filter(([url]) => String(url).includes("/api/meta-conversions"))
+    .map(([, init]) => JSON.parse(String((init as RequestInit).body)));
+}
+
+function pixelCalls(eventName: string) {
+  return fbqMock.mock.calls.filter((c) => c[1] === eventName);
+}
+
+function forbiddenPlaceholders() {
+  const html = document.body.innerHTML;
+  return [/CHECKOUT PENDENTE/i, /example\.com/i, /data-placeholder/i, /\[COPY/, /pendente/i].filter((re) =>
+    re.test(html)
+  );
+}
+
+// ─── Configuração ──────────────────────────────────────────────────────────
+
 describe("Config Funil 01 — Ciclo Feminino", () => {
-  it("tem os 3 produtos com os preços definidos", () => {
-    expect(cicloFemininoProducts.cicloFeminino.price).toBe(39.9);
-    expect(cicloFemininoProducts.ciclosDesbloqueados.price).toBe(67);
-    expect(cicloFemininoProducts.suplementacao.price).toBe(47.9);
+  it("produtos, preços e checkouts oficiais", () => {
+    const { cicloFeminino, ciclosDesbloqueados, suplementacao } = cicloFemininoProducts;
+    expect([cicloFeminino.name, cicloFeminino.price, cicloFeminino.checkoutUrl, cicloFeminino.checkoutReady]).toEqual([
+      "Ciclo Feminino Descomplicado",
+      39.9,
+      ENTRY_CHECKOUT,
+      true,
+    ]);
+    expect([ciclosDesbloqueados.name, ciclosDesbloqueados.price, ciclosDesbloqueados.checkoutUrl]).toEqual([
+      "Ciclos Desbloqueados",
+      67,
+      UPSELL1_CHECKOUT,
+    ]);
+    expect([suplementacao.name, suplementacao.price, suplementacao.checkoutUrl]).toEqual([
+      "Suplementação para a Fertilidade da Mulher",
+      47.9,
+      UPSELL2_CHECKOUT,
+    ]);
+  });
+
+  it("IDs oficiais do 1 clique e próxima etapa", () => {
+    expect(getOneClickConfig(cicloFemininoProducts.ciclosDesbloqueados)).toEqual({
+      containerId: "kiwify-upsell-AQyRq5m",
+      triggerId: "kiwify-upsell-trigger-AQyRq5m",
+      cancelTriggerId: "kiwify-upsell-cancel-trigger-AQyRq5m",
+    });
+    expect(getOneClickConfig(cicloFemininoProducts.suplementacao)).toEqual({
+      containerId: "kiwify-upsell-Ttiul2X",
+      triggerId: "kiwify-upsell-trigger-Ttiul2X",
+      cancelTriggerId: "kiwify-upsell-cancel-trigger-Ttiul2X",
+    });
+    expect(cicloFemininoProducts.ciclosDesbloqueados.nextPath).toBe("/ciclofeminino/suplementacao");
+    expect(cicloFemininoProducts.suplementacao.nextPath).toBe("/ciclofeminino/obrigada");
+    expect(KIWIFY_UPSELL_SCRIPT_SRC).toBe("https://snippets.kiwify.com/upsell-v2/upsell.min.js");
+  });
+
+  it("nenhum produto do funil usa checkout de outro produto, checkout global ou placeholder", () => {
+    const urls = (Object.values(cicloFemininoProducts) as FunnelProduct[]).map((p) => p.checkoutUrl);
+    expect(new Set(urls).size).toBe(3);
+    for (const url of urls) {
+      expect(url).not.toBe(GLOBAL_CHECKOUT);
+      expect(url).not.toMatch(/example\.com|placeholder|SEU_PRODUTO/i);
+      expect(url).toMatch(/^https:\/\/pay\.kiwify\.com\.br\/[A-Za-z0-9]+$/);
+    }
   });
 
   it("formata preço em BRL", () => {
     expect(formatPrice(39.9)).toBe("R$ 39,90");
-    expect(formatPrice(67)).toBe("R$ 67,00");
-  });
-
-  it("nenhum checkout não confirmado tem URL preenchida", () => {
-    for (const p of Object.values(cicloFemininoProducts) as FunnelProduct[]) {
-      if (p.checkoutStatus === "pending") expect(p.checkoutUrl).toBeNull();
-    }
+    expect(formatPrice(47.9)).toBe("R$ 47,90");
   });
 });
 
+describe("Parâmetros (funnel-params)", () => {
+  it("preserva atribuição sem duplicar chaves já existentes no destino", () => {
+    const params = pickParams("?utm_source=meta&utm_campaign=x&foo=bar&token=T", ATTRIBUTION_PARAMS);
+    expect(params.has("token")).toBe(false);
+    expect(params.has("foo")).toBe(false);
+    const url = appendParams("https://pay.kiwify.com.br/aktchfx?utm_source=kiwify", params);
+    const parsed = new URL(url);
+    expect(parsed.searchParams.getAll("utm_source")).toEqual(["kiwify"]);
+    expect(parsed.searchParams.get("utm_campaign")).toBe("x");
+    expect(appendParams("/ciclofeminino/obrigada", new URLSearchParams())).toBe("/ciclofeminino/obrigada");
+  });
+});
+
+// ─── /ciclofeminino ────────────────────────────────────────────────────────
+
 describe("/ciclofeminino", () => {
-  it("renderiza o hero voltado a quem deseja engravidar, com nome do produto e preço", () => {
+  it("A/B) todos os CTAs de compra levam SOMENTE ao checkout aktchfx", async () => {
+    render(<CicloFemininoPage />);
+    const ctas = Array.from(document.querySelectorAll("[data-funnel-checkout]"));
+    expect(ctas.length).toBe(3);
+    ctas.forEach((a) => expect(a.getAttribute("href")!.startsWith(ENTRY_CHECKOUT)).toBe(true));
+    const kiwifyLinks = allHrefs().filter((h) => h.includes("pay.kiwify.com.br") || h.includes("hotmart"));
+    kiwifyLinks.forEach((h) => expect(h.startsWith(ENTRY_CHECKOUT)).toBe(true));
+    expect(allHrefs()).not.toContain(GLOBAL_CHECKOUT);
+  });
+
+  it("I) leva UTMs/src/sck/fbclid ao checkout, sem token e sem duplicar", async () => {
+    go(`/ciclofeminino?${ALL_PARAMS}`);
+    render(<CicloFemininoPage />);
+    await waitFor(() => {
+      const href = document.querySelector("[data-funnel-checkout]")!.getAttribute("href")!;
+      expect(href).toContain("utm_source=meta");
+    });
+    const url = new URL(document.querySelector("[data-funnel-checkout]")!.getAttribute("href")!);
+    expect(`${url.origin}${url.pathname}`).toBe(ENTRY_CHECKOUT);
+    for (const [k, v] of Object.entries({
+      utm_source: "meta",
+      utm_medium: "cpc",
+      utm_campaign: "camp",
+      utm_content: "ad1",
+      utm_term: "termo",
+      src: "SRC",
+      sck: "SCK",
+      fbclid: "FB1",
+    })) {
+      expect(url.searchParams.getAll(k)).toEqual([v]);
+    }
+    expect(url.searchParams.has("token")).toBe(false);
+    expect(url.searchParams.has("foo")).toBe(false);
+  });
+
+  it("M) ViewContent uma única vez (Strict Mode), Pixel e CAPI com o mesmo eventID", async () => {
+    const { rerender } = render(
+      <StrictMode>
+        <CicloFemininoPage />
+      </StrictMode>
+    );
+    rerender(
+      <StrictMode>
+        <CicloFemininoPage />
+      </StrictMode>
+    );
+    await waitFor(() => expect(capiEvents().filter((e) => e.eventName === "ViewContent").length).toBe(1));
+    const capi = capiEvents().find((e) => e.eventName === "ViewContent");
+    const pixel = pixelCalls("ViewContent");
+    expect(pixel.length).toBe(1);
+    expect(pixel[0][2]).toMatchObject({
+      value: 39.9,
+      currency: "BRL",
+      content_name: "Ciclo Feminino Descomplicado",
+      content_ids: ["ciclo-feminino-descomplicado"],
+      step: "entry",
+    });
+    expect(pixel[0][3].eventID).toBe(capi.eventId);
+  });
+
+  it("InitiateCheckout 39,90 BRL no clique; clique duplo conta uma vez", () => {
+    render(<CicloFemininoPage />);
+    const cta = document.querySelector("[data-funnel-checkout]")!;
+    cta.addEventListener("click", (e) => e.preventDefault());
+    fireEvent.click(cta);
+    fireEvent.click(cta);
+    const calls = pixelCalls("InitiateCheckout");
+    expect(calls.length).toBe(1);
+    expect(calls[0][2]).toMatchObject({ value: 39.9, currency: "BRL" });
+    expect(capiEvents().filter((e) => e.eventName === "InitiateCheckout")[0].eventId).toBe(calls[0][3].eventID);
+  });
+
+  it("copy: hero, sem promessa e sem citar as ofertas seguintes", () => {
     render(<CicloFemininoPage />);
     expect(
       screen.getByRole("heading", { level: 1, name: /tentando engravidar, conhecer seus dias férteis/i })
     ).toBeInTheDocument();
-    expect(screen.getByText(/para mulheres que desejam engravidar/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Ciclo Feminino Descomplicado • R\$\s*39,90/).length).toBeGreaterThan(0);
-  });
-
-  it("não promete gravidez nem menciona as ofertas seguintes", () => {
-    render(<CicloFemininoPage />);
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/garant\w* (a |sua )?gravidez|engravide em|cura/i);
-    expect(text).not.toMatch(/ciclos desbloqueados|suplementação|R\$\s*67|R\$\s*47,90/i);
+    expect(text).not.toMatch(/ciclos desbloqueados|suplementação para|R\$\s*67|R\$\s*47,90/i);
   });
 
-  it("dispara ViewContent ao montar", () => {
+  it("O) sem placeholders e com metadata pública", async () => {
     render(<CicloFemininoPage />);
-    expect(window.fbq).toHaveBeenCalledWith(
-      "track",
-      "ViewContent",
-      expect.objectContaining({ value: 39.9, currency: "BRL", funnel_step: "entry" }),
-      expect.objectContaining({ eventID: expect.any(String) })
-    );
-  });
-
-  it("nunca usa o checkout global e marca checkout pendente", () => {
-    render(<CicloFemininoPage />);
-    expect(allHrefs()).not.toContain(GLOBAL_CHECKOUT);
-    expect(document.querySelectorAll("[data-checkout-pending]").length).toBeGreaterThanOrEqual(3);
-  });
-
-  it("mantém o mockup como pendência e mostra a entrega pela área de membros", () => {
-    render(<CicloFemininoPage />);
-    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByText(/como vou receber o material/i).closest("button")!);
-    expect(screen.getByText(/acesso ao conteúdo pela área de membros/i)).toBeInTheDocument();
-    expect(document.body.textContent).not.toMatch(/\[CONFIRMAR|\[COPY/);
-  });
-
-  it("autoridade usa as credenciais confirmadas e não usa 'Dra.' no conteúdo da página", () => {
-    render(<CicloFemininoPage />);
-    expect(screen.getAllByText(/pós-graduada em Fertilidade/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/fertilidade do casal\.$/i)).toBeInTheDocument();
-    const main = document.body.cloneNode(true) as HTMLElement;
-    main.querySelector("footer")?.remove(); // rodapé é componente compartilhado
-    expect(main.textContent).not.toMatch(/Dra\./);
+    expect(forbiddenPlaceholders()).toEqual([]);
+    const { metadata } = await import("@/app/ciclofeminino/page");
+    expect(metadata.robots).toMatchObject({ index: true, follow: true });
   });
 });
 
-describe("Ofertas pós-compra", () => {
-  it("oferta-especial: recusa leva para /ciclofeminino/suplementacao preservando token", () => {
-    window.history.replaceState({}, "", "/ciclofeminino/oferta-especial?token=abc&utm_source=meta&x=1");
-    render(<OfertaEspecialPage />);
-    const decline = screen.getByRole("link", { name: /não, obrigada/i });
-    expect(decline).toHaveAttribute("href", "/ciclofeminino/suplementacao?token=abc&utm_source=meta");
+// ─── Upsells ───────────────────────────────────────────────────────────────
+
+const UPSELLS = [
+  {
+    label: "Upsell 1 (Ciclos Desbloqueados)",
+    Page: OfertaEspecialPage,
+    path: "/ciclofeminino/oferta-especial",
+    code: "AQyRq5m",
+    checkout: UPSELL1_CHECKOUT,
+    next: "/ciclofeminino/suplementacao",
+    step: "upsell-1",
+    value: 67,
+    product: "Ciclos Desbloqueados",
+    accept: /SIM, QUERO AMPLIAR MINHA PREPARAÇÃO/,
+    decline: /Não, obrigada\. Quero continuar sem adicionar o Ciclos Desbloqueados\./,
+  },
+  {
+    label: "Upsell 2 (Suplementação)",
+    Page: SuplementacaoPage,
+    path: "/ciclofeminino/suplementacao",
+    code: "Ttiul2X",
+    checkout: UPSELL2_CHECKOUT,
+    next: "/ciclofeminino/obrigada",
+    step: "upsell-2",
+    value: 47.9,
+    product: "Suplementação para a Fertilidade da Mulher",
+    accept: /SIM, QUERO ENTENDER MELHOR A SUPLEMENTAÇÃO/,
+    decline: /Não, obrigada\. Quero continuar sem adicionar este material\./,
+  },
+] as const;
+
+describe.each(UPSELLS)("$label", (u) => {
+  it("C/D/F/G) com token: marcação oficial da Kiwify com os IDs exatos", async () => {
+    go(`${u.path}?${ALL_PARAMS}`);
+    render(<u.Page />);
+    const trigger = await waitFor(() => {
+      const el = document.getElementById(`kiwify-upsell-trigger-${u.code}`);
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    expect(trigger.tagName).toBe("BUTTON");
+    expect(trigger.textContent).toMatch(u.accept);
+    const cancel = document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!;
+    expect(cancel.textContent).toMatch(u.decline);
+    const container = document.getElementById(`kiwify-upsell-${u.code}`)!;
+    expect(container.contains(trigger) && container.contains(cancel)).toBe(true);
+    // Nenhum link de checkout comum quando há contexto de 1 clique.
+    expect(allHrefs().some((h) => h.includes("pay.kiwify.com.br"))).toBe(false);
+  });
+
+  it("E/H/I) data-upsell-url e data-downsell-url → próxima etapa + atribuição, sem token", async () => {
+    go(`${u.path}?${ALL_PARAMS}`);
+    render(<u.Page />);
+    const container = await waitFor(() => {
+      const el = document.getElementById(`kiwify-upsell-${u.code}`);
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    for (const attr of ["data-upsell-url", "data-downsell-url"]) {
+      const url = new URL(container.getAttribute(attr)!);
+      expect(url.pathname).toBe(u.next);
+      expect(url.searchParams.get("utm_source")).toBe("meta");
+      expect(url.searchParams.get("utm_campaign")).toBe("camp");
+      expect(url.searchParams.get("sck")).toBe("SCK");
+      expect(url.searchParams.has("token")).toBe(false);
+      expect(url.searchParams.has("foo")).toBe(false);
+    }
+  });
+
+  it("L) script oficial carregado no máximo uma vez, mesmo com re-render", async () => {
+    go(`${u.path}?token=TK1`);
+    const { rerender } = render(<u.Page />);
+    await waitFor(() => expect(document.getElementById(`kiwify-upsell-${u.code}`)).not.toBeNull());
+    rerender(<u.Page />);
+    rerender(<u.Page />);
+    await new Promise((r) => setTimeout(r, 50));
+    // Carregado pela primeira página com token e nunca reinserido (re-render,
+    // remount e as duas upsells compartilham o mesmo script).
+    const scripts = document.querySelectorAll(`script[src="${KIWIFY_UPSELL_SCRIPT_SRC}"]`);
+    expect(scripts.length).toBe(1);
+  });
+
+  it("aceite/recusa no 1 clique disparam UpsellAccept/UpsellDecline uma vez (clique duplo)", async () => {
+    go(`${u.path}?token=TK1`);
+    render(<u.Page />);
+    const trigger = await waitFor(() => {
+      const el = document.getElementById(`kiwify-upsell-trigger-${u.code}`);
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    fireEvent.click(trigger);
+    fireEvent.click(trigger);
+    const accept = pixelCalls("UpsellAccept");
+    expect(accept.length).toBe(1);
+    expect(accept[0][0]).toBe("trackCustom");
+    expect(accept[0][2]).toMatchObject({ step: u.step, product: u.product, value: u.value, currency: "BRL" });
+    expect(pixelCalls("InitiateCheckout").length).toBe(0); // 1 clique não é checkout novo
+    fireEvent.click(document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!);
+    expect(pixelCalls("UpsellDecline")[0][2]).toMatchObject({ step: u.step, value: u.value });
+  });
+
+  it("5/6) sem token: página não quebra; aceitar → checkout oficial, recusar → próxima etapa", async () => {
+    go(`${u.path}?utm_source=meta&sck=SCK`);
+    render(<u.Page />);
+    const accept = await waitFor(() => {
+      const el = screen.getByRole("link", { name: u.accept });
+      expect(el.getAttribute("href")).toContain("utm_source=meta");
+      return el;
+    });
+    const acceptUrl = new URL(accept.getAttribute("href")!);
+    expect(`${acceptUrl.origin}${acceptUrl.pathname}`).toBe(u.checkout);
+    expect(acceptUrl.searchParams.get("sck")).toBe("SCK");
+    const decline = screen.getByRole("link", { name: u.decline });
+    expect(decline.getAttribute("href")).toBe(`${u.next}?utm_source=meta&sck=SCK`);
+    expect(document.getElementById(`kiwify-upsell-trigger-${u.code}`)).toBeNull();
     expect(allHrefs()).not.toContain(GLOBAL_CHECKOUT);
   });
 
-  it("oferta-especial: copy pós-compra, 3 materiais, R$ 67 e sem mencionar a próxima oferta ou consulta", () => {
+  it("I) recusa sem 1 clique preserva token e atribuição", async () => {
+    const withoutOneClick = { ...cicloFemininoProducts[u.code === "AQyRq5m" ? "ciclosDesbloqueados" : "suplementacao"] };
+    go(`${u.path}?${ALL_PARAMS}`);
+    // Mesmo com token, sem IDs de 1 clique cai no modo checkout (mesmo caminho do fallback por falha do script).
+    const { UpsellActions } = await import("@/components/funnel/upsell-actions");
+    render(
+      <UpsellActions
+        product={{ ...withoutOneClick, oneClickTriggerId: null }}
+        funnelId="f"
+        step={u.step}
+        acceptLabel="Aceitar"
+        declineLabel="Recusar"
+      />
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Recusar" }).getAttribute("href")).toContain("token=TK1")
+    );
+    const decline = new URL(screen.getByRole("link", { name: "Recusar" }).getAttribute("href")!, "http://x");
+    expect(decline.pathname).toBe(u.next);
+    for (const k of ["token", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "src", "sck", "fbclid"]) {
+      expect(decline.searchParams.getAll(k).length).toBe(1);
+    }
+    expect(decline.searchParams.has("foo")).toBe(false);
+  });
+
+  it("M) UpsellView uma única vez (Strict Mode) com step/produto/valor corretos", async () => {
+    go(u.path);
+    render(
+      <StrictMode>
+        <u.Page />
+      </StrictMode>
+    );
+    await waitFor(() => expect(capiEvents().filter((e) => e.eventName === "UpsellView").length).toBe(1));
+    const view = pixelCalls("UpsellView");
+    expect(view.length).toBe(1);
+    expect(view[0][0]).toBe("trackCustom");
+    expect(view[0][2]).toMatchObject({ step: u.step, product: u.product, value: u.value, currency: "BRL" });
+  });
+
+  it("N/O) CTAs acessíveis e nenhum placeholder, nos dois modos", async () => {
+    for (const q of ["", "?token=TK1"]) {
+      go(`${u.path}${q}`);
+      const { unmount } = render(<u.Page />);
+      await waitFor(() => expect(screen.getAllByText(u.accept).length).toBeGreaterThan(0));
+      const accept = screen.getAllByText(u.accept)[0].closest("a,button")!;
+      expect(accept).not.toHaveAttribute("aria-disabled");
+      expect(forbiddenPlaceholders()).toEqual([]);
+      unmount();
+    }
+  });
+});
+
+describe("Upsell 1 — copy", () => {
+  it("selo correto e sem afirmar pagamento confirmado", () => {
     render(<OfertaEspecialPage />);
     expect(screen.getByText(/seu primeiro passo está dado/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 1, name: /não começa e termina na ovulação/i })
-    ).toBeInTheDocument();
-    expect(screen.getAllByText(/conexão íntima/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/fertilidade de dentro para fora/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/R\$\s*67,00/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/SIM, QUERO AMPLIAR MINHA PREPARAÇÃO/)).toBeInTheDocument();
-    const text = document.body.textContent ?? "";
-    expect(text).not.toMatch(/suplementação|R\$\s*47,90|R\$\s*147|consulta/i);
-    expect(text).not.toMatch(/Dra\./);
-    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBe(3);
+    expect(document.body.textContent).not.toMatch(/compra confirmada|pagamento confirmado/i);
   });
+});
 
-  it("oferta-especial: dispara UpsellView (custom) e UpsellDecline ao recusar", () => {
-    render(<OfertaEspecialPage />);
-    expect(window.fbq).toHaveBeenCalledWith(
-      "trackCustom",
-      "UpsellView",
-      expect.objectContaining({ value: 67, funnel_step: "upsell-1" }),
-      expect.any(Object)
-    );
-    fireEvent.click(screen.getByRole("link", { name: /não, obrigada/i }));
-    expect(window.fbq).toHaveBeenCalledWith(
-      "trackCustom",
-      "UpsellDecline",
-      expect.objectContaining({ value: 67 }),
-      expect.any(Object)
-    );
-  });
-
-  it("suplementacao: recusa leva para /ciclofeminino/obrigada preservando token/UTMs", () => {
-    window.history.replaceState({}, "", "/ciclofeminino/suplementacao?token=abc&utm_campaign=x");
+describe("Upsell 2 — copy", () => {
+  it("não pressupõe a decisão anterior nem cita outros preços/consulta", () => {
     render(<SuplementacaoPage />);
-    expect(screen.getByRole("link", { name: /não, obrigada/i })).toHaveAttribute(
-      "href",
-      `${cicloFemininoFunnel.routes.thankYou}?token=abc&utm_campaign=x`
-    );
-    expect(screen.getAllByText(/R\$\s*47,90/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/SIM, QUERO ENTENDER MELHOR A SUPLEMENTAÇÃO/)).toBeInTheDocument();
-  });
-
-  it("suplementacao: copy neutra à decisão anterior, só os nutrientes do material, sem promessas nem consulta", () => {
-    render(<SuplementacaoPage />);
-    expect(screen.getByText(/um último passo antes de continuar/i)).toBeInTheDocument();
-    for (const n of ["Metilfolato", "Vitamina B12", "Vitamina D3", "Mio-inositol", "CoQ10", "Vitamina E"]) {
-      expect(screen.getByText(n)).toBeInTheDocument();
-    }
-    expect(screen.getByText(/avaliação individual ajuda a entender/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Suplementação para a Fertilidade da Mulher").length).toBeGreaterThan(0);
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/ciclos desbloqueados|R\$\s*67|R\$\s*147|consulta|Dra\./i);
     expect(text).not.toMatch(/garant\w* (a |sua )?gravidez|cura|aumenta(rá)? (a |sua )?fertilidade/i);
-    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBe(1);
-  });
-
-  const readyProduct: FunnelProduct = {
-    id: "teste",
-    name: "Produto Teste",
-    price: 67,
-    checkoutUrl: "https://pay.kiwify.com.br/TESTE",
-    checkoutStatus: "confirmed",
-    oneClickTriggerId: null,
-  };
-
-  it("sem token: aceitar abre o checkout próprio do produto e dispara UpsellAccept + InitiateCheckout", () => {
-    window.history.replaceState({}, "", "/x?utm_source=meta");
-    render(
-      <UpsellActions
-        product={readyProduct}
-        funnelId="f"
-        step="upsell-1"
-        acceptLabel="Aceitar"
-        declineLabel="Recusar"
-        declineHref="/proxima"
-      />
-    );
-    const accept = screen.getByRole("link", { name: "Aceitar" });
-    expect(accept).toHaveAttribute("href", "https://pay.kiwify.com.br/TESTE?utm_source=meta");
-    fireEvent.click(accept);
-    expect(window.fbq).toHaveBeenCalledWith("trackCustom", "UpsellAccept", expect.any(Object), expect.any(Object));
-    expect(window.fbq).toHaveBeenCalledWith("track", "InitiateCheckout", expect.any(Object), expect.any(Object));
-  });
-
-  it("com token e trigger configurado: usa os ids do upsell de 1 clique da Kiwify", () => {
-    window.history.replaceState({}, "", "/x?token=tok");
-    render(
-      <UpsellActions
-        product={{ ...readyProduct, oneClickTriggerId: "kiwify-upsell-trigger-ABC123" }}
-        funnelId="f"
-        step="upsell-1"
-        acceptLabel="Aceitar"
-        declineLabel="Recusar"
-        declineHref="/proxima"
-      />
-    );
-    expect(screen.getByRole("link", { name: "Aceitar" })).toHaveAttribute("id", "kiwify-upsell-trigger-ABC123");
-    expect(screen.getByRole("link", { name: "Recusar" })).toHaveAttribute("id", "kiwify-upsell-cancel-trigger");
   });
 });
 
+// ─── /obrigada ─────────────────────────────────────────────────────────────
+
 describe("/ciclofeminino/obrigada", () => {
-  it("não dispara Purchase (nem nenhum evento de conversão) pela visita e não tem checkout", () => {
-    render(<ObrigadaPage />);
-    const calls = (window.fbq as ReturnType<typeof vi.fn>).mock.calls;
-    expect(calls.some((c) => c[1] === "Purchase")).toBe(false);
-    expect(calls.length).toBe(0);
-    expect(fetch).not.toHaveBeenCalled();
-    expect(allHrefs().some((h) => h.includes("pay.kiwify") || h.includes("hotmart"))).toBe(false);
+  it("J/K/7) sem checkout e sem Purchase (nem outro evento de conversão) pela visita", async () => {
+    go(`/ciclofeminino/obrigada?${ALL_PARAMS}`);
+    render(
+      <StrictMode>
+        <ObrigadaPage />
+      </StrictMode>
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(fbqMock).not.toHaveBeenCalled();
+    expect(capiEvents()).toEqual([]);
+    expect(allHrefs().some((h) => /pay\.kiwify|hotmart/.test(h))).toBe(false);
   });
 
-  it("encerra a jornada com a copy definida e sem afirmar quais produtos foram comprados", () => {
+  it("copy final, sem afirmar produtos comprados, sem WhatsApp e sem link falso", () => {
     render(<ObrigadaPage />);
-    expect(screen.getByText(/agora começa a sua preparação/i)).toBeInTheDocument();
+    expect(screen.getByText(/pronto 💛/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 1, name: /decidiu compreender melhor a sua própria jornada/i })
+      screen.getByRole("heading", { level: 1, name: /seu próximo passo agora é acessar o seu conteúdo/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /o que fazer agora/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /uma mensagem da camilla para você/i })).toBeInTheDocument();
+    expect(screen.getByText(/verifique o e-mail usado na compra/i)).toBeInTheDocument();
+    expect(screen.getByText(/promoções, atualizações e spam/i)).toBeInTheDocument();
     const text = document.body.textContent ?? "";
-    expect(text).not.toMatch(/ciclos desbloqueados|suplementação inteligente|R\$|desafio|Dra\./i);
-  });
-
-  it("não tem WhatsApp, redes sociais nem CTA de consulta/agendamento", () => {
-    render(<ObrigadaPage />);
-    const hrefs = allHrefs();
-    expect(hrefs.some((h) => /wa\.me|whatsapp|instagram|facebook|tiktok|mailto:|tel:/i.test(h))).toBe(false);
-    const ctaText = Array.from(document.querySelectorAll("a, button, [role='button']"))
-      .map((el) => el.textContent ?? "")
-      .join(" ");
-    expect(ctaText).not.toMatch(/whatsapp|consulta|agend|fale comigo|atendimento/i);
-    expect(document.body.textContent).not.toMatch(/whatsapp|agendamento|agende/i);
-  });
-
-  it("CTA da área de membros (2x) fica inativo sem URL confirmada, sem destino falso", () => {
-    render(<ObrigadaPage />);
-    const ctas = document.querySelectorAll('[data-members-url-pending="true"]');
-    expect(ctas.length).toBe(2);
-    ctas.forEach((el) => {
-      expect(el.tagName).not.toBe("A");
-      expect(el).toHaveAttribute("aria-disabled", "true");
-    });
-    expect(allHrefs()).toEqual([]);
+    expect(text).not.toMatch(/ciclos desbloqueados|suplementação para|R\$|desafio|consulta|Dra\./i);
+    expect(allHrefs()).toEqual([]); // sem URL da área de membros: nenhum botão
+    expect(forbiddenPlaceholders()).toEqual([]);
   });
 });

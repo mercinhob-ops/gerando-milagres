@@ -10,17 +10,17 @@ import {
   Smartphone,
   Thermometer,
 } from "lucide-react";
-import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { GuaranteeSection } from "@/components/marketing/guarantee-section";
 import { PremiumFooter } from "@/components/marketing/premium-footer";
 import { EntryCheckoutCta } from "@/components/funnel/entry-checkout-cta";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
-import { MediaPlaceholder } from "@/components/funnel/copy-slot";
+import { FunnelStickyCheckout } from "@/components/funnel/funnel-sticky-checkout";
+import { ProductCover } from "@/components/funnel/product-cover";
 import {
   cicloFemininoFunnel,
   formatPrice,
-  isCheckoutReady,
+  SITE_URL,
 } from "@/config/funnels/ciclo-feminino";
 import { cicloFemininoContent as c } from "./content";
 
@@ -30,7 +30,17 @@ const PRICE = formatPrice(product.price);
 export const metadata: Metadata = {
   title: c.meta.title,
   description: c.meta.description,
-  robots: { index: false, follow: false },
+  // Única página pública do funil (as etapas internas seguem noindex).
+  robots: { index: true, follow: true },
+  alternates: { canonical: `${SITE_URL}${cicloFemininoFunnel.routes.entry}` },
+  openGraph: {
+    title: c.meta.title,
+    description: c.meta.description,
+    url: `${SITE_URL}${cicloFemininoFunnel.routes.entry}`,
+    siteName: "Gerando Milagres",
+    locale: "pt_BR",
+    type: "website",
+  },
 };
 
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
@@ -75,9 +85,7 @@ export default function CicloFemininoPage() {
         step="entry"
         kind="view-content"
       />
-      {isCheckoutReady(product) && (
-        <StickyHeaderCheckout checkoutUrl={product.checkoutUrl} eventValue={product.price} />
-      )}
+      <FunnelStickyCheckout product={product} />
 
       {/* ─── 1. HERO ────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden" style={darkGradient}>
@@ -104,6 +112,7 @@ export default function CicloFemininoPage() {
             <div className="space-y-3 pt-1">
               <EntryCheckoutCta
                 product={product}
+                funnelId={cicloFemininoFunnel.id}
                 label={c.hero.ctaLabel}
                 className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
               />
@@ -287,7 +296,13 @@ export default function CicloFemininoPage() {
       <section id="oferta" className="py-14 md:py-20 px-5 bg-cream scroll-mt-20">
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-nude-dark/40 overflow-hidden md:flex">
           <div className="md:w-[45%] bg-nude/50 p-6 md:p-8 flex items-center">
-            <MediaPlaceholder label={c.product.mediaLabel} className="aspect-[4/3] md:aspect-square w-full" />
+            <ProductCover
+              title={product.name}
+              image={product.coverImage}
+              eyebrow="Guia digital"
+              className="w-40 md:w-full max-w-[260px] mx-auto"
+              titleClassName="text-lg md:text-3xl"
+            />
           </div>
           <div className="flex-1 p-6 md:p-10 text-center md:text-left">
             <Eyebrow>{c.product.eyebrow}</Eyebrow>
@@ -300,6 +315,7 @@ export default function CicloFemininoPage() {
               <p className="font-sans text-xs text-gray-500 mt-2 mb-6">{c.product.note}</p>
               <EntryCheckoutCta
                 product={product}
+                funnelId={cicloFemininoFunnel.id}
                 label={c.product.ctaLabel}
                 className="w-full justify-center text-sm md:text-base tracking-wide"
               />
@@ -375,6 +391,7 @@ export default function CicloFemininoPage() {
           <div>
             <EntryCheckoutCta
               product={product}
+              funnelId={cicloFemininoFunnel.id}
               label={c.finalOffer.ctaLabel}
               className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
             />

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { HeartPulse, Layers, Users } from "lucide-react";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
 import { UpsellActions } from "@/components/funnel/upsell-actions";
+import { ProductCover } from "@/components/funnel/product-cover";
 import { cicloFemininoFunnel, formatPrice } from "@/config/funnels/ciclo-feminino";
 import { ofertaEspecialContent as c } from "./content";
 
@@ -18,33 +19,7 @@ const serif = "font-['Georgia',serif]";
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
 const pillarIcons = [Layers, HeartPulse, Users] as const;
 
-/**
- * Capa provisória: ainda não existem mockups dos 3 materiais.
- * Espaço tipográfico na identidade do funil, marcado como pendente.
- */
-function CoverPlaceholder({ title, index }: { title: string; index: number }) {
-  const tones = [
-    "from-[#6B4239] to-[#4A2E26] text-white",
-    "from-[#C4867A] to-[#A96D62] text-white",
-    "from-[#E8D0C0] to-[#D4B5A0] text-dark-brown",
-  ];
-  return (
-    <div
-      data-placeholder="media"
-      role="img"
-      aria-label={`Mockup pendente: ${title}`}
-      className={`relative aspect-[3/4] rounded-xl bg-gradient-to-br ${tones[index]} shadow-lg ring-1 ring-black/5 p-2.5 md:p-4 flex flex-col justify-between`}
-    >
-      <span className="font-sans text-[8px] md:text-[10px] font-bold uppercase tracking-widest opacity-70">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <span className={`${serif} text-[11px] sm:text-sm md:text-lg font-bold leading-tight`}>{title}</span>
-      <span className="self-start font-sans text-[7px] md:text-[9px] font-bold uppercase tracking-wider border border-dashed border-amber-400 text-amber-500 bg-white/90 rounded px-1 py-0.5">
-        Mockup pendente
-      </span>
-    </div>
-  );
-}
+const COVER_TONES = ["dark", "salmon", "light"] as const;
 
 export default function OfertaEspecialPage() {
   return (
@@ -91,7 +66,14 @@ export default function OfertaEspecialPage() {
           <div className="mt-5 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10">
             <div className="order-2 md:order-1 md:col-span-2 grid grid-cols-3 gap-2.5 md:gap-5 w-full max-w-[300px] md:max-w-xl mx-auto">
               {c.offer.materials.map((m, i) => (
-                <CoverPlaceholder key={m.title} title={m.title} index={i} />
+                <ProductCover
+                  key={m.title}
+                  title={m.title}
+                  eyebrow={String(i + 1).padStart(2, "0")}
+                  tone={COVER_TONES[i]}
+                  className="rounded-xl"
+                  titleClassName="text-[11px] sm:text-sm md:text-lg"
+                />
               ))}
             </div>
 
@@ -124,7 +106,6 @@ export default function OfertaEspecialPage() {
                 step="upsell-1"
                 acceptLabel={c.offer.acceptLabel}
                 declineLabel={c.offer.declineLabel}
-                declineHref={cicloFemininoFunnel.routes.downsell}
               />
             </div>
           </div>

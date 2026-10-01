@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
 import { UpsellActions } from "@/components/funnel/upsell-actions";
+import { ProductCover } from "@/components/funnel/product-cover";
 import { cicloFemininoFunnel, formatPrice } from "@/config/funnels/ciclo-feminino";
 import { suplementacaoContent as c } from "./content";
 
@@ -23,7 +24,7 @@ export default function SuplementacaoPage() {
       <TrackFunnelView
         product={product}
         funnelId={cicloFemininoFunnel.id}
-        step="oferta-2"
+        step="upsell-2"
         kind="upsell-view"
       />
 
@@ -57,18 +58,15 @@ export default function SuplementacaoPage() {
           <div className="mt-5 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10">
             <div className="order-2 md:order-1 space-y-5">
               <div className="flex gap-4 items-start">
-                {/* Capa provisória: não existe mockup deste material nos assets */}
-                <div
-                  data-placeholder="media"
-                  role="img"
-                  aria-label={`Mockup pendente: ${c.offer.mediaLabel}`}
-                  className="w-24 md:w-32 shrink-0 aspect-[3/4] rounded-xl bg-gradient-to-br from-[#C4867A] to-[#6B4239] text-white shadow-lg p-2.5 flex flex-col justify-between"
-                >
-                  <span className={`${serif} text-[11px] md:text-sm font-bold leading-tight`}>{c.offer.mediaLabel}</span>
-                  <span className="self-start font-sans text-[7px] md:text-[9px] font-bold uppercase tracking-wider border border-dashed border-amber-400 text-amber-500 bg-white/90 rounded px-1 py-0.5">
-                    Mockup pendente
-                  </span>
-                </div>
+                <ProductCover
+                  title={product.name}
+                  image={product.coverImage}
+                  eyebrow="Guia digital"
+                  tone="salmon"
+                  className="w-24 md:w-32 shrink-0"
+                  sizes="128px"
+                  titleClassName="text-[11px] md:text-sm"
+                />
                 <div>
                   <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon mb-2.5">
                     {c.offer.nutrientsLabel}
@@ -96,10 +94,9 @@ export default function SuplementacaoPage() {
               <UpsellActions
                 product={product}
                 funnelId={cicloFemininoFunnel.id}
-                step="oferta-2"
+                step="upsell-2"
                 acceptLabel={c.offer.acceptLabel}
                 declineLabel={c.offer.declineLabel}
-                declineHref={cicloFemininoFunnel.routes.thankYou}
               />
             </div>
           </div>

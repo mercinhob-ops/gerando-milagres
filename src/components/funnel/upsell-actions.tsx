@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 import {
+  getOneClickConfig,
   isCheckoutReady,
-  KIWIFY_UPSELL_CANCEL_ID,
   KIWIFY_UPSELL_SCRIPT_SRC,
   type FunnelProduct,
+  type OneClickConfig,
 } from "@/config/funnels/ciclo-feminino";
 import {
   trackFunnelInitiateCheckout,
@@ -17,142 +18,189 @@ import {
   trackUpsellDecline,
   type FunnelStep,
 } from "@/lib/funnel-tracking";
-
-/** Parâmetros repassados entre etapas (token da Kiwify + UTMs). */
-const FORWARDED_PARAMS = [
-  "token",
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-  "utm_content",
-  "utm_term",
-  "src",
-  "sck",
-] as const;
-
-function forwardedQuery(search: string) {
-  const current = new URLSearchParams(search);
-  const next = new URLSearchParams();
-  for (const key of FORWARDED_PARAMS) {
-    const value = current.get(key);
-    if (value) next.set(key, value);
-  }
-  const qs = next.toString();
-  return qs ? `?${qs}` : "";
-}
-
-type Mode = "one-click" | "checkout" | "pending";
+import {
+  ATTRIBUTION_PARAMS,
+  FUNNEL_PARAMS,
+  KIWIFY_CONTEXT_PARAM,
+  appendParams,
+  pickParams,
+} from "@/lib/funnel-params";
 
 /**
- * Botões de aceitar/recusar de uma oferta pós-compra.
+ * Aceitar/recusar de uma oferta pós-compra do Funil 01.
  *
- * - "one-click": a Kiwify redirecionou para cá com `?token=` E o id do botão
- *   do gerador de upsell está configurado → renderiza os ids que o script
- *   oficial da Kiwify usa. A cobrança e o redirecionamento são da Kiwify.
- * - "checkout": sem token (ex.: acesso direto) → aceitar abre o checkout
- *   próprio do produto.
- * - "pending": checkout ainda não confirmado na config → botão inativo.
+ * MODO "one-click" — a URL tem `?token=` (contexto que a Kiwify envia ao
+ * redirecionar após a compra; é o mesmo sinal que a documentação da Kiwify
+ * usa para testes: `?token=123`) E o produto tem os IDs do gerador:
+ *   renderiza a marcação OFICIAL do gerador de upsell (container
+ *   `kiwify-upsell-<código>` com data-upsell-url/data-downsell-url, botão
+ *   `kiwify-upsell-trigger-<código>`, recusa `kiwify-upsell-cancel-trigger-<código>`)
+ *   via innerHTML — React não controla esses nós, então o script oficial pode
+ *   manipulá-los livremente — e carrega o script v2 UMA vez (next/script, id fixo).
+ *   Cobrança e redirecionamento (aceite e recusa) são da Kiwify.
  *
- * Recusar sempre leva à próxima etapa, preservando token e UTMs.
- * Nada aqui confirma compra: Purchase vem da Kiwify.
+ * MODO "checkout" — sem token (acesso direto) ou se o script oficial falhar
+ *   ao carregar: aceitar abre o checkout oficial do produto (com UTMs);
+ *   recusar segue para a próxima etapa (com token/UTMs).
+ *
+ * Tracking por delegação de clique (fase de captura) no wrapper: funciona
+ * nos dois modos sem interferir nos handlers do script da Kiwify e sem
+ * chamar preventDefault. Cliques repetidos são ignorados pela janela de
+ * deduplicação de funnel-tracking. Nenhum evento aqui representa compra.
  */
+
+type Mode = "one-click" | "checkout" | "unavailable";
+
+const KIWIFY_STYLE_VARS =
+  "--kiwify-upsell-accept-bg:#C4867A;--kiwify-upsell-accept-color:#FFFFFF;" +
+  "--kiwify-upsell-decline-color:#6B7280;--kiwify-upsell-width:100%;--kiwify-upsell-font:inherit";
+
+/**
+ * Estilo base da marca para a marcação oficial (sem !important): garante um
+ * botão legível antes/sem o CSS do script. Quando o script oficial carrega,
+ * as regras dele prevalecem e usam as variáveis acima.
+ */
+const KIWIFY_HOST_CSS = `
+.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:16px 24px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:1.0625rem;line-height:1.35;cursor:pointer;box-shadow:0 10px 30px rgba(196,134,122,.45)}
+.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px}
+.kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]{margin-top:18px;text-align:center;color:var(--kiwify-upsell-decline-color);font-size:.875rem;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:8px 0}
+`;
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export function buildOfficialUpsellHtml({
+  config,
+  nextUrl,
+  acceptLabel,
+  declineLabel,
+}: {
+  config: OneClickConfig;
+  nextUrl: string;
+  acceptLabel: string;
+  declineLabel: string;
+}) {
+  const url = escapeHtml(nextUrl);
+  return (
+    `<div id="${config.containerId}" data-upsell-url="${url}" data-downsell-url="${url}" style="${KIWIFY_STYLE_VARS}">` +
+    `<button id="${config.triggerId}" type="button">${escapeHtml(acceptLabel)}</button>` +
+    `<div id="${config.cancelTriggerId}" role="button" tabindex="0">${escapeHtml(declineLabel)}</div>` +
+    `</div>`
+  );
+}
+
 export function UpsellActions({
   product,
   funnelId,
   step,
   acceptLabel,
   declineLabel,
-  declineHref,
 }: {
   product: FunnelProduct;
   funnelId: string;
   step: FunnelStep;
   acceptLabel: string;
   declineLabel: string;
-  declineHref: string;
 }) {
-  const [query, setQuery] = useState("");
-  const [hasToken, setHasToken] = useState(false);
+  const oneClick = useMemo(() => getOneClickConfig(product), [product]);
+  const nextPath = product.nextPath ?? "/";
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const [mode, setMode] = useState<Mode>(isCheckoutReady(product) ? "checkout" : "unavailable");
+  const [search, setSearch] = useState("");
+  const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    const search = window.location.search;
-    // Leitura única da URL após a hidratação (evita mismatch SSR/cliente).
+    const query = window.location.search;
+    const hasKiwifyContext = new URLSearchParams(query).has(KIWIFY_CONTEXT_PARAM);
+    // Leitura única da URL após a hidratação (HTML estático não conhece a query).
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setQuery(forwardedQuery(search));
-    setHasToken(new URLSearchParams(search).has("token"));
-  }, []);
+    setSearch(query);
+    setOrigin(window.location.origin);
+    if (hasKiwifyContext && oneClick) setMode("one-click");
+  }, [oneClick]);
 
-  const mode: Mode =
-    product.oneClickTriggerId && hasToken
-      ? "one-click"
-      : isCheckoutReady(product)
-        ? "checkout"
-        : "pending";
+  // Delegação de cliques para tracking (não altera navegação).
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const onClick = (event: Event) => {
+      const target = event.target as Element | null;
+      if (!target?.closest) return;
+      const isAccept =
+        target.closest('[data-funnel-action="accept"]') ||
+        (oneClick && target.closest(`[id="${oneClick.triggerId}"]`));
+      const isDecline =
+        target.closest('[data-funnel-action="decline"]') ||
+        (oneClick && target.closest(`[id="${oneClick.cancelTriggerId}"]`));
+      if (isAccept) {
+        trackUpsellAccept(product, funnelId, step);
+        if (mode === "checkout") trackFunnelInitiateCheckout(product, funnelId, step);
+      } else if (isDecline) {
+        trackUpsellDecline(product, funnelId, step);
+      }
+    };
+    el.addEventListener("click", onClick, true);
+    return () => el.removeEventListener("click", onClick, true);
+  }, [mode, oneClick, product, funnelId, step]);
+
+  const attribution = pickParams(search, ATTRIBUTION_PARAMS);
+  const checkoutHref = isCheckoutReady(product) ? appendParams(product.checkoutUrl, attribution) : null;
+  const declineHref = appendParams(nextPath, pickParams(search, FUNNEL_PARAMS));
+  // Para o script oficial: URL absoluta da próxima etapa + atribuição, SEM o
+  // token (o script da Kiwify anexa o próprio contexto ao redirecionar).
+  const kiwifyNextUrl = appendParams(`${origin}${nextPath}`, attribution);
 
   const acceptClass = cn(
     buttonVariants({ variant: "primary", size: "lg" }),
     "w-full justify-center text-center leading-snug shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
   );
 
-  function handleAccept() {
-    trackUpsellAccept(product, funnelId, step);
-    if (mode === "checkout") trackFunnelInitiateCheckout(product, funnelId, step);
-  }
-
-  function handleDecline() {
-    trackUpsellDecline(product, funnelId, step);
-  }
-
   return (
-    <div className="space-y-5" data-upsell-mode={mode}>
-      {mode === "one-click" && (
+    <div ref={wrapperRef} className="space-y-5" data-upsell-mode={mode}>
+      {mode === "one-click" && oneClick ? (
         <>
-          <a id={product.oneClickTriggerId ?? undefined} href="#" onClick={handleAccept} className={acceptClass}>
-            {acceptLabel}
-          </a>
-          <Script src={KIWIFY_UPSELL_SCRIPT_SRC} strategy="afterInteractive" />
+          <style>{KIWIFY_HOST_CSS}</style>
+          <div
+            className="kiwify-upsell-host"
+            dangerouslySetInnerHTML={{
+              __html: buildOfficialUpsellHtml({ config: oneClick, nextUrl: kiwifyNextUrl, acceptLabel, declineLabel }),
+            }}
+          />
+          <Script
+            id="kiwify-upsell-v2"
+            src={KIWIFY_UPSELL_SCRIPT_SRC}
+            strategy="afterInteractive"
+            onError={() => setMode(isCheckoutReady(product) ? "checkout" : "unavailable")}
+          />
+        </>
+      ) : (
+        <>
+          {mode === "checkout" && checkoutHref && (
+            <a href={checkoutHref} data-funnel-action="accept" className={acceptClass}>
+              {acceptLabel}
+            </a>
+          )}
+          <div className="flex items-center justify-center gap-1.5 text-gray-400">
+            <Lock className="w-3.5 h-3.5" aria-hidden="true" />
+            <span className="font-sans text-xs">Pagamento processado pela Kiwify</span>
+          </div>
+          <div className="text-center">
+            <a
+              href={declineHref}
+              data-funnel-action="decline"
+              className="inline-block font-sans text-sm text-gray-400 hover:text-gray-600 underline underline-offset-4 transition-colors py-2"
+            >
+              {declineLabel}
+            </a>
+          </div>
         </>
       )}
-
-      {mode === "checkout" && isCheckoutReady(product) && (
-        <a href={`${product.checkoutUrl}${query}`} onClick={handleAccept} className={acceptClass}>
-          {acceptLabel}
-        </a>
-      )}
-
-      {mode === "pending" && (
-        <span
-          role="button"
-          aria-disabled="true"
-          data-checkout-pending={product.id}
-          title="Checkout Kiwify ainda não configurado em src/config/funnels/ciclo-feminino.ts"
-          className={cn(
-            acceptClass,
-            "flex-col gap-0.5 cursor-not-allowed bg-salmon/80 hover:bg-salmon/80 outline-2 outline-dashed outline-offset-4 outline-amber-500/70"
-          )}
-        >
-          <span>{acceptLabel}</span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/85">
-            Checkout pendente
-          </span>
-        </span>
-      )}
-
-      <div className="flex items-center justify-center gap-1.5 text-gray-400">
-        <Lock className="w-3.5 h-3.5" aria-hidden="true" />
-        <span className="font-sans text-xs">Pagamento processado pela Kiwify</span>
-      </div>
-
-      <div className="text-center">
-        <a
-          id={mode === "one-click" ? KIWIFY_UPSELL_CANCEL_ID : undefined}
-          href={`${declineHref}${query}`}
-          onClick={handleDecline}
-          className="inline-block font-sans text-sm text-gray-400 hover:text-gray-600 underline underline-offset-4 transition-colors py-2"
-        >
-          {declineLabel}
-        </a>
-      </div>
     </div>
   );
 }

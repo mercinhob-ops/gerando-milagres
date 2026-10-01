@@ -1,5 +1,5 @@
 /**
- * Copy da oferta /ciclofeminino/suplementacao (Suplementação Inteligente, R$ 47,90).
+ * Copy da oferta /ciclofeminino/suplementacao (Suplementação para a Fertilidade da Mulher, R$ 47,90).
  *
  * A cliente chega aqui tendo ACEITADO ou RECUSADO o Ciclos Desbloqueados:
  * nada nesta página pressupõe a decisão anterior.
@@ -12,7 +12,7 @@
  * avaliação individual); sem mencionar R$ 147.
  */
 export const suplementacaoContent = {
-  meta: { title: "Um último passo — Suplementação Inteligente" },
+  meta: { title: "Um último passo — Suplementação para a Fertilidade da Mulher" },
 
   hero: {
     eyebrow: "Um último passo antes de continuar",
@@ -29,7 +29,6 @@ export const suplementacaoContent = {
     nutrients: ["Metilfolato", "Vitamina B12", "Vitamina D3", "Mio-inositol", "CoQ10", "Vitamina E"],
     care:
       "O conteúdo também aborda cuidados, acompanhamento e a importância da avaliação profissional antes de iniciar qualquer suplemento.",
-    mediaLabel: "Suplementação Inteligente",
     priceNote: "Pagamento único",
     acceptLabel: "SIM, QUERO ENTENDER MELHOR A SUPLEMENTAÇÃO",
     declineLabel: "Não, obrigada. Quero continuar sem adicionar este material.",

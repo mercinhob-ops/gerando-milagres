@@ -1,89 +1,51 @@
 /**
  * FUNIL 01 — Ciclo Feminino
  *
- * Fonte única de verdade para produtos, preços, checkouts e rotas do funil.
- * Nenhuma página ou componente do funil deve ter URL de checkout ou preço
- * hardcoded — tudo vem daqui.
+ * Fonte única de verdade para produtos, preços, checkouts, IDs Kiwify e rotas
+ * do funil. Nenhuma página ou componente do funil deve ter URL de checkout,
+ * ID Kiwify ou preço hardcoded — tudo vem daqui.
  *
  * Fluxo:
- *   /ciclofeminino  →  checkout R$ 39,90 (Kiwify)
- *   → /ciclofeminino/oferta-especial  (Ciclos Desbloqueados, R$ 67)
- *   → /ciclofeminino/suplementacao    (Suplementação Inteligente, R$ 47,90)
- *   → /ciclofeminino/obrigada
+ *   /ciclofeminino  →  checkout aktchfx (R$ 39,90)
+ *   → [Kiwify: obrigado do produto] /ciclofeminino/oferta-especial  (1-click AQyRq5m, R$ 67)
+ *   → [Kiwify: data-upsell-url / data-downsell-url] /ciclofeminino/suplementacao  (1-click Ttiul2X, R$ 47,90)
+ *   → [Kiwify: data-upsell-url / data-downsell-url] /ciclofeminino/obrigada
  *
- * Os redirecionamentos entre etapas pós-compra são feitos PELA KIWIFY
- * (página de obrigado/upsell configurada em cada produto). O frontend
- * não simula esses redirecionamentos. Ver docs/funil-ciclo-feminino.md.
+ * Ver docs/funil-ciclo-feminino.md.
  */
 
-export type CheckoutStatus = "confirmed" | "pending";
-
 export interface FunnelProduct {
-  /** Identificador interno estável (usado em eventos e âncoras). */
+  /** Identificador interno estável (usado em content_ids e eventos). */
   id: string;
   name: string;
   /** Valor numérico em BRL, usado nos eventos de conversão. */
   price: number;
-  /**
-   * URL do checkout Kiwify deste produto.
-   * `null` = ainda não confirmada → a página mostra "checkout pendente".
-   */
+  /** Checkout oficial Kiwify deste produto. */
   checkoutUrl: string | null;
-  checkoutStatus: CheckoutStatus;
+  /** `true` somente quando o checkout foi confirmado pelo proprietário. */
+  checkoutReady: boolean;
   /**
-   * Upsell de 1 clique da Kiwify (cartão/Pix). Preencher com o id EXATO do
-   * botão gerado no "gerador de upsell" do painel Kiwify
-   * (formato `kiwify-upsell-trigger-XXXXXXX`). `null` = desativado:
-   * o botão de aceitar leva ao checkout normal do produto.
+   * Código da oferta no gerador de upsell da Kiwify. O container oficial é
+   * `kiwify-upsell-<código>`. `null` = produto sem upsell de 1 clique.
    */
+  kiwifyOfferCode: string | null;
+  /** ID EXATO do botão de aceite gerado pela Kiwify. */
   oneClickTriggerId: string | null;
-  /** Observações operacionais (não aparecem na página). */
-  notes?: string;
+  /** ID EXATO do elemento de recusa gerado pela Kiwify. */
+  oneClickCancelTriggerId: string | null;
+  /** Próxima etapa do funil (aceite e recusa levam para cá). */
+  nextPath: string | null;
+  /**
+   * Capa/mockup do produto em /public. `null` = arte ainda não instalada:
+   * a página usa uma capa tipográfica na identidade do funil.
+   */
+  coverImage: string | null;
 }
 
-export const KIWIFY_UPSELL_SCRIPT_SRC =
-  "https://kiwify-snippets.netlify.app/upsell/upsell.min.js";
+export const SITE_URL = "https://gerandomilagres.com.br";
 
-/** Id fixo que o script da Kiwify usa para o link de recusa. */
-export const KIWIFY_UPSELL_CANCEL_ID = "kiwify-upsell-cancel-trigger";
-
-export type CicloFemininoProductKey = "cicloFeminino" | "ciclosDesbloqueados" | "suplementacao";
-
-// Tipado como FunnelProduct (não `as const`) para que trocar `null` por uma URL
-// confirmada não exija mudar nenhum tipo nas páginas.
-export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduct> = {
-  cicloFeminino: {
-    id: "ciclo-feminino-descomplicado",
-    name: "Ciclo Feminino Descomplicado",
-    price: 39.9,
-    checkoutUrl: null, // TODO(kiwify): link do produto R$ 39,90 ainda não fornecido
-    checkoutStatus: "pending",
-    oneClickTriggerId: null, // produto de entrada — não usa 1 clique
-  },
-  ciclosDesbloqueados: {
-    id: "ciclos-desbloqueados",
-    name: "Ciclos Desbloqueados",
-    price: 67,
-    checkoutUrl: null, // TODO(kiwify): confirmar antes de ativar — ver notes
-    checkoutStatus: "pending",
-    oneClickTriggerId: null, // TODO(kiwify): id do botão do gerador de upsell
-    notes:
-      "Candidato: https://pay.kiwify.com.br/AQyRq5m (usado em /desbloqueandociclos). " +
-      "O checkout mostra o nome 'Ciclos Desbloqueados', mas não exibe o preço e a descrição " +
-      "fala de protocolo intestinal. Confirmar no painel Kiwify que é a oferta de R$ 67 " +
-      "deste funil antes de preencher checkoutUrl. Atenção: a página de obrigado da Kiwify " +
-      "é configurada por produto — alterar a deste produto afeta também quem compra por " +
-      "/desbloqueandociclos. Recomendado: oferta/produto separado para o funil.",
-  },
-  suplementacao: {
-    id: "suplementacao-inteligente-fertilidade",
-    name: "Suplementação Inteligente para Fertilidade Feminina",
-    price: 47.9,
-    checkoutUrl: null, // TODO(kiwify): link do produto R$ 47,90 ainda não fornecido
-    checkoutStatus: "pending",
-    oneClickTriggerId: null, // TODO(kiwify): id do botão do gerador de upsell
-  },
-};
+/** Script oficial do upsell de 1 clique (v2) fornecido pela Kiwify. */
+export const KIWIFY_UPSELL_SCRIPT_SRC = "https://snippets.kiwify.com/upsell-v2/upsell.min.js";
 
 export const cicloFemininoRoutes = {
   entry: "/ciclofeminino",
@@ -91,6 +53,48 @@ export const cicloFemininoRoutes = {
   downsell: "/ciclofeminino/suplementacao",
   thankYou: "/ciclofeminino/obrigada",
 } as const;
+
+export type CicloFemininoProductKey = "cicloFeminino" | "ciclosDesbloqueados" | "suplementacao";
+
+export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduct> = {
+  cicloFeminino: {
+    id: "ciclo-feminino-descomplicado",
+    name: "Ciclo Feminino Descomplicado",
+    price: 39.9,
+    checkoutUrl: "https://pay.kiwify.com.br/aktchfx",
+    checkoutReady: true,
+    kiwifyOfferCode: null, // produto de entrada — não usa 1 clique
+    oneClickTriggerId: null,
+    oneClickCancelTriggerId: null,
+    // Pós-compra configurado NA KIWIFY (página de obrigado do produto):
+    nextPath: cicloFemininoRoutes.upsell,
+    coverImage: null, // esperado: /images/ciclofeminino/ciclo-feminino-descomplicado.png
+  },
+  ciclosDesbloqueados: {
+    id: "ciclos-desbloqueados",
+    name: "Ciclos Desbloqueados",
+    price: 67,
+    checkoutUrl: "https://pay.kiwify.com.br/AQyRq5m",
+    checkoutReady: true,
+    kiwifyOfferCode: "AQyRq5m",
+    oneClickTriggerId: "kiwify-upsell-trigger-AQyRq5m",
+    oneClickCancelTriggerId: "kiwify-upsell-cancel-trigger-AQyRq5m",
+    nextPath: cicloFemininoRoutes.downsell,
+    coverImage: null, // sem arte; capas tipográficas dos 3 materiais
+  },
+  suplementacao: {
+    id: "suplementacao-fertilidade-mulher",
+    name: "Suplementação para a Fertilidade da Mulher",
+    price: 47.9,
+    checkoutUrl: "https://pay.kiwify.com.br/Ttiul2X",
+    checkoutReady: true,
+    kiwifyOfferCode: "Ttiul2X",
+    oneClickTriggerId: "kiwify-upsell-trigger-Ttiul2X",
+    oneClickCancelTriggerId: "kiwify-upsell-cancel-trigger-Ttiul2X",
+    nextPath: cicloFemininoRoutes.thankYou,
+    coverImage: null, // esperado: /images/ciclofeminino/suplementacao-fertilidade-feminina.png
+  },
+};
 
 export const cicloFemininoFunnel = {
   id: "funil-01-ciclo-feminino",
@@ -103,7 +107,25 @@ export const cicloFemininoFunnel = {
 export function isCheckoutReady(product: FunnelProduct): product is FunnelProduct & {
   checkoutUrl: string;
 } {
-  return product.checkoutStatus === "confirmed" && typeof product.checkoutUrl === "string";
+  return product.checkoutReady && typeof product.checkoutUrl === "string";
+}
+
+export interface OneClickConfig {
+  containerId: string;
+  triggerId: string;
+  cancelTriggerId: string;
+}
+
+/** Configuração completa do 1 clique ou `null` se faltar qualquer ID. */
+export function getOneClickConfig(product: FunnelProduct): OneClickConfig | null {
+  if (!product.kiwifyOfferCode || !product.oneClickTriggerId || !product.oneClickCancelTriggerId) {
+    return null;
+  }
+  return {
+    containerId: `kiwify-upsell-${product.kiwifyOfferCode}`,
+    triggerId: product.oneClickTriggerId,
+    cancelTriggerId: product.oneClickCancelTriggerId,
+  };
 }
 
 const brl = new Intl.NumberFormat("pt-BR", {
