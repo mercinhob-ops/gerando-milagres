@@ -25,6 +25,17 @@ describe("StickyHeader", () => {
     vi.doUnmock("next/navigation");
   });
 
+  it("não renderiza em /desbloqueandociclos", async () => {
+    vi.resetModules();
+    vi.doMock("next/navigation", () => ({ usePathname: () => "/desbloqueandociclos" }));
+    const { StickyHeader: StickyHeaderWithMockedPath } = await import("@/components/ui/sticky-header");
+
+    const { container } = render(<StickyHeaderWithMockedPath />);
+    expect(container).toBeEmptyDOMElement();
+
+    vi.doUnmock("next/navigation");
+  });
+
   it("está oculto no scroll inicial (translate-y-full)", () => {
     render(<StickyHeader />);
     const header = screen.getByRole("banner");

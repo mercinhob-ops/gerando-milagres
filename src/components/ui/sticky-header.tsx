@@ -50,7 +50,8 @@ export function StickyHeader({
   if (
     pathname?.startsWith("/quizfertilidade") ||
     pathname?.startsWith("/casalgm1") ||
-    pathname?.startsWith("/casalgm3")
+    pathname?.startsWith("/casalgm3") ||
+    pathname?.startsWith("/desbloqueandociclos")
   )
     return null;
 
