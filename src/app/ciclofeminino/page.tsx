@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowRight, Check, CheckCircle2, Lock, X } from "lucide-react";
+import {
+  ArrowDown,
+  CalendarDays,
+  CheckCircle2,
+  Droplets,
+  Lock,
+  RefreshCw,
+  Smartphone,
+  Thermometer,
+} from "lucide-react";
 import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { GuaranteeSection } from "@/components/marketing/guarantee-section";
 import { PremiumFooter } from "@/components/marketing/premium-footer";
 import { EntryCheckoutCta } from "@/components/funnel/entry-checkout-cta";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
-import { CopySlot, MediaPlaceholder } from "@/components/funnel/copy-slot";
+import { MediaPlaceholder } from "@/components/funnel/copy-slot";
 import {
   cicloFemininoFunnel,
   formatPrice,
@@ -25,23 +34,35 @@ export const metadata: Metadata = {
 };
 
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
+const serif = "font-['Georgia',serif]";
+const signalIcons = [RefreshCw, Droplets, Thermometer] as const;
 
-function Eyebrow({ children }: { children: string }) {
+function Eyebrow({ children, className = "" }: { children: string; className?: string }) {
   return (
-    <p className="font-sans text-xs font-semibold tracking-widest uppercase mb-3 text-salmon">{children}</p>
+    <p className={`font-sans text-xs font-semibold tracking-widest uppercase mb-3 text-salmon ${className}`}>
+      {children}
+    </p>
   );
 }
 
-function SectionHeading({ text, dark = false }: { text: string; dark?: boolean }) {
+function H2({ children, dark = false }: { children: string; dark?: boolean }) {
   return (
     <h2
-      className={
-        "font-['Georgia',serif] text-2xl md:text-4xl font-bold leading-snug " +
-        (dark ? "text-white" : "text-dark-brown")
-      }
+      className={`${serif} text-2xl md:text-4xl font-bold leading-snug ${dark ? "text-white" : "text-dark-brown"}`}
     >
-      <CopySlot text={text} />
+      {children}
     </h2>
+  );
+}
+
+function PriceLine({ dark = false }: { dark?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 justify-center md:justify-start">
+      <Lock className={`w-3.5 h-3.5 ${dark ? "text-nude/50" : "text-gray-400"}`} aria-hidden="true" />
+      <p className={`font-sans text-xs ${dark ? "text-nude/75" : "text-gray-500"}`}>
+        {product.name} • {PRICE}
+      </p>
+    </div>
   );
 }
 
@@ -60,9 +81,36 @@ export default function CicloFemininoPage() {
 
       {/* ─── 1. HERO ────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden" style={darkGradient}>
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-5 pt-10 pb-14 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-12">
-          <div className="flex-1 text-center md:text-left space-y-6 order-2 md:order-1">
-            <div className="flex items-center gap-3 justify-center md:justify-start">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-[-15%] right-[-20%] w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] rounded-full bg-salmon/10 blur-3xl" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-5 pt-10 pb-12 md:py-24 flex flex-col md:flex-row items-center gap-10 md:gap-14">
+          <div className="flex-1 text-center md:text-left space-y-6">
+            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-salmon shrink-0" aria-hidden="true" />
+              <span className="font-sans text-[11px] md:text-xs font-semibold tracking-widest text-nude uppercase">
+                {c.hero.eyebrow}
+              </span>
+            </span>
+
+            <h1 className={`${serif} text-[1.7rem] leading-[1.2] sm:text-4xl md:text-5xl font-bold text-white md:leading-[1.12]`}>
+              {c.hero.headline}
+            </h1>
+
+            <p className="font-sans text-base md:text-lg text-nude/85 leading-relaxed md:max-w-xl">
+              {c.hero.subheadline}
+            </p>
+
+            <div className="space-y-3 pt-1">
+              <EntryCheckoutCta
+                product={product}
+                label={c.hero.ctaLabel}
+                className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
+              />
+              <PriceLine dark />
+            </div>
+
+            <div className="flex items-center gap-3 justify-center md:justify-start pt-2">
               <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 ring-2 ring-salmon/40">
                 <Image
                   src="/images/camilla-zap.jpg"
@@ -73,234 +121,171 @@ export default function CicloFemininoPage() {
                 />
               </div>
               <span className="font-sans text-[11px] md:text-xs font-semibold tracking-widest text-salmon uppercase">
-                {c.hero.eyebrow}
+                {c.hero.author}
               </span>
             </div>
-
-            <div>
-              <p className="font-sans text-nude/70 text-xs md:text-sm font-semibold tracking-widest uppercase mb-2">
-                {c.hero.kicker}
-              </p>
-              <h1 className="font-['Georgia',serif] text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-[1.05] tracking-tight">
-                {c.hero.titleLine1}
-                <br />
-                <span className="text-salmon">{c.hero.titleLine2}</span>
-              </h1>
-            </div>
-
-            <CopySlot
-              as="p"
-              text={c.hero.subtitle}
-              className="block font-sans text-base md:text-xl text-nude/90 leading-relaxed md:max-w-xl"
-            />
-
-            <div className="space-y-3">
-              <EntryCheckoutCta
-                product={product}
-                label={c.hero.ctaLabel}
-                className="w-full sm:w-auto justify-center text-base md:text-lg px-8 py-4"
-              />
-              <div className="flex items-center gap-2 justify-center md:justify-start">
-                <Lock className="w-3.5 h-3.5 text-nude/50" aria-hidden="true" />
-                <p className="font-sans text-xs text-nude/70">
-                  {PRICE} · pagamento único · garantia de 7 dias
-                </p>
-              </div>
-            </div>
           </div>
 
-          <div className="order-1 md:order-2 shrink-0 w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px]">
-            <MediaPlaceholder label={c.hero.mediaLabel} tone="dark" className="aspect-square w-full" />
+          {/* Mockup só no desktop: no celular o CTA vem primeiro */}
+          <div className="hidden md:block shrink-0 w-[340px] lg:w-[400px]">
+            <MediaPlaceholder label={c.product.mediaLabel} tone="dark" className="aspect-square w-full" />
           </div>
         </div>
       </section>
 
-      {/* ─── 2. IDENTIFICAÇÃO DO PROBLEMA ──────────────────────────── */}
+      {/* ─── 2. IDENTIFICAÇÃO ──────────────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-white">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>{c.identification.eyebrow}</Eyebrow>
-            <SectionHeading text={c.identification.heading} />
+          <div className="text-center mb-8">
+            <H2>{c.identification.heading}</H2>
+            <p className="font-sans text-sm text-gray-500 mt-4">{c.identification.intro}</p>
           </div>
-          <ul className="space-y-3 mb-10">
-            {c.identification.items.map((item) => (
-              <li key={item} className="flex items-start gap-4 bg-cream rounded-2xl px-5 py-4">
-                <span
-                  className="w-6 h-6 rounded-full bg-salmon/20 text-salmon font-bold text-sm flex items-center justify-center shrink-0 mt-0.5"
-                  aria-hidden="true"
-                >
-                  ✦
-                </span>
-                <CopySlot as="p" text={item} className="font-sans text-brown/90 leading-snug text-sm md:text-base" />
-              </li>
-            ))}
+          <ul className="grid gap-2.5 sm:grid-cols-2 mb-8">
+            {c.identification.items.map((item, i) => {
+              const Icon = i === 0 ? Smartphone : CalendarDays;
+              return (
+                <li key={item} className="flex items-start gap-3 bg-cream rounded-2xl px-4 py-3.5">
+                  <Icon className="w-4 h-4 text-salmon shrink-0 mt-0.5" aria-hidden="true" />
+                  <p className="font-sans text-sm text-brown/90 leading-snug">{item}</p>
+                </li>
+              );
+            })}
           </ul>
-          <div className="rounded-3xl border-l-4 border-salmon bg-cream px-6 py-6">
-            <CopySlot
-              as="p"
-              text={c.identification.highlight}
-              className="font-['Georgia',serif] italic text-lg md:text-2xl text-dark-brown leading-relaxed"
-            />
+          <div className="rounded-3xl border-l-4 border-salmon bg-cream px-6 py-6 text-center md:text-left">
+            <p className="font-sans text-brown/80 text-base">{c.identification.conclusionLead}</p>
+            <p className={`${serif} italic text-lg md:text-2xl text-dark-brown leading-relaxed mt-1`}>
+              {c.identification.conclusion}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ─── 3. TRANSFORMAÇÃO ──────────────────────────────────────── */}
+      {/* ─── 3. QUEBRA DE CRENÇA ───────────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-cream">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>{c.transformation.eyebrow}</Eyebrow>
-            <SectionHeading text={c.transformation.heading} />
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <Eyebrow>{c.belief.eyebrow}</Eyebrow>
+            <H2>{c.belief.heading}</H2>
+            <p className="font-sans text-base text-gray-600 leading-relaxed mt-4">{c.belief.text}</p>
           </div>
-          <div className="space-y-3">
-            {c.transformation.pairs.map(({ from, to }) => (
-              <div
-                key={from}
-                className="bg-white rounded-2xl p-5 border border-nude-dark/30 flex flex-col sm:flex-row sm:items-center gap-3"
-              >
-                <CopySlot as="p" text={from} className="flex-1 font-sans text-sm text-gray-500" />
-                <ArrowRight className="w-4 h-4 text-salmon shrink-0 rotate-90 sm:rotate-0" aria-hidden="true" />
-                <CopySlot as="p" text={to} className="flex-1 font-sans text-sm font-semibold text-dark-brown" />
+          <div className="grid grid-cols-3 gap-2.5 md:gap-4">
+            {c.belief.signals.map(({ title, desc }, i) => {
+              const Icon = signalIcons[i];
+              return (
+                <div key={title} className="bg-white rounded-2xl p-3.5 md:p-6 text-center border border-nude-dark/30">
+                  <div className="w-9 h-9 md:w-11 md:h-11 mx-auto rounded-full bg-salmon/10 flex items-center justify-center mb-2.5">
+                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-salmon" aria-hidden="true" />
+                  </div>
+                  <p className="font-sans font-bold text-dark-brown text-xs md:text-base leading-tight">{title}</p>
+                  <p className="hidden md:block font-sans text-sm text-gray-500 mt-1.5">{desc}</p>
+                </div>
+              );
+            })}
+          </div>
+          <p className="font-sans text-xs text-gray-500 text-center mt-3">{c.belief.signalsNote}</p>
+
+          <blockquote className="mt-10 rounded-3xl px-6 py-8 md:px-12 md:py-10 text-center" style={darkGradient}>
+            <p className={`${serif} text-xl md:text-3xl font-bold text-white leading-snug`}>
+              {c.belief.quote[0]}{" "}
+              <span className="text-salmon">{c.belief.quote[1]}</span>
+            </p>
+            <p className="font-sans text-sm md:text-base text-nude/80 leading-relaxed mt-3 max-w-xl mx-auto">
+              {c.belief.quote[2]}
+            </p>
+          </blockquote>
+        </div>
+      </section>
+
+      {/* ─── 4. TRANSFORMAÇÃO ──────────────────────────────────────── */}
+      <section className="py-14 md:py-20 px-5 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-8 md:mb-12">
+            <Eyebrow>{c.transformation.eyebrow}</Eyebrow>
+            <H2>{c.transformation.heading}</H2>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3 md:gap-4">
+            {c.transformation.pairs.map(({ before, after }) => (
+              <div key={before} className="rounded-2xl overflow-hidden border border-nude-dark/40 flex flex-col">
+                <div className="bg-gray-50 px-5 py-4">
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Antes</p>
+                  <p className="font-sans text-sm text-gray-500 italic leading-snug">“{before}”</p>
+                </div>
+                <div className="flex justify-center -my-3 relative z-10">
+                  <span className="w-6 h-6 rounded-full bg-salmon flex items-center justify-center">
+                    <ArrowDown className="w-3.5 h-3.5 text-white" aria-hidden="true" />
+                  </span>
+                </div>
+                <div className="bg-cream px-5 py-4 flex-1">
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-salmon mb-1">Depois</p>
+                  <p className="font-sans text-sm font-semibold text-dark-brown leading-snug">“{after}”</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── 4. O QUE ELA VAI APRENDER ─────────────────────────────── */}
-      <section className="py-14 md:py-20 px-5 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>{c.learn.eyebrow}</Eyebrow>
-            <SectionHeading text={c.learn.heading} />
-          </div>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {c.learn.items.map((item) => (
-              <li key={item} className="flex items-start gap-3 rounded-2xl border border-nude-dark/30 px-5 py-4">
-                <CheckCircle2 className="w-5 h-5 text-salmon shrink-0 mt-0.5" aria-hidden="true" />
-                <CopySlot as="p" text={item} className="font-sans text-sm md:text-base text-brown/90 leading-snug" />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ─── 5. PARA QUEM É ────────────────────────────────────────── */}
+      {/* ─── 5. O QUE ELA VAI APRENDER ─────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-nude">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>{c.forWho.eyebrow}</Eyebrow>
-            <SectionHeading text={c.forWho.heading} />
+          <div className="text-center max-w-2xl mx-auto mb-8 md:mb-12">
+            <Eyebrow>{c.learn.eyebrow}</Eyebrow>
+            <H2>{c.learn.heading}</H2>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="bg-white rounded-2xl p-6 space-y-3">
-              <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon">É para você se</p>
-              {c.forWho.isFor.map((item) => (
-                <div key={item} className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-salmon shrink-0 mt-1" aria-hidden="true" />
-                  <CopySlot as="p" text={item} className="font-sans text-sm text-brown/90 leading-snug" />
-                </div>
-              ))}
-            </div>
-            <div className="bg-white/60 rounded-2xl p-6 space-y-3">
-              <p className="font-sans text-xs font-bold uppercase tracking-widest text-brown/60">Não é para</p>
-              {c.forWho.notFor.map((item) => (
-                <div key={item} className="flex items-start gap-3">
-                  <X className="w-4 h-4 text-brown/50 shrink-0 mt-1" aria-hidden="true" />
-                  <CopySlot as="p" text={item} className="font-sans text-sm text-brown/80 leading-snug" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 6. CONTEÚDO ───────────────────────────────────────────── */}
-      <section className="py-14 md:py-20 px-5 bg-cream">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <Eyebrow>{c.modules.eyebrow}</Eyebrow>
-            <SectionHeading text={c.modules.heading} />
-          </div>
-          <div className="space-y-3">
-            {c.modules.items.map(({ number, title, desc }) => (
-              <div
-                key={number}
-                className="bg-white rounded-2xl p-5 flex items-start gap-4 shadow-sm border border-nude-dark/30"
-              >
-                <span className="font-['Georgia',serif] text-2xl font-bold text-salmon leading-none shrink-0 w-9">
-                  {number}
+          <ol className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {c.learn.items.map((item, i) => (
+              <li key={item} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 shadow-sm">
+                <span className={`${serif} text-lg font-bold text-salmon w-7 shrink-0`}>
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="space-y-1">
-                  <CopySlot as="p" text={title} className="font-sans font-bold text-dark-brown text-base" />
-                  <CopySlot as="p" text={desc} className="font-sans text-gray-500 text-sm leading-relaxed" />
-                </div>
-              </div>
+                <p className="font-sans text-sm text-brown/90 leading-snug">{item}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* ─── 7. ESPECIALISTA ───────────────────────────────────────── */}
-      <section className="py-14 md:py-20 px-5 bg-white">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-14 items-center">
-          <div className="w-full max-w-[260px] md:max-w-none md:w-[280px] shrink-0">
-            <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-xl">
-              <Image
-                src="/images/camilla-zap.jpg"
-                alt="Dra. Camilla Freitas, farmacêutica"
-                fill
-                className="object-cover object-top"
-                sizes="(max-width: 768px) 260px, 280px"
-              />
-            </div>
-          </div>
-          <div className="flex-1 space-y-5 text-center md:text-left">
-            <div>
-              <Eyebrow>{c.specialist.eyebrow}</Eyebrow>
-              <h2 className="font-['Georgia',serif] text-2xl md:text-4xl font-bold text-dark-brown leading-snug">
-                {c.specialist.name}
-              </h2>
-            </div>
-            <CopySlot
-              as="p"
-              text={c.specialist.bio}
-              className="font-['Georgia',serif] italic text-base md:text-lg text-gray-700 leading-relaxed"
-            />
-            <div className="border-l-4 border-salmon pl-5 py-1 text-left inline-block">
-              <p className="font-sans text-xs font-semibold tracking-wide text-salmon uppercase">
-                {c.specialist.role}
-              </p>
-            </div>
-          </div>
+      {/* ─── 6. CONEXÃO COM O DESEJO MAIOR ─────────────────────────── */}
+      <section className="py-16 md:py-24 px-5" style={darkGradient}>
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <p className="font-sans text-sm md:text-base text-nude/75">{c.desire.heading}</p>
+          <p className={`${serif} text-3xl md:text-5xl font-bold text-white leading-tight`}>
+            {c.desire.highlight}
+          </p>
+          <p className="font-sans text-base md:text-lg text-nude/85 leading-relaxed">{c.desire.text}</p>
+
+          <div className="h-px w-16 bg-salmon/60 mx-auto" aria-hidden="true" />
+
+          <p className="font-sans text-base text-nude/80">
+            {c.desire.turnLead}{" "}
+            <strong className="text-white font-semibold">{c.desire.turn}</strong>
+          </p>
+          <p className={`${serif} italic text-xl md:text-2xl text-salmon`}>{c.desire.piece}</p>
+          <p className="font-sans text-sm md:text-base text-nude/75 leading-relaxed">{c.desire.closing}</p>
         </div>
       </section>
 
-      {/* ─── 8. OFERTA ─────────────────────────────────────────────── */}
+      {/* ─── 7. PRODUTO ────────────────────────────────────────────── */}
       <section id="oferta" className="py-14 md:py-20 px-5 bg-cream scroll-mt-20">
-        <div className="max-w-lg mx-auto text-center">
-          <Eyebrow>{c.offer.eyebrow}</Eyebrow>
-          <SectionHeading text={c.offer.heading} />
-
-          <div className="mt-8 bg-white rounded-3xl p-6 md:p-10 shadow-xl border border-nude-dark/40 text-left">
-            <p className="font-sans text-sm font-bold text-dark-brown text-center mb-5">{product.name}</p>
-            <ul className="space-y-3 mb-6">
-              {c.offer.included.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-salmon shrink-0 mt-0.5" aria-hidden="true" />
-                  <CopySlot as="p" text={item} className="font-sans text-sm text-brown/90 leading-snug" />
-                </li>
-              ))}
-            </ul>
-            <div className="text-center border-t border-nude-dark/30 pt-6">
-              <p className="font-['Georgia',serif] text-5xl font-bold text-salmon leading-none">{PRICE}</p>
-              <p className="font-sans text-brown/60 text-xs mt-3 mb-6">{c.offer.note}</p>
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-nude-dark/40 overflow-hidden md:flex">
+          <div className="md:w-[45%] bg-nude/50 p-6 md:p-8 flex items-center">
+            <MediaPlaceholder label={c.product.mediaLabel} className="aspect-[4/3] md:aspect-square w-full" />
+          </div>
+          <div className="flex-1 p-6 md:p-10 text-center md:text-left">
+            <Eyebrow>{c.product.eyebrow}</Eyebrow>
+            <h2 className={`${serif} text-2xl md:text-4xl font-bold text-dark-brown leading-tight`}>
+              {product.name}
+            </h2>
+            <p className="font-sans text-sm md:text-base text-gray-600 leading-relaxed mt-3">{c.product.subtitle}</p>
+            <div className="border-t border-nude-dark/30 mt-6 pt-6">
+              <p className={`${serif} text-5xl font-bold text-salmon leading-none`}>{PRICE}</p>
+              <p className="font-sans text-xs text-gray-500 mt-2 mb-6">{c.product.note}</p>
               <EntryCheckoutCta
                 product={product}
-                label={c.offer.ctaLabel}
-                className="w-full justify-center text-base"
+                label={c.product.ctaLabel}
+                className="w-full justify-center text-sm md:text-base tracking-wide"
               />
-              <div className="flex items-center justify-center gap-1.5 text-gray-400 mt-4">
+              <div className="flex items-center justify-center md:justify-start gap-1.5 text-gray-400 mt-4">
                 <Lock className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="font-sans text-xs">Pagamento seguro via Kiwify</span>
               </div>
@@ -309,7 +294,7 @@ export default function CicloFemininoPage() {
         </div>
       </section>
 
-      {/* ─── 9. GARANTIA ───────────────────────────────────────────── */}
+      {/* ─── GARANTIA (componente existente) ───────────────────────── */}
       <GuaranteeSection
         description={
           <>
@@ -317,39 +302,83 @@ export default function CicloFemininoPage() {
             não é para você, devolvemos 100% do valor.
           </>
         }
-        quote={c.guarantee.quote}
       />
 
-      {/* ─── 10. FAQ ───────────────────────────────────────────────── */}
+      {/* ─── 8. AUTORIDADE ─────────────────────────────────────────── */}
+      <section className="py-14 md:py-20 px-5 bg-cream">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-14 items-center">
+          <div className="w-full max-w-[240px] md:max-w-none md:w-[280px] shrink-0">
+            <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-xl">
+              <Image
+                src="/images/camilla-zap.jpg"
+                alt="Dra. Camilla Freitas, farmacêutica"
+                fill
+                className="object-cover object-top"
+                sizes="(max-width: 768px) 240px, 280px"
+              />
+            </div>
+          </div>
+          <div className="flex-1 space-y-5 text-center md:text-left">
+            <div>
+              <Eyebrow>{c.specialist.eyebrow}</Eyebrow>
+              <H2>{c.specialist.name}</H2>
+              <p className="font-sans text-xs font-semibold tracking-wide text-salmon uppercase mt-2">
+                {c.specialist.role}
+              </p>
+            </div>
+            <blockquote className={`${serif} italic text-lg md:text-2xl text-dark-brown leading-relaxed`}>
+              “{c.specialist.quote}”
+            </blockquote>
+            <p className="font-sans text-sm md:text-base text-gray-600 leading-relaxed">{c.specialist.text}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 9. PLANTAR A JORNADA ──────────────────────────────────── */}
+      <section className="py-12 md:py-16 px-5 bg-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-5" aria-hidden="true">
+            <span className="w-3 h-3 rounded-full bg-salmon" />
+            <span className="w-10 h-px bg-nude-dark" />
+            <span className="w-3 h-3 rounded-full border-2 border-nude-dark" />
+            <span className="w-10 h-px bg-nude-dark" />
+            <span className="w-3 h-3 rounded-full border-2 border-nude-dark" />
+          </div>
+          <H2>{c.journey.heading}</H2>
+          <p className="font-sans text-base text-gray-600 leading-relaxed mt-4">{c.journey.text}</p>
+        </div>
+      </section>
+
+      {/* ─── 10. OFERTA FINAL ──────────────────────────────────────── */}
+      <section className="py-16 md:py-24 px-5 text-center" style={darkGradient}>
+        <div className="max-w-2xl mx-auto space-y-6">
+          <H2 dark>{c.finalOffer.heading}</H2>
+          <div className="inline-block bg-white/10 border border-white/15 rounded-2xl px-8 py-5">
+            <p className="font-sans text-sm font-semibold text-nude">{product.name}</p>
+            <p className={`${serif} text-4xl font-bold text-salmon leading-none mt-2`}>{PRICE}</p>
+          </div>
+          <div>
+            <EntryCheckoutCta
+              product={product}
+              label={c.finalOffer.ctaLabel}
+              className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
+            />
+            <p className="font-sans text-xs text-nude/60 mt-3">Garantia de 7 dias · pagamento seguro</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 11. FAQ ───────────────────────────────────────────────── */}
       <section className="py-14 md:py-20 px-5 bg-cream">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8 md:mb-12">
             <Eyebrow>{c.faq.eyebrow}</Eyebrow>
-            <SectionHeading text={c.faq.heading} />
+            <H2>{c.faq.heading}</H2>
           </div>
           <FaqAccordion items={c.faq.items} />
-        </div>
-      </section>
-
-      {/* ─── 11. CTA FINAL ─────────────────────────────────────────── */}
-      <section className="py-16 md:py-24 px-5 text-center" style={darkGradient}>
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Eyebrow>{c.finalCta.eyebrow}</Eyebrow>
-          <SectionHeading text={c.finalCta.heading} dark />
-          <CopySlot
-            as="p"
-            text={c.finalCta.text}
-            className="font-sans text-nude/80 text-base md:text-lg leading-relaxed"
-          />
-          <div className="pt-2 space-y-3">
-            <EntryCheckoutCta
-              product={product}
-              label={c.finalCta.ctaLabel}
-              className="w-full sm:w-auto justify-center text-base md:text-lg px-8 py-4"
-            />
-            <p className="font-sans text-xs text-nude/60">
-              {PRICE} · garantia de 7 dias · pagamento seguro
-            </p>
+          <div className="text-center mt-8 flex items-center justify-center gap-2 text-brown/70">
+            <CheckCircle2 className="w-4 h-4 text-salmon" aria-hidden="true" />
+            <p className="font-sans text-xs">Conteúdo educativo. Não substitui avaliação profissional.</p>
           </div>
         </div>
       </section>

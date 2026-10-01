@@ -44,10 +44,20 @@ describe("Config Funil 01 — Ciclo Feminino", () => {
 });
 
 describe("/ciclofeminino", () => {
-  it("renderiza o hero com o nome do produto e o preço", () => {
+  it("renderiza o hero voltado a quem deseja engravidar, com nome do produto e preço", () => {
     render(<CicloFemininoPage />);
-    expect(screen.getByRole("heading", { level: 1, name: /ciclo feminino\s*descomplicado/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/R\$\s*39,90/).length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("heading", { level: 1, name: /tentando engravidar, conhecer seus dias férteis/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/para mulheres que desejam engravidar/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Ciclo Feminino Descomplicado • R\$\s*39,90/).length).toBeGreaterThan(0);
+  });
+
+  it("não promete gravidez nem menciona as ofertas seguintes", () => {
+    render(<CicloFemininoPage />);
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/garant\w* (a |sua )?gravidez|engravide em|cura/i);
+    expect(text).not.toMatch(/ciclos desbloqueados|suplementação|R\$\s*67|R\$\s*47,90/i);
   });
 
   it("dispara ViewContent ao montar", () => {
@@ -66,9 +76,11 @@ describe("/ciclofeminino", () => {
     expect(document.querySelectorAll("[data-checkout-pending]").length).toBeGreaterThanOrEqual(3);
   });
 
-  it("marca a copy provisória de forma identificável", () => {
+  it("mantém pendências reais identificáveis (mockup e forma de entrega)", () => {
     render(<CicloFemininoPage />);
-    expect(document.querySelectorAll('[data-placeholder="copy"]').length).toBeGreaterThan(5);
+    expect(document.querySelectorAll('[data-placeholder="media"]').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByText(/como vou receber o material/i).closest("button")!);
+    expect(screen.getByText(/\[CONFIRMAR:/)).toBeInTheDocument();
   });
 });
 

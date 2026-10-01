@@ -1,99 +1,143 @@
 /**
  * Conteúdo da página /ciclofeminino.
  *
- * Tudo que começa com "[COPY" é marcador provisório e aparece com contorno
- * tracejado na página. Substituir pela copy definitiva aprovada.
- * Regras de compliance: sem promessa de gravidez, sem "tratamento"/"cura",
- * sem cálculo ou menção a janela fértil/ovulação como previsão.
+ * Narrativa: "quero engravidar" → "preciso compreender minha fertilidade" →
+ * "meu ciclo e os sinais do meu corpo são o primeiro lugar a observar" →
+ * "este material me ajuda a começar" → compra.
+ *
+ * Regras: sem promessa de gravidez, cura ou resultado biológico; sinais
+ * corporais nunca apresentados como diagnóstico ou confirmação de ovulação;
+ * sem mencionar próximos produtos, preços ou upsell.
+ *
+ * Itens que começam com "[CONFIRMAR" ou "[COPY" são pendências e aparecem
+ * com contorno tracejado na página.
  */
 export const cicloFemininoContent = {
   meta: {
     title: "Ciclo Feminino Descomplicado — Dra. Camilla Freitas",
-    description: "[COPY: meta description da página — até 155 caracteres]",
+    description:
+      "Para mulheres que desejam engravidar: aprenda a reconhecer os sinais do seu ciclo e compreender melhor sua janela fértil.",
   },
 
   hero: {
-    eyebrow: "Dra. Camilla Freitas · CRF/PE 4563",
-    kicker: "Apresenta",
-    titleLine1: "Ciclo Feminino",
-    titleLine2: "Descomplicado",
-    subtitle: "[COPY: subtítulo do hero — promessa educacional central, sem alegação médica]",
-    ctaLabel: "Quero o Ciclo Feminino Descomplicado →",
-    mediaLabel: "[Imagem: mockup do produto]",
+    eyebrow: "Para mulheres que desejam engravidar",
+    headline:
+      "Se você está tentando engravidar, conhecer seus dias férteis não deveria depender apenas da previsão de um aplicativo.",
+    subheadline:
+      "Aprenda a reconhecer os sinais do seu ciclo, compreender melhor sua janela fértil e dê o primeiro passo para uma preparação mais consciente na sua jornada em busca do positivo.",
+    ctaLabel: "QUERO COMEÇAR MINHA PREPARAÇÃO",
+    author: "Dra. Camilla Freitas · CRF/PE 4563",
   },
 
   identification: {
-    eyebrow: "Isso é para você se…",
-    heading: "[COPY: título da seção de identificação do problema]",
+    heading:
+      "Talvez você esteja tentando acertar o dia. Mas ainda não aprendeu a interpretar o seu próprio corpo.",
+    intro: "Se a sua rotina de tentante se parece com isso:",
     items: [
-      "[COPY: dor/situação 1]",
-      "[COPY: dor/situação 2]",
-      "[COPY: dor/situação 3]",
-      "[COPY: dor/situação 4]",
+      "Abrir o aplicativo para descobrir quando “deveria” estar ovulando",
+      "Contar os dias do ciclo no calendário",
+      "Esperar a próxima menstruação com o coração apertado",
+      "Tentar adivinhar qual é o seu período fértil",
+      "Ficar em dúvida se realmente ovulou neste mês",
+      "Perceber mudanças no corpo e não saber o que elas significam",
     ],
-    highlight: "[COPY: frase de virada — por que entender o ciclo muda a forma de olhar para o corpo]",
+    conclusionLead: "Seu corpo pode apresentar sinais ao longo do ciclo.",
+    conclusion: "O problema é que muitas mulheres nunca aprenderam quais sinais observar.",
+  },
+
+  belief: {
+    eyebrow: "Uma crença que precisa cair",
+    heading: "Fertilidade é muito mais do que contar 14 dias.",
+    text:
+      "Nem todo ciclo segue a conta de calendário. Compreender o seu ciclo envolve conhecer as fases pelas quais ele passa e aprender a observar sinais que o seu corpo pode dar ao longo do mês.",
+    signals: [
+      { title: "Fases do ciclo", desc: "O que muda em cada etapa do mês." },
+      { title: "Muco cervical", desc: "Como observar as mudanças ao longo do ciclo." },
+      { title: "Temperatura basal", desc: "Como funciona a observação e o registro." },
+    ],
+    signalsNote: "E outras alterações explicadas no material.",
+    quote: [
+      "O aplicativo calcula.",
+      "Seu corpo sinaliza.",
+      "E aprender a observar esses sinais muda a forma como você entende o seu ciclo.",
+    ],
   },
 
   transformation: {
-    eyebrow: "A mudança",
-    heading: "[COPY: título da seção de transformação]",
+    eyebrow: "A virada",
+    heading: "O primeiro passo não é tentar adivinhar mais. É começar a entender.",
     pairs: [
-      { from: "[COPY: antes 1]", to: "[COPY: depois 1]" },
-      { from: "[COPY: antes 2]", to: "[COPY: depois 2]" },
-      { from: "[COPY: antes 3]", to: "[COPY: depois 3]" },
+      {
+        before: "O aplicativo disse que hoje é meu período fértil.",
+        after: "Agora eu sei quais sinais observar no meu corpo.",
+      },
+      {
+        before: "Será que estou ovulando?",
+        after: "Entendo melhor as mudanças que podem acontecer próximo à ovulação.",
+      },
+      {
+        before: "Todo mês parece uma nova tentativa no escuro.",
+        after: "Comecei a registrar meu ciclo e observar padrões do meu próprio corpo.",
+      },
     ],
   },
 
   learn: {
     eyebrow: "O que você vai aprender",
-    heading: "[COPY: título da seção de aprendizados]",
+    heading: "Comece conhecendo aquilo que acontece dentro de você todos os meses.",
     items: [
-      "[COPY: aprendizado 1]",
-      "[COPY: aprendizado 2]",
-      "[COPY: aprendizado 3]",
-      "[COPY: aprendizado 4]",
-      "[COPY: aprendizado 5]",
+      "Como funciona o ciclo menstrual",
+      "Quais são as suas principais fases",
+      "Sinais que podem aparecer próximos à ovulação",
+      "Como observar o muco cervical",
+      "Como funciona a observação da temperatura basal",
+      "Ferramentas que podem ajudar no acompanhamento",
+      "Como começar a mapear o seu próprio ciclo",
+      "Uma proposta de acompanhamento por três meses",
+      "Checklist de autoconhecimento do ciclo",
     ],
   },
 
-  forWho: {
-    eyebrow: "Para quem é",
-    heading: "[COPY: título da seção para quem é]",
-    isFor: ["[COPY: perfil 1]", "[COPY: perfil 2]", "[COPY: perfil 3]"],
-    notFor: [
-      "Quem busca substituir consulta, diagnóstico ou acompanhamento com profissional de saúde",
-      "[COPY: perfil para quem não é 2]",
-    ],
+  desire: {
+    heading: "Porque o seu objetivo não é apenas entender o ciclo.",
+    highlight: "O seu desejo é ver o positivo.",
+    text:
+      "E justamente por isso, aprender a compreender seu ciclo pode ser uma das primeiras etapas de uma jornada mais consciente de preparação.",
+    turnLead: "Mas existe algo que você precisa saber desde agora:",
+    turn: "fertilidade não depende apenas do dia da ovulação.",
+    piece: "Seu ciclo é uma peça dessa história.",
+    closing:
+      "Por isso, o Ciclo Feminino Descomplicado não pretende entregar uma promessa milagrosa. Ele foi criado para ajudar você a dominar uma das primeiras informações que precisa compreender: o funcionamento do seu próprio ciclo.",
   },
 
-  modules: {
-    eyebrow: "Conteúdo",
-    heading: "[COPY: título da seção de conteúdo]",
-    items: [
-      { number: "01", title: "[COPY: módulo 1 — título]", desc: "[COPY: módulo 1 — descrição]" },
-      { number: "02", title: "[COPY: módulo 2 — título]", desc: "[COPY: módulo 2 — descrição]" },
-      { number: "03", title: "[COPY: módulo 3 — título]", desc: "[COPY: módulo 3 — descrição]" },
-      { number: "04", title: "[COPY: módulo 4 — título]", desc: "[COPY: módulo 4 — descrição]" },
-    ],
+  product: {
+    eyebrow: "O seu primeiro passo",
+    subtitle:
+      "O primeiro passo para sair da tentativa no escuro e começar a compreender melhor os sinais do seu ciclo.",
+    mediaLabel: "[Imagem: mockup Ciclo Feminino Descomplicado]",
+    note: "Pagamento único",
+    ctaLabel: "QUERO ENTENDER MELHOR MEU CORPO",
   },
 
+  // Somente informações já existentes no projeto (src/data/camilla.ts e páginas publicadas).
   specialist: {
-    eyebrow: "Quem criou este material",
+    eyebrow: "Quem está por trás deste caminho",
     name: "Dra. Camilla Freitas",
     role: "Farmacêutica · CRF/PE 4563",
-    bio: "[COPY: apresentação da especialista para este produto — sem depoimentos profissionais de pacientes]",
+    quote: "Eu sei o que é olhar para um resultado negativo e sentir o chão sumir.",
+    text:
+      "Camilla viveu a jornada da tentante por dentro, incluindo a perda de gestações. Como farmacêutica, passou a estudar a fertilidade com os olhos de quem conhece essa dor e criou o método Gerando Milagres a partir dessa vivência.",
   },
 
-  offer: {
-    eyebrow: "Investimento",
-    heading: "[COPY: título da oferta]",
-    included: ["[COPY: item incluso 1]", "[COPY: item incluso 2]", "[COPY: item incluso 3]"],
-    note: "Pagamento único · acesso enviado por e-mail após a confirmação",
-    ctaLabel: "Quero começar agora →",
+  journey: {
+    heading: "Esse é o começo. Não o fim da sua preparação.",
+    text:
+      "Compreender o seu ciclo é uma etapa importante. Ao longo da jornada, outros fatores ligados à sua saúde e à preparação para a fertilidade podem precisar ser compreendidos de forma individual, porque cada corpo e cada história são únicos.",
   },
 
-  guarantee: {
-    quote: "[COPY: frase curta de garantia]",
+  finalOffer: {
+    heading: "Antes de tentar interpretar mais um ciclo no escuro, aprenda o que observar.",
+    ctaLabel: "QUERO DAR O PRIMEIRO PASSO",
   },
 
   faq: {
@@ -101,30 +145,31 @@ export const cicloFemininoContent = {
     heading: "Perguntas que talvez você tenha",
     items: [
       {
-        question: "Como eu recebo o acesso?",
+        question: "É somente para quem está tentando engravidar?",
         answer:
-          "Assim que o pagamento é confirmado, a Kiwify envia o acesso para o e-mail informado na compra. Confira também a caixa de spam e a aba promoções.",
+          "Não. O material foi pensado principalmente para quem deseja engravidar e quer começar entendendo o próprio ciclo, mas qualquer mulher que queira conhecer melhor as fases e os sinais do seu corpo pode aproveitar o conteúdo.",
       },
       {
-        question: "Este material substitui acompanhamento médico?",
+        question: "Preciso entender de ciclo menstrual para acompanhar?",
         answer:
-          "Não. É um conteúdo educativo para você entender melhor o seu ciclo. Ele não substitui consulta, diagnóstico ou acompanhamento com profissional de saúde.",
+          "Não. O conteúdo começa pelo básico, explicando como o ciclo funciona e quais são as suas fases, antes de chegar à observação dos sinais e ao registro do seu próprio ciclo.",
       },
       {
-        question: "Como funciona a garantia?",
+        question: "Vou aprender a reconhecer sinais relacionados ao período fértil?",
         answer:
-          "Você tem 7 dias de garantia. Se sentir que o material não é para você, basta pedir o reembolso dentro desse prazo e devolvemos 100% do valor.",
+          "Sim. Você vai conhecer sinais que podem aparecer próximos à ovulação, como as mudanças no muco cervical e na temperatura basal, e como começar a observá-los e registrá-los. Esses sinais ajudam você a entender melhor o seu ciclo, mas não substituem exames nem confirmam a ovulação com certeza.",
       },
-      { question: "[COPY: pergunta sobre o conteúdo 1]", answer: "[COPY: resposta 1]" },
-      { question: "[COPY: pergunta sobre o conteúdo 2]", answer: "[COPY: resposta 2]" },
+      {
+        question: "Isso substitui uma avaliação profissional?",
+        answer:
+          "Não. O material ajuda você a compreender o seu ciclo, mas não faz diagnóstico nem substitui a avaliação individual com um profissional de saúde, que continua essencial para investigar a sua fertilidade.",
+      },
+      {
+        question: "Como vou receber o material?",
+        answer:
+          "[CONFIRMAR: formato do material (PDF, área de membros Kiwify etc.) e como o acesso é enviado após a compra]",
+      },
     ],
-  },
-
-  finalCta: {
-    eyebrow: "Próximo passo",
-    heading: "[COPY: título do CTA final]",
-    text: "[COPY: texto curto de fechamento]",
-    ctaLabel: "Quero o Ciclo Feminino Descomplicado →",
   },
 
   footerWhatsappMessage:
