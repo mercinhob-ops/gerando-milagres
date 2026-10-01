@@ -206,11 +206,46 @@ describe("Ofertas pós-compra", () => {
 });
 
 describe("/ciclofeminino/obrigada", () => {
-  it("não dispara Purchase nem tem link de checkout", () => {
+  it("não dispara Purchase (nem nenhum evento de conversão) pela visita e não tem checkout", () => {
     render(<ObrigadaPage />);
     const calls = (window.fbq as ReturnType<typeof vi.fn>).mock.calls;
     expect(calls.some((c) => c[1] === "Purchase")).toBe(false);
+    expect(calls.length).toBe(0);
+    expect(fetch).not.toHaveBeenCalled();
     expect(allHrefs().some((h) => h.includes("pay.kiwify") || h.includes("hotmart"))).toBe(false);
-    expect(screen.getByRole("heading", { level: 1, name: /obrigada/i })).toBeInTheDocument();
+  });
+
+  it("encerra a jornada com a copy definida e sem afirmar quais produtos foram comprados", () => {
+    render(<ObrigadaPage />);
+    expect(screen.getByText(/agora começa a sua preparação/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /decidiu compreender melhor a sua própria jornada/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /o que fazer agora/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /uma mensagem da camilla para você/i })).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/ciclos desbloqueados|suplementação inteligente|R\$|desafio|Dra\./i);
+  });
+
+  it("não tem WhatsApp, redes sociais nem CTA de consulta/agendamento", () => {
+    render(<ObrigadaPage />);
+    const hrefs = allHrefs();
+    expect(hrefs.some((h) => /wa\.me|whatsapp|instagram|facebook|tiktok|mailto:|tel:/i.test(h))).toBe(false);
+    const ctaText = Array.from(document.querySelectorAll("a, button, [role='button']"))
+      .map((el) => el.textContent ?? "")
+      .join(" ");
+    expect(ctaText).not.toMatch(/whatsapp|consulta|agend|fale comigo|atendimento/i);
+    expect(document.body.textContent).not.toMatch(/whatsapp|agendamento|agende/i);
+  });
+
+  it("CTA da área de membros (2x) fica inativo sem URL confirmada, sem destino falso", () => {
+    render(<ObrigadaPage />);
+    const ctas = document.querySelectorAll('[data-members-url-pending="true"]');
+    expect(ctas.length).toBe(2);
+    ctas.forEach((el) => {
+      expect(el.tagName).not.toBe("A");
+      expect(el).toHaveAttribute("aria-disabled", "true");
+    });
+    expect(allHrefs()).toEqual([]);
   });
 });
