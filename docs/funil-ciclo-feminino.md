@@ -11,10 +11,10 @@ TRÁFEGO
 /ciclofeminino                       (pública, index/follow, canonical)
 Ciclo Feminino Descomplicado · R$ 39,90 · checkout aktchfx
 ↓ Kiwify — página de obrigado do produto (configurada na Kiwify)
-/ciclofeminino/oferta-especial       (noindex)
+/ciclofeminino/oferta-especial       (noindex, dinâmica: lê ?token= no servidor)
 Ciclos Desbloqueados · R$ 67 · 1-click AQyRq5m
 ↓ aceite ou recusa → data-upsell-url / data-downsell-url (script oficial)
-/ciclofeminino/suplementacao         (noindex)
+/ciclofeminino/suplementacao         (noindex, dinâmica: lê ?token= no servidor)
 Suplementação para a Fertilidade da Mulher · R$ 47,90 · 1-click Ttiul2X
 ↓ aceite ou recusa → data-upsell-url / data-downsell-url (script oficial)
 /ciclofeminino/obrigada              (noindex)
@@ -35,6 +35,8 @@ Componente: `src/components/funnel/upsell-actions.tsx`.
 - Cores do botão: variáveis CSS do script (`--kiwify-upsell-accept-bg:#C4867A` etc.) + estilo base da marca sem `!important` (o CSS do script prevalece quando carrega).
 - **Sem contexto** (acesso direto) ou **se o script falhar ao carregar** (`onError`): aceitar abre o checkout oficial do produto com UTMs; recusar segue para a próxima etapa com token/UTMs. A página nunca quebra.
 - A detecção usa apenas a presença de `token`; não bloqueia o script quando o contexto existe.
+- A detecção acontece **no servidor** (`searchParams` da página → `initialSearch`): o HTML já sai no modo certo, sem troca de botão após a hidratação (evita clique no botão errado em conexões lentas e salto de layout). Por isso as duas upsells são rotas dinâmicas (ƒ); a LP e a /obrigada continuam estáticas.
+- `data-upsell-url`/`data-downsell-url` usam o domínio oficial (`SITE_URL`), como no HTML gerado pela Kiwify.
 
 ## Parâmetros preservados (`src/lib/funnel-params.ts`)
 
@@ -88,6 +90,22 @@ Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, 
 | Suplementação para a Fertilidade da Mulher | `public/images/ciclofeminino/suplementacao-fertilidade-feminina.png` | card da oferta 2 | idem |
 
 Sem arte, as páginas usam capa tipográfica (`ProductCover`). Ciclos Desbloqueados: capas tipográficas dos 3 materiais.
+
+## Rodapé, autoridade e privacidade
+
+- As 4 páginas usam `FunnelFooter` (`src/components/funnel/funnel-footer.tsx`): assinatura "Camilla Freitas • Farmacêutica • CRF/PE 4563" (sem "Dra."), **sem WhatsApp**, link para `/privacidade`.
+- `PremiumFooter` ganhou props opcionais (`signature`, `whatsappMessage` opcional, `showBackToTop`); sem props novas o comportamento das outras páginas é o mesmo.
+- `/privacidade` criada (LGPD, Meta, Kiwify, cookies, direitos do titular; contato pelo WhatsApp já publicado no site). Sem CNPJ/endereço/razão social — **revisar com assessoria jurídica** e completar com dados reais se houver.
+
+## Posição do primeiro CTA (QA visual)
+
+| Página | 375×812 | 390×844 | 430×932 | 1366×768 | 1440×900 |
+|---|---|---|---|---|---|
+| /ciclofeminino | 441 | 441 | 383 | 506 | 506 |
+| /oferta-especial | 703 | 703 | 607 | 533 | 533 |
+| /suplementacao | 630 | 630 | 576 | 482 | 482 |
+
+Topo do botão em px; botão inteiro dentro da primeira dobra em todos os viewports.
 
 ## Configuração externa ainda necessária
 

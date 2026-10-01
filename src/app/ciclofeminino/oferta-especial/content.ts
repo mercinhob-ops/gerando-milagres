@@ -25,6 +25,8 @@ export const ofertaEspecialContent = {
     heading: "Adicione agora o Ciclos Desbloqueados à sua jornada",
     subtitle:
       "Um combo para quem decidiu que não quer olhar apenas para o calendário — quer compreender melhor a preparação para a fertilidade.",
+    difference:
+      "Complementa o Ciclo Feminino Descomplicado: em vez do ciclo, o foco aqui é o corpo, a rotina e o casal.",
     comboLabel: "O combo reúne 3 materiais",
     materials: [
       { title: "Ciclos Desbloqueados", subtitle: "O Manual Completo da Fertilidade Natural" },

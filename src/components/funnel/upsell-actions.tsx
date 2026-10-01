@@ -9,6 +9,7 @@ import {
   getOneClickConfig,
   isCheckoutReady,
   KIWIFY_UPSELL_SCRIPT_SRC,
+  SITE_URL,
   type FunnelProduct,
   type OneClickConfig,
 } from "@/config/funnels/ciclo-feminino";
@@ -51,6 +52,11 @@ import {
 
 type Mode = "one-click" | "checkout" | "unavailable";
 
+function resolveMode(product: FunnelProduct, oneClick: OneClickConfig | null, search: string): Mode {
+  if (oneClick && new URLSearchParams(search).has(KIWIFY_CONTEXT_PARAM)) return "one-click";
+  return isCheckoutReady(product) ? "checkout" : "unavailable";
+}
+
 const KIWIFY_STYLE_VARS =
   "--kiwify-upsell-accept-bg:#C4867A;--kiwify-upsell-accept-color:#FFFFFF;" +
   "--kiwify-upsell-decline-color:#6B7280;--kiwify-upsell-width:100%;--kiwify-upsell-font:inherit";
@@ -61,7 +67,7 @@ const KIWIFY_STYLE_VARS =
  * as regras dele prevalecem e usam as variáveis acima.
  */
 const KIWIFY_HOST_CSS = `
-.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:16px 24px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:1.0625rem;line-height:1.35;cursor:pointer;box-shadow:0 10px 30px rgba(196,134,122,.45)}
+.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:15px 14px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:.95rem;letter-spacing:.01em;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(196,134,122,.45)}
 .kiwify-upsell-host [id^="kiwify-upsell-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px}
 .kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]{margin-top:18px;text-align:center;color:var(--kiwify-upsell-decline-color);font-size:.875rem;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:8px 0}
 `;
@@ -100,30 +106,35 @@ export function UpsellActions({
   step,
   acceptLabel,
   declineLabel,
+  initialSearch = "",
 }: {
   product: FunnelProduct;
   funnelId: string;
   step: FunnelStep;
   acceptLabel: string;
   declineLabel: string;
+  /**
+   * Query da requisição, lida no servidor (searchParams da página). Permite
+   * renderizar já no HTML o modo correto (1 clique x checkout), sem troca
+   * após a hidratação — evita clique no botão errado e salto de layout.
+   */
+  initialSearch?: string;
 }) {
   const oneClick = useMemo(() => getOneClickConfig(product), [product]);
   const nextPath = product.nextPath ?? "/";
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const [mode, setMode] = useState<Mode>(isCheckoutReady(product) ? "checkout" : "unavailable");
-  const [search, setSearch] = useState("");
-  const [origin, setOrigin] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [mode, setMode] = useState<Mode>(() => resolveMode(product, oneClick, initialSearch));
 
   useEffect(() => {
+    // Confirma no cliente (ex.: render sem searchParams). Normalmente igual ao SSR.
     const query = window.location.search;
-    const hasKiwifyContext = new URLSearchParams(query).has(KIWIFY_CONTEXT_PARAM);
-    // Leitura única da URL após a hidratação (HTML estático não conhece a query).
+    const next = resolveMode(product, oneClick, query);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearch(query);
-    setOrigin(window.location.origin);
-    if (hasKiwifyContext && oneClick) setMode("one-click");
-  }, [oneClick]);
+    setMode((current) => (current === next ? current : next));
+  }, [product, oneClick]);
 
   // Delegação de cliques para tracking (não altera navegação).
   useEffect(() => {
@@ -152,17 +163,25 @@ export function UpsellActions({
   const attribution = pickParams(search, ATTRIBUTION_PARAMS);
   const checkoutHref = isCheckoutReady(product) ? appendParams(product.checkoutUrl, attribution) : null;
   const declineHref = appendParams(nextPath, pickParams(search, FUNNEL_PARAMS));
-  // Para o script oficial: URL absoluta da próxima etapa + atribuição, SEM o
-  // token (o script da Kiwify anexa o próprio contexto ao redirecionar).
-  const kiwifyNextUrl = appendParams(`${origin}${nextPath}`, attribution);
+  // Para o script oficial: URL absoluta da próxima etapa (domínio oficial, como
+  // no HTML gerado pela Kiwify) + atribuição, SEM o token (o script da Kiwify
+  // anexa o próprio contexto ao redirecionar).
+  const kiwifyNextUrl = appendParams(`${SITE_URL}${nextPath}`, attribution);
 
   const acceptClass = cn(
     buttonVariants({ variant: "primary", size: "lg" }),
-    "w-full justify-center text-center leading-snug shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
+    "w-full justify-center text-center text-[15px] px-4 leading-snug shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
+  );
+
+  const secureNote = (
+    <div className="flex items-center justify-center gap-1.5 text-gray-400">
+      <Lock className="w-3.5 h-3.5" aria-hidden="true" />
+      <span className="font-sans text-xs">Pagamento processado pela Kiwify</span>
+    </div>
   );
 
   return (
-    <div ref={wrapperRef} className="space-y-5" data-upsell-mode={mode}>
+    <div ref={wrapperRef} className="space-y-4" data-upsell-mode={mode}>
       {mode === "one-click" && oneClick ? (
         <>
           <style>{KIWIFY_HOST_CSS}</style>
@@ -178,6 +197,7 @@ export function UpsellActions({
             strategy="afterInteractive"
             onError={() => setMode(isCheckoutReady(product) ? "checkout" : "unavailable")}
           />
+          {secureNote}
         </>
       ) : (
         <>
@@ -186,15 +206,12 @@ export function UpsellActions({
               {acceptLabel}
             </a>
           )}
-          <div className="flex items-center justify-center gap-1.5 text-gray-400">
-            <Lock className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="font-sans text-xs">Pagamento processado pela Kiwify</span>
-          </div>
+          {secureNote}
           <div className="text-center">
             <a
               href={declineHref}
               data-funnel-action="decline"
-              className="inline-block font-sans text-sm text-gray-400 hover:text-gray-600 underline underline-offset-4 transition-colors py-2"
+              className="inline-block font-sans text-sm text-gray-500 hover:text-gray-700 underline underline-offset-4 transition-colors py-2"
             >
               {declineLabel}
             </a>

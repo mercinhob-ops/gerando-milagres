@@ -3,6 +3,7 @@ import Image from "next/image";
 import { BookOpenCheck, Inbox, LogIn, Mail } from "lucide-react";
 import { buttonVariants } from "@/components/design-system/button";
 import { cn } from "@/lib/utils";
+import { FunnelFooter } from "@/components/funnel/funnel-footer";
 import { obrigadaContent as c } from "./content";
 import { getMembersAreaUrl } from "./config";
 
@@ -140,10 +141,7 @@ export default function ObrigadaPage() {
         </div>
       </section>
 
-      {/* Rodapé local, sem canais de contato (o PremiumFooter tem WhatsApp). */}
-      <footer className="px-5 py-8 text-center" style={{ background: "#4A2E26" }}>
-        <p className="font-sans text-xs text-nude/50">{c.footer}</p>
-      </footer>
+      <FunnelFooter showBackToTop={false} />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { HeartPulse, Layers, Users } from "lucide-react";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
 import { UpsellActions } from "@/components/funnel/upsell-actions";
 import { ProductCover } from "@/components/funnel/product-cover";
+import { FunnelFooter } from "@/components/funnel/funnel-footer";
+import { searchParamsToQuery } from "@/lib/funnel-params";
 import { cicloFemininoFunnel, formatPrice } from "@/config/funnels/ciclo-feminino";
 import { ofertaEspecialContent as c } from "./content";
 
@@ -21,7 +23,14 @@ const pillarIcons = [Layers, HeartPulse, Users] as const;
 
 const COVER_TONES = ["dark", "salmon", "light"] as const;
 
-export default function OfertaEspecialPage() {
+export default async function OfertaEspecialPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Lido no servidor: o HTML já sai no modo certo (1 clique com ?token=).
+  const initialSearch = searchParamsToQuery(await searchParams);
+
   return (
     <main className="min-h-screen bg-white">
       <TrackFunnelView
@@ -33,7 +42,7 @@ export default function OfertaEspecialPage() {
 
       {/* ─── TOPO ──────────────────────────────────────────────────── */}
       <section
-        className="px-5 pt-8 pb-6 md:pt-14 md:pb-10 text-center"
+        className="px-5 pt-8 pb-6 md:pt-10 md:pb-8 text-center"
         style={{ background: "linear-gradient(180deg, #F0E6DC 0%, #ffffff 100%)" }}
       >
         <div className="max-w-2xl mx-auto space-y-4">
@@ -42,29 +51,51 @@ export default function OfertaEspecialPage() {
               {c.top.eyebrow}
             </span>
           </span>
-          <h1 className={`${serif} text-[1.45rem] leading-[1.25] sm:text-3xl md:text-4xl font-bold text-dark-brown`}>
+          <h1 className={`${serif} text-[1.45rem] leading-[1.25] sm:text-3xl md:text-[2.1rem] font-bold text-dark-brown`}>
             {c.top.headline}
           </h1>
-          <p className="font-sans text-[15px] md:text-lg text-gray-600 leading-relaxed">{c.top.subheadline}</p>
+          <p className="font-sans text-[15px] md:text-base text-gray-600 leading-relaxed">{c.top.subheadline}</p>
         </div>
       </section>
 
       {/* ─── APRESENTAÇÃO + OFERTA (CTA cedo) ─────────────────────── */}
+      {/* Mobile: título → preço/CTA → materiais.
+          Desktop: título e materiais à esquerda, preço/CTA fixo à direita
+          desde o topo do card (CTA dentro da primeira dobra em 1366×768). */}
       <section id="oferta" className="px-5 pb-12 md:pb-16 scroll-mt-4">
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl border border-nude-dark/50 shadow-xl p-4 md:p-10">
-          <div className="text-center">
-            <h2 className={`${serif} text-xl md:text-3xl font-bold text-dark-brown leading-snug`}>
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-nude-dark/50 shadow-xl p-4 md:p-8 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10 md:gap-y-6">
+          <div className="order-1 md:col-start-1 text-center md:text-left">
+            <h2 className={`${serif} text-xl md:text-[1.7rem] font-bold text-dark-brown leading-snug`}>
               {c.offer.heading}
             </h2>
-            <p className="font-sans text-sm md:text-base text-gray-600 leading-relaxed mt-2 max-w-xl mx-auto">
-              {c.offer.subtitle}
+            <p className="font-sans text-sm md:text-[15px] text-gray-600 leading-relaxed mt-2">{c.offer.subtitle}</p>
+            {/* Desktop: logo abaixo do título. Mobile: abaixo do CTA (mantém o CTA na 1ª dobra). */}
+            <p className="hidden md:block font-sans text-[13px] text-brown bg-cream/70 rounded-xl px-3 py-2 mt-3 leading-snug">
+              {c.offer.difference}
             </p>
           </div>
 
-          {/* Mobile: preço + CTA logo após o título; capas e lista em seguida.
-              Desktop: capas em cima, lista e card de preço lado a lado. */}
-          <div className="mt-5 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10">
-            <div className="order-2 md:order-1 md:col-span-2 grid grid-cols-3 gap-2.5 md:gap-5 w-full max-w-[300px] md:max-w-xl mx-auto">
+          <div className="order-2 md:col-start-2 md:row-start-1 md:row-span-2 md:self-start md:sticky md:top-6 bg-cream/60 rounded-2xl p-5">
+            <div className="text-center mb-4">
+              <p className="font-sans text-sm font-bold text-dark-brown">{product.name}</p>
+              <p className={`${serif} text-4xl md:text-5xl font-bold text-salmon leading-none mt-2`}>{PRICE}</p>
+              <p className="font-sans text-xs text-gray-500 mt-2">{c.offer.priceNote}</p>
+            </div>
+            <UpsellActions
+              product={product}
+              funnelId={cicloFemininoFunnel.id}
+              step="upsell-1"
+              acceptLabel={c.offer.acceptLabel}
+              declineLabel={c.offer.declineLabel}
+              initialSearch={initialSearch}
+            />
+          </div>
+
+          <div className="order-3 md:col-start-1 md:row-start-2 space-y-5">
+            <p className="md:hidden font-sans text-[13px] text-brown bg-cream/70 rounded-xl px-3 py-2 leading-snug text-center">
+              {c.offer.difference}
+            </p>
+            <div className="grid grid-cols-3 gap-2.5 md:gap-4 w-full max-w-[300px] md:max-w-none mx-auto md:mx-0">
               {c.offer.materials.map((m, i) => (
                 <ProductCover
                   key={m.title}
@@ -72,12 +103,11 @@ export default function OfertaEspecialPage() {
                   eyebrow={String(i + 1).padStart(2, "0")}
                   tone={COVER_TONES[i]}
                   className="rounded-xl"
-                  titleClassName="text-[11px] sm:text-sm md:text-lg"
+                  titleClassName="text-[11px] sm:text-sm md:text-sm lg:text-base"
                 />
               ))}
             </div>
-
-            <div className="order-3 md:order-2">
+            <div>
               <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon mb-3 text-center md:text-left">
                 {c.offer.comboLabel}
               </p>
@@ -92,21 +122,6 @@ export default function OfertaEspecialPage() {
                   </li>
                 ))}
               </ol>
-            </div>
-
-            <div className="order-1 md:order-3 bg-cream/60 rounded-2xl p-5">
-              <div className="text-center mb-4">
-                <p className="font-sans text-sm font-bold text-dark-brown">{product.name}</p>
-                <p className={`${serif} text-4xl md:text-5xl font-bold text-salmon leading-none mt-2`}>{PRICE}</p>
-                <p className="font-sans text-xs text-gray-500 mt-2">{c.offer.priceNote}</p>
-              </div>
-              <UpsellActions
-                product={product}
-                funnelId={cicloFemininoFunnel.id}
-                step="upsell-1"
-                acceptLabel={c.offer.acceptLabel}
-                declineLabel={c.offer.declineLabel}
-              />
             </div>
           </div>
         </div>
@@ -196,6 +211,7 @@ export default function OfertaEspecialPage() {
           </p>
         </div>
       </section>
+      <FunnelFooter showBackToTop={false} />
     </main>
   );
 }

@@ -50,3 +50,20 @@ export function appendParams(url: string, params: URLSearchParams): string {
   if (isAbsolute) return parsed.toString();
   return `${parsed.pathname}${parsed.search}${parsed.hash}`;
 }
+
+/**
+ * Converte o `searchParams` de uma página do App Router (já resolvido) em
+ * query string, mantendo só as chaves do funil. Valores repetidos: o primeiro.
+ */
+export function searchParamsToQuery(
+  params: Record<string, string | string[] | undefined> | undefined
+): string {
+  const out = new URLSearchParams();
+  for (const key of FUNNEL_PARAMS) {
+    const raw = params?.[key];
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (value) out.set(key, value);
+  }
+  const qs = out.toString();
+  return qs ? `?${qs}` : "";
+}

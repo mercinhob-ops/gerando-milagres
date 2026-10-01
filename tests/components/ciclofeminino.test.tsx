@@ -1,6 +1,9 @@
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
+import PrivacidadePage from "@/app/privacidade/page";
+import { PremiumFooter } from "@/components/marketing/premium-footer";
 import CicloFemininoPage from "@/app/ciclofeminino/page";
 import OfertaEspecialPage from "@/app/ciclofeminino/oferta-especial/page";
 import SuplementacaoPage from "@/app/ciclofeminino/suplementacao/page";
@@ -38,6 +41,16 @@ beforeEach(() => {
 
 function go(path: string) {
   window.history.replaceState({}, "", path);
+}
+
+type AsyncPage = (props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) => Promise<React.ReactElement>;
+
+/** Renderiza uma página assíncrona (searchParams) com a query atual da URL. */
+async function pageEl(Page: AsyncPage) {
+  const params = Object.fromEntries(new URLSearchParams(window.location.search));
+  return await Page({ searchParams: Promise.resolve(params) });
 }
 
 function allHrefs() {
@@ -256,7 +269,7 @@ const UPSELLS = [
 describe.each(UPSELLS)("$label", (u) => {
   it("C/D/F/G) com token: marcação oficial da Kiwify com os IDs exatos", async () => {
     go(`${u.path}?${ALL_PARAMS}`);
-    render(<u.Page />);
+    render(await pageEl(u.Page));
     const trigger = await waitFor(() => {
       const el = document.getElementById(`kiwify-upsell-trigger-${u.code}`);
       expect(el).not.toBeNull();
@@ -274,7 +287,7 @@ describe.each(UPSELLS)("$label", (u) => {
 
   it("E/H/I) data-upsell-url e data-downsell-url → próxima etapa + atribuição, sem token", async () => {
     go(`${u.path}?${ALL_PARAMS}`);
-    render(<u.Page />);
+    render(await pageEl(u.Page));
     const container = await waitFor(() => {
       const el = document.getElementById(`kiwify-upsell-${u.code}`);
       expect(el).not.toBeNull();
@@ -293,10 +306,10 @@ describe.each(UPSELLS)("$label", (u) => {
 
   it("L) script oficial carregado no máximo uma vez, mesmo com re-render", async () => {
     go(`${u.path}?token=TK1`);
-    const { rerender } = render(<u.Page />);
+    const { rerender } = render(await pageEl(u.Page));
     await waitFor(() => expect(document.getElementById(`kiwify-upsell-${u.code}`)).not.toBeNull());
-    rerender(<u.Page />);
-    rerender(<u.Page />);
+    rerender(await pageEl(u.Page));
+    rerender(await pageEl(u.Page));
     await new Promise((r) => setTimeout(r, 50));
     // Carregado pela primeira página com token e nunca reinserido (re-render,
     // remount e as duas upsells compartilham o mesmo script).
@@ -306,7 +319,7 @@ describe.each(UPSELLS)("$label", (u) => {
 
   it("aceite/recusa no 1 clique disparam UpsellAccept/UpsellDecline uma vez (clique duplo)", async () => {
     go(`${u.path}?token=TK1`);
-    render(<u.Page />);
+    render(await pageEl(u.Page));
     const trigger = await waitFor(() => {
       const el = document.getElementById(`kiwify-upsell-trigger-${u.code}`);
       expect(el).not.toBeNull();
@@ -325,7 +338,7 @@ describe.each(UPSELLS)("$label", (u) => {
 
   it("5/6) sem token: página não quebra; aceitar → checkout oficial, recusar → próxima etapa", async () => {
     go(`${u.path}?utm_source=meta&sck=SCK`);
-    render(<u.Page />);
+    render(await pageEl(u.Page));
     const accept = await waitFor(() => {
       const el = screen.getByRole("link", { name: u.accept });
       expect(el.getAttribute("href")).toContain("utm_source=meta");
@@ -368,9 +381,7 @@ describe.each(UPSELLS)("$label", (u) => {
   it("M) UpsellView uma única vez (Strict Mode) com step/produto/valor corretos", async () => {
     go(u.path);
     render(
-      <StrictMode>
-        <u.Page />
-      </StrictMode>
+      <StrictMode>{await pageEl(u.Page)}</StrictMode>
     );
     await waitFor(() => expect(capiEvents().filter((e) => e.eventName === "UpsellView").length).toBe(1));
     const view = pixelCalls("UpsellView");
@@ -382,7 +393,7 @@ describe.each(UPSELLS)("$label", (u) => {
   it("N/O) CTAs acessíveis e nenhum placeholder, nos dois modos", async () => {
     for (const q of ["", "?token=TK1"]) {
       go(`${u.path}${q}`);
-      const { unmount } = render(<u.Page />);
+      const { unmount } = render(await pageEl(u.Page));
       await waitFor(() => expect(screen.getAllByText(u.accept).length).toBeGreaterThan(0));
       const accept = screen.getAllByText(u.accept)[0].closest("a,button")!;
       expect(accept).not.toHaveAttribute("aria-disabled");
@@ -393,16 +404,16 @@ describe.each(UPSELLS)("$label", (u) => {
 });
 
 describe("Upsell 1 — copy", () => {
-  it("selo correto e sem afirmar pagamento confirmado", () => {
-    render(<OfertaEspecialPage />);
+  it("selo correto e sem afirmar pagamento confirmado", async () => {
+    render(await pageEl(OfertaEspecialPage));
     expect(screen.getByText(/seu primeiro passo está dado/i)).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/compra confirmada|pagamento confirmado/i);
   });
 });
 
 describe("Upsell 2 — copy", () => {
-  it("não pressupõe a decisão anterior nem cita outros preços/consulta", () => {
-    render(<SuplementacaoPage />);
+  it("não pressupõe a decisão anterior nem cita outros preços/consulta", async () => {
+    render(await pageEl(SuplementacaoPage));
     expect(screen.getAllByText("Suplementação para a Fertilidade da Mulher").length).toBeGreaterThan(0);
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/ciclos desbloqueados|R\$\s*67|R\$\s*147|consulta|Dra\./i);
@@ -436,7 +447,67 @@ describe("/ciclofeminino/obrigada", () => {
     expect(screen.getByText(/promoções, atualizações e spam/i)).toBeInTheDocument();
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/ciclos desbloqueados|suplementação para|R\$|desafio|consulta|Dra\./i);
-    expect(allHrefs()).toEqual([]); // sem URL da área de membros: nenhum botão
+    // sem URL da área de membros: nenhum botão; único link é a Política de Privacidade
+    expect(allHrefs()).toEqual(["/privacidade"]);
     expect(forbiddenPlaceholders()).toEqual([]);
+  });
+});
+
+// ─── SSR do modo das upsells ───────────────────────────────────────────────
+
+describe.each(UPSELLS)("$label — HTML do servidor", (u) => {
+  it("com ?token= o HTML já sai com a marcação oficial (sem troca pós-hidratação)", async () => {
+    const html = renderToString(await u.Page({ searchParams: Promise.resolve({ token: "T", utm_source: "meta" }) }));
+    expect(html).toContain(`id="kiwify-upsell-trigger-${u.code}"`);
+    expect(html).toContain(`id="kiwify-upsell-cancel-trigger-${u.code}"`);
+    expect(html).toContain(`data-upsell-url="https://gerandomilagres.com.br${u.next}?utm_source=meta"`);
+    expect(html).not.toContain('data-funnel-action="accept"');
+  });
+
+  it("sem token o HTML já sai com o checkout oficial (+UTMs)", async () => {
+    const html = renderToString(await u.Page({ searchParams: Promise.resolve({ utm_source: "meta" }) }));
+    expect(html).toContain(`href="${u.checkout}?utm_source=meta"`);
+    expect(html).not.toContain(`kiwify-upsell-trigger-${u.code}`);
+  });
+});
+
+// ─── Rodapé, autoridade e links ────────────────────────────────────────────
+
+describe("Rodapé e links do Funil 01", () => {
+  const pages = [
+    ["LP", async () => render(<CicloFemininoPage />)],
+    ["Upsell 1", async () => render(await pageEl(OfertaEspecialPage))],
+    ["Upsell 2", async () => render(await pageEl(SuplementacaoPage))],
+    ["Obrigada", async () => render(<ObrigadaPage />)],
+  ] as const;
+
+  it.each(pages)("%s: sem 'Dra.', sem WhatsApp e com link válido de privacidade", async (_, mount) => {
+    await mount();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/Dra\./);
+    expect(text).toMatch(/Camilla Freitas • Farmacêutica • CRF\/PE 4563/);
+    expect(allHrefs().some((h) => /wa\.me|whatsapp/i.test(h))).toBe(false);
+    expect(allHrefs()).toContain("/privacidade");
+    // Todos os links internos apontam para rotas existentes do funil ou institucionais.
+    const internal = allHrefs().filter((h) => h.startsWith("/"));
+    for (const h of internal) {
+      expect(h.split("?")[0]).toMatch(/^\/(privacidade|ciclofeminino(\/(oferta-especial|suplementacao|obrigada))?)$/);
+    }
+  });
+
+  it("PremiumFooter padrão continua igual nas outras páginas (regressão)", () => {
+    render(<PremiumFooter whatsappMessage="Oi" />);
+    expect(screen.getByText(/Dra\. Camilla Freitas • CRF\/PE 4563/)).toBeInTheDocument();
+    expect(allHrefs().some((h) => h.startsWith("https://wa.me/"))).toBe(true);
+    expect(screen.getByRole("button", { name: /voltar ao topo/i })).toBeInTheDocument();
+  });
+
+  it("/privacidade existe e não inventa dados empresariais", () => {
+    render(<PrivacidadePage />);
+    expect(screen.getByRole("heading", { level: 1, name: /política de privacidade/i })).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).toMatch(/Kiwify/);
+    expect(text).toMatch(/LGPD|13\.709/);
+    expect(text).not.toMatch(/CNPJ|Ltda|razão social|endereço:/i);
   });
 });

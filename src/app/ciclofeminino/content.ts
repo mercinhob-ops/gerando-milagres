@@ -178,6 +178,4 @@ export const cicloFemininoContent = {
     ],
   },
 
-  footerWhatsappMessage:
-    "Olá! Tenho interesse no Ciclo Feminino Descomplicado da Camilla Freitas 🌸",
 } as const;

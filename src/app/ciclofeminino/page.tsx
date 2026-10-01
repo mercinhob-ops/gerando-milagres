@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { GuaranteeSection } from "@/components/marketing/guarantee-section";
-import { PremiumFooter } from "@/components/marketing/premium-footer";
 import { EntryCheckoutCta } from "@/components/funnel/entry-checkout-cta";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
 import { FunnelStickyCheckout } from "@/components/funnel/funnel-sticky-checkout";
 import { ProductCover } from "@/components/funnel/product-cover";
+import { FunnelFooter } from "@/components/funnel/funnel-footer";
 import {
   cicloFemininoFunnel,
   formatPrice,
@@ -65,14 +65,16 @@ function H2({ children, dark = false }: { children: string; dark?: boolean }) {
   );
 }
 
-function PriceLine({ dark = false }: { dark?: boolean }) {
+/** Produto + preço junto ao CTA do hero: claro e legível já na primeira dobra. */
+function PriceLine() {
   return (
-    <div className="flex items-center gap-2 justify-center md:justify-start">
-      <Lock className={`w-3.5 h-3.5 ${dark ? "text-nude/50" : "text-gray-400"}`} aria-hidden="true" />
-      <p className={`font-sans text-xs ${dark ? "text-nude/75" : "text-gray-500"}`}>
-        {product.name} • {PRICE}
-      </p>
-    </div>
+    <p className="font-sans text-[13px] md:text-sm text-nude/90 text-center md:text-left">
+      <Lock className="inline w-3.5 h-3.5 text-nude/60 -mt-0.5 mr-1.5" aria-hidden="true" />
+      <span className="font-semibold">{product.name}</span>
+      <span className="text-nude/50"> · </span>
+      <span className="font-bold text-white whitespace-nowrap">{PRICE}</span>
+      <span className="hidden sm:inline text-nude/60"> · pagamento único</span>
+    </p>
   );
 }
 
@@ -96,7 +98,7 @@ export default function CicloFemininoPage() {
           <div className="flex-1 text-center md:text-left space-y-6">
             <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-salmon shrink-0" aria-hidden="true" />
-              <span className="font-sans text-[11px] md:text-xs font-semibold tracking-widest text-nude uppercase">
+              <span className="font-sans text-[11px] md:text-xs font-semibold tracking-wider md:tracking-widest text-nude uppercase whitespace-nowrap">
                 {c.hero.eyebrow}
               </span>
             </span>
@@ -116,7 +118,7 @@ export default function CicloFemininoPage() {
                 label={c.hero.ctaLabel}
                 className="w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4"
               />
-              <PriceLine dark />
+              <PriceLine />
             </div>
 
             <div className="flex items-center gap-3 justify-center md:justify-start pt-2">
@@ -440,7 +442,7 @@ export default function CicloFemininoPage() {
         </div>
       </section>
 
-      <PremiumFooter whatsappMessage={c.footerWhatsappMessage} />
+      <FunnelFooter />
     </div>
   );
 }

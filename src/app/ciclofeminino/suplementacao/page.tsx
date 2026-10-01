@@ -4,6 +4,8 @@ import { ArrowDown } from "lucide-react";
 import { TrackFunnelView } from "@/components/funnel/track-funnel-view";
 import { UpsellActions } from "@/components/funnel/upsell-actions";
 import { ProductCover } from "@/components/funnel/product-cover";
+import { FunnelFooter } from "@/components/funnel/funnel-footer";
+import { searchParamsToQuery } from "@/lib/funnel-params";
 import { cicloFemininoFunnel, formatPrice } from "@/config/funnels/ciclo-feminino";
 import { suplementacaoContent as c } from "./content";
 
@@ -18,7 +20,14 @@ export const metadata: Metadata = {
 const serif = "font-['Georgia',serif]";
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
 
-export default function SuplementacaoPage() {
+export default async function SuplementacaoPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Lido no servidor: o HTML já sai no modo certo (1 clique com ?token=).
+  const initialSearch = searchParamsToQuery(await searchParams);
+
   return (
     <main className="min-h-screen bg-white">
       <TrackFunnelView
@@ -30,7 +39,7 @@ export default function SuplementacaoPage() {
 
       {/* ─── HERO ──────────────────────────────────────────────────── */}
       <section
-        className="px-5 pt-8 pb-6 md:pt-14 md:pb-10 text-center"
+        className="px-5 pt-8 pb-6 md:pt-10 md:pb-8 text-center"
         style={{ background: "linear-gradient(180deg, #F0E6DC 0%, #ffffff 100%)" }}
       >
         <div className="max-w-2xl mx-auto space-y-4">
@@ -39,66 +48,66 @@ export default function SuplementacaoPage() {
               {c.hero.eyebrow}
             </span>
           </span>
-          <h1 className={`${serif} text-[1.45rem] leading-[1.25] sm:text-3xl md:text-4xl font-bold text-dark-brown`}>
+          <h1 className={`${serif} text-[1.45rem] leading-[1.25] sm:text-3xl md:text-[2.1rem] font-bold text-dark-brown`}>
             {c.hero.headline}
           </h1>
-          <p className="font-sans text-[15px] md:text-lg text-gray-600 leading-relaxed">{c.hero.subheadline}</p>
+          <p className="font-sans text-[15px] md:text-base text-gray-600 leading-relaxed">{c.hero.subheadline}</p>
         </div>
       </section>
 
       {/* ─── PRODUTO + OFERTA (CTA cedo) ──────────────────────────── */}
+      {/* Mobile: título → preço/CTA → conteúdo. Desktop: conteúdo à esquerda,
+          preço/CTA à direita desde o topo do card. */}
       <section id="oferta" className="px-5 pb-12 md:pb-16 scroll-mt-4">
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl border border-nude-dark/50 shadow-xl p-4 md:p-10">
-          <div className="text-center md:text-left md:max-w-xl">
-            <h2 className={`${serif} text-xl md:text-3xl font-bold text-dark-brown leading-snug`}>{product.name}</h2>
-            <p className="font-sans text-sm md:text-base text-gray-600 leading-relaxed mt-2">{c.offer.subtitle}</p>
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-nude-dark/50 shadow-xl p-4 md:p-8 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10 md:gap-y-5">
+          <div className="order-1 md:col-start-1 text-center md:text-left">
+            <h2 className={`${serif} text-xl md:text-[1.7rem] font-bold text-dark-brown leading-snug`}>{product.name}</h2>
+            <p className="font-sans text-sm md:text-[15px] text-gray-600 leading-relaxed mt-2">{c.offer.subtitle}</p>
           </div>
 
-          {/* Mobile: preço + CTA primeiro. Desktop: conteúdo à esquerda, preço à direita. */}
-          <div className="mt-5 grid gap-6 md:grid-cols-[1fr_320px] md:gap-x-10">
-            <div className="order-2 md:order-1 space-y-5">
-              <div className="flex gap-4 items-start">
-                <ProductCover
-                  title={product.name}
-                  image={product.coverImage}
-                  eyebrow="Guia digital"
-                  tone="salmon"
-                  className="w-24 md:w-32 shrink-0"
-                  sizes="128px"
-                  titleClassName="text-[11px] md:text-sm"
-                />
-                <div>
-                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon mb-2.5">
-                    {c.offer.nutrientsLabel}
-                  </p>
-                  <ul className="flex flex-wrap gap-1.5">
-                    {c.offer.nutrients.map((n) => (
-                      <li
-                        key={n}
-                        className="font-sans text-xs md:text-sm font-semibold text-brown bg-cream border border-nude-dark/50 rounded-full px-3 py-1"
-                      >
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <p className="font-sans text-sm text-gray-600 leading-relaxed">{c.offer.care}</p>
+          <div className="order-2 md:col-start-2 md:row-start-1 md:row-span-2 md:self-start md:sticky md:top-6 bg-cream/60 rounded-2xl p-5">
+            <div className="text-center mb-4">
+              <p className={`${serif} text-4xl md:text-5xl font-bold text-salmon leading-none`}>{PRICE}</p>
+              <p className="font-sans text-xs text-gray-500 mt-2">{c.offer.priceNote}</p>
             </div>
+            <UpsellActions
+              product={product}
+              funnelId={cicloFemininoFunnel.id}
+              step="upsell-2"
+              acceptLabel={c.offer.acceptLabel}
+              declineLabel={c.offer.declineLabel}
+              initialSearch={initialSearch}
+            />
+          </div>
 
-            <div className="order-1 md:order-2 bg-cream/60 rounded-2xl p-5">
-              <div className="text-center mb-4">
-                <p className={`${serif} text-4xl md:text-5xl font-bold text-salmon leading-none`}>{PRICE}</p>
-                <p className="font-sans text-xs text-gray-500 mt-2">{c.offer.priceNote}</p>
-              </div>
-              <UpsellActions
-                product={product}
-                funnelId={cicloFemininoFunnel.id}
-                step="upsell-2"
-                acceptLabel={c.offer.acceptLabel}
-                declineLabel={c.offer.declineLabel}
+          <div className="order-3 md:col-start-1 md:row-start-2 space-y-5">
+            <div className="flex gap-4 items-start">
+              <ProductCover
+                title={product.name}
+                image={product.coverImage}
+                eyebrow="Guia digital"
+                tone="salmon"
+                className="w-24 md:w-32 shrink-0"
+                sizes="128px"
+                titleClassName="text-[11px] md:text-sm"
               />
+              <div>
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon mb-2.5">
+                  {c.offer.nutrientsLabel}
+                </p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {c.offer.nutrients.map((n) => (
+                    <li
+                      key={n}
+                      className="font-sans text-xs md:text-sm font-semibold text-brown bg-cream border border-nude-dark/50 rounded-full px-3 py-1"
+                    >
+                      {n}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
+            <p className="font-sans text-sm text-gray-600 leading-relaxed">{c.offer.care}</p>
           </div>
         </div>
       </section>
@@ -167,6 +176,7 @@ export default function SuplementacaoPage() {
           </div>
         </div>
       </section>
+      <FunnelFooter showBackToTop={false} />
     </main>
   );
 }

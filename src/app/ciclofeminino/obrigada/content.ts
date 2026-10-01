@@ -51,5 +51,4 @@ export const obrigadaContent = {
     text: "Observe. Aprenda. Registre. E, principalmente, comece a compreender sua jornada com mais consciência.",
   },
 
-  footer: "Camilla Freitas · CRF/PE 4563 · Todos os direitos reservados",
 } as const;
