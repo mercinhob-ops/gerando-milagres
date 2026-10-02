@@ -10,25 +10,26 @@
  * adicionadas depois sem reconstruir a página.
  */
 export const obrigadaContent = {
-  meta: { title: "Pronto! Próximos passos — Ciclo Feminino" },
+  meta: { title: "Pronto. Agora é hora de começar — Ciclo Feminino" },
 
   hero: {
-    eyebrow: "Pronto 💛",
-    headline: "Seu próximo passo agora é acessar o seu conteúdo.",
-    text: "Seu material será disponibilizado pela Kiwify na área de membros vinculada ao e-mail utilizado na compra.",
+    eyebrow: "Pronto. Agora é hora de começar. 💛",
+    headline: "Seu próximo passo é transformar informação em uma preparação mais consciente.",
+    text: "Você acaba de dar um passo importante para compreender melhor o seu corpo e a sua fertilidade. Agora, em vez de tentar absorver tudo de uma vez, comece pelo material que escolheu e avance no seu ritmo.",
   },
 
   /** Usado somente se membersAreaUrl for configurada em ./config.ts. */
   membersCtaLabel: "ACESSAR MINHA ÁREA DE MEMBROS",
 
   nextSteps: {
-    heading: "O que fazer agora",
+    heading: "Seus próximos passos",
     steps: [
-      { title: "Verifique o e-mail usado na compra." },
-      { title: "Procure a mensagem de acesso enviada pela Kiwify." },
-      { title: "Entre na área de membros e comece pelo conteúdo que você adquiriu." },
+      { title: "Acesse sua área de membros da Kiwify." },
+      { title: "Comece pelo material adquirido e percorra o conteúdo com calma." },
+      { title: "Anote dúvidas, sinais do seu ciclo e pontos que gostaria de compreender melhor." },
+      { title: "Lembre-se de que conteúdos educativos não substituem avaliação individual de saúde." },
     ],
-    note: "Se não encontrar o e-mail imediatamente, confira também as abas Promoções, Atualizações e Spam.",
+    note: "O acesso é enviado pela Kiwify para o e-mail utilizado na compra. Se não encontrar a mensagem, confira também as abas Promoções, Atualizações e Spam.",
   },
 
   message: {

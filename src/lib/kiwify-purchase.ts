@@ -85,3 +85,52 @@ export async function sendFunnelPurchase(sale: ConfirmedKiwifySale): Promise<boo
   await sendServerConversionEvent(event);
   return true;
 }
+
+// ─── Webhook: configuração, especificação e idempotência ────────────────────
+
+/**
+ * Marcador explícito: o contrato do webhook da Kiwify (payload, campo de
+ * status aprovado, ID da transação, valor e forma de verificar autenticidade)
+ * NÃO está documentado publicamente nem no repositório. Enquanto este
+ * marcador existir, a rota recusa qualquer POST — nenhum Purchase é enviado.
+ */
+export const KIWIFY_WEBHOOK_SPEC_REQUIRED = "KIWIFY_WEBHOOK_SPEC_REQUIRED" as const;
+
+export type KiwifyWebhookConfig =
+  | { status: "disabled" }
+  | { status: "misconfigured"; missing: string[] }
+  | { status: "ready"; secret: string };
+
+/** Valida as variáveis de servidor do webhook (nunca expostas ao cliente). */
+export function getKiwifyWebhookConfig(env: NodeJS.ProcessEnv = process.env): KiwifyWebhookConfig {
+  if (env.KIWIFY_WEBHOOK_ENABLED !== "true") return { status: "disabled" };
+  const missing = ["KIWIFY_WEBHOOK_TOKEN", "META_CONVERSIONS_TOKEN", "NEXT_PUBLIC_META_PIXEL_ID"].filter(
+    (key) => !env[key]
+  );
+  if (missing.length > 0) return { status: "misconfigured", missing };
+  return { status: "ready", secret: env.KIWIFY_WEBHOOK_TOKEN! };
+}
+
+/**
+ * Idempotência por pedido/transação: o mesmo orderId só gera um Purchase.
+ * Camadas:
+ *  1. este guard em memória (por instância do servidor, com TTL);
+ *  2. event_id estável `kiwify-purchase-<orderId>` → o Meta deduplica
+ *     reenvios do mesmo evento.
+ * Para garantia entre instâncias/reinícios, a versão final deve gravar o
+ * orderId em armazenamento persistente (ex.: tabela no Supabase do projeto)
+ * antes de enviar — definido quando a especificação da Kiwify existir.
+ */
+export function createOrderIdempotencyGuard(ttlMs = 48 * 60 * 60 * 1000, now: () => number = Date.now) {
+  const seen = new Map<string, number>();
+  return {
+    /** true na primeira vez que o orderId aparece dentro do TTL. */
+    claim(orderId: string): boolean {
+      const t = now();
+      for (const [id, at] of seen) if (t - at > ttlMs) seen.delete(id);
+      if (!orderId || seen.has(orderId)) return false;
+      seen.set(orderId, t);
+      return true;
+    },
+  };
+}

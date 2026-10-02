@@ -69,6 +69,7 @@ const KIWIFY_STYLE_VARS =
 const KIWIFY_HOST_CSS = `
 .kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:15px 14px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:.95rem;letter-spacing:.01em;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(196,134,122,.45)}
 .kiwify-upsell-host [id^="kiwify-upsell-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px}
+.kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px;border-radius:6px}
 .kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]{margin-top:18px;text-align:center;color:var(--kiwify-upsell-decline-color);font-size:.875rem;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:8px 0}
 `;
 
@@ -156,8 +157,21 @@ export function UpsellActions({
         trackUpsellDecline(product, funnelId, step);
       }
     };
+    // Acessibilidade: a recusa oficial é um <div role="button" tabindex="0">.
+    // Enter/Espaço acionam o mesmo clique que o script da Kiwify escuta.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!oneClick || (event.key !== "Enter" && event.key !== " ")) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.id !== oneClick.cancelTriggerId) return;
+      event.preventDefault();
+      target.click();
+    };
     el.addEventListener("click", onClick, true);
-    return () => el.removeEventListener("click", onClick, true);
+    el.addEventListener("keydown", onKeyDown);
+    return () => {
+      el.removeEventListener("click", onClick, true);
+      el.removeEventListener("keydown", onKeyDown);
+    };
   }, [mode, oneClick, product, funnelId, step]);
 
   const attribution = pickParams(search, ATTRIBUTION_PARAMS);

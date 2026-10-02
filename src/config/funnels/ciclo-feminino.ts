@@ -68,7 +68,9 @@ export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduc
     oneClickCancelTriggerId: null,
     // Pós-compra configurado NA KIWIFY (página de obrigado do produto):
     nextPath: cicloFemininoRoutes.upsell,
-    coverImage: null, // esperado: /images/ciclofeminino/ciclo-feminino-descomplicado.png
+    // Arte oficial: "Ciclo Feminino_ Guia e Bem-Estar (1).png" → copiar para
+    // public/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png e preencher abaixo.
+    coverImage: null,
   },
   ciclosDesbloqueados: {
     id: "ciclos-desbloqueados",
@@ -92,7 +94,9 @@ export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduc
     oneClickTriggerId: "kiwify-upsell-trigger-Ttiul2X",
     oneClickCancelTriggerId: "kiwify-upsell-cancel-trigger-Ttiul2X",
     nextPath: cicloFemininoRoutes.thankYou,
-    coverImage: null, // esperado: /images/ciclofeminino/suplementacao-fertilidade-feminina.png
+    // Arte oficial: "Guia de Fertilidade em Tons Naturais (1).png" → copiar para
+    // public/images/funil-ciclo-feminino/suplementacao-fertilidade-feminina.png e preencher abaixo.
+    coverImage: null,
   },
 };
 

@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { buildPurchaseEvent, findFunnelProductByOfferCode } from "@/lib/kiwify-purchase";
+import {
+  buildPurchaseEvent,
+  createOrderIdempotencyGuard,
+  findFunnelProductByOfferCode,
+  getKiwifyWebhookConfig,
+  KIWIFY_WEBHOOK_SPEC_REQUIRED,
+} from "@/lib/kiwify-purchase";
 
 describe("buildPurchaseEvent (Funil 01)", () => {
   const base = { approvedAt: 1_759_000_000, customerEmail: "Cliente@Exemplo.com" };
@@ -48,12 +54,53 @@ describe("POST /api/webhooks/kiwify (infraestrutura desligada)", () => {
     expect((await POST()).status).toBe(503);
   });
 
+  it("503 quando habilitado sem as variáveis obrigatórias", async () => {
+    process.env.KIWIFY_WEBHOOK_ENABLED = "true";
+    delete process.env.KIWIFY_WEBHOOK_TOKEN;
+    const { POST } = await import("@/app/api/webhooks/kiwify/route");
+    const res = await POST();
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ missing: expect.arrayContaining(["KIWIFY_WEBHOOK_TOKEN"]) });
+  });
+
   it("501 mesmo habilitado: sem verificação oficial nenhum Purchase é enviado", async () => {
     process.env.KIWIFY_WEBHOOK_ENABLED = "true";
     process.env.KIWIFY_WEBHOOK_TOKEN = "segredo";
+    process.env.META_CONVERSIONS_TOKEN = "t";
+    process.env.NEXT_PUBLIC_META_PIXEL_ID = "1";
     const fetchSpy = vi.spyOn(global, "fetch");
     const { POST } = await import("@/app/api/webhooks/kiwify/route");
-    expect((await POST()).status).toBe(501);
+    const res = await POST();
+    expect(res.status).toBe(501);
+    expect(await res.json()).toEqual({ error: KIWIFY_WEBHOOK_SPEC_REQUIRED });
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Webhook — configuração e idempotência", () => {
+  it("valida o ambiente sem expor segredos", () => {
+    expect(getKiwifyWebhookConfig({} as NodeJS.ProcessEnv)).toEqual({ status: "disabled" });
+    expect(getKiwifyWebhookConfig({ KIWIFY_WEBHOOK_ENABLED: "true" } as unknown as NodeJS.ProcessEnv)).toMatchObject({
+      status: "misconfigured",
+    });
+    expect(
+      getKiwifyWebhookConfig({
+        KIWIFY_WEBHOOK_ENABLED: "true",
+        KIWIFY_WEBHOOK_TOKEN: "s",
+        META_CONVERSIONS_TOKEN: "t",
+        NEXT_PUBLIC_META_PIXEL_ID: "1",
+      } as unknown as NodeJS.ProcessEnv).status
+    ).toBe("ready");
+  });
+
+  it("o mesmo pedido só é aceito uma vez dentro do TTL", () => {
+    let t = 0;
+    const guard = createOrderIdempotencyGuard(1000, () => t);
+    expect(guard.claim("o1")).toBe(true);
+    expect(guard.claim("o1")).toBe(false);
+    expect(guard.claim("o2")).toBe(true);
+    expect(guard.claim("")).toBe(false);
+    t = 2000;
+    expect(guard.claim("o1")).toBe(true);
   });
 });

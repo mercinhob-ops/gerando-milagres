@@ -1,43 +1,34 @@
 import { NextResponse } from "next/server";
+import { getKiwifyWebhookConfig, KIWIFY_WEBHOOK_SPEC_REQUIRED } from "@/lib/kiwify-purchase";
 
 /**
  * Webhook Kiwify → Purchase (Funil 01) — INFRAESTRUTURA DESLIGADA.
  *
- * Por que desligada: a documentação pública da Kiwify lista os gatilhos de
- * webhook (ex.: `compra_aprovada`) e o campo `token` do cadastro, mas NÃO
- * documenta o formato do payload nem como verificar a autenticidade de uma
- * entrega. Processar corpo não verificado permitiria Purchases falsos.
+ * KIWIFY_WEBHOOK_SPEC_REQUIRED: a documentação pública da Kiwify lista os
+ * gatilhos (ex.: `compra_aprovada`), mas não publica o payload nem como
+ * verificar a autenticidade da entrega. Aceitar POST não verificado
+ * permitiria Purchases falsos. Por isso esta rota NUNCA processa o corpo.
  *
- * Para ativar (somente com contrato oficial em mãos):
- *   1. Implementar `verifyKiwifyDelivery` conforme a documentação oficial,
- *      usando o segredo em KIWIFY_WEBHOOK_TOKEN (variável de servidor).
- *   2. Implementar `toConfirmedSale`, retornando dados só para eventos de
- *      compra APROVADA, com o valor real da transação.
- *   3. Chamar `sendFunnelPurchase(sale)` de @/lib/kiwify-purchase.
- *   4. Definir KIWIFY_WEBHOOK_ENABLED=true e cadastrar a URL na Kiwify.
- *   5. NÃO ativar se o Pixel/CAPI nativo da Kiwify já envia Purchase ao
- *      mesmo Pixel (contaria em dobro).
+ * Para finalizar (somente com o contrato oficial em mãos):
+ *   1. verificar autenticidade com KIWIFY_WEBHOOK_TOKEN conforme a especificação;
+ *   2. aceitar só o evento de pagamento APROVADO;
+ *   3. normalizar → ConfirmedKiwifySale (orderId, offerCode, amount real, approvedAt);
+ *   4. `createOrderIdempotencyGuard().claim(orderId)` + armazenamento persistente;
+ *   5. `sendFunnelPurchase(sale)`;
+ *   6. não ativar se o Pixel/CAPI nativo da Kiwify já envia Purchase ao mesmo Pixel.
  *
- * Esta rota nunca registra (log) o corpo recebido nem dados de compradores.
+ * Nunca registrar (log) o corpo, e-mail, telefone ou tokens.
  */
-
-type Verification = { ok: true } | { ok: false; reason: string };
-
-// TODO(kiwify): implementar conforme contrato oficial. Até lá, sempre recusa.
-function verifyKiwifyDelivery(): Verification {
-  return { ok: false, reason: "verification-not-implemented" };
-}
-
 export async function POST() {
-  if (process.env.KIWIFY_WEBHOOK_ENABLED !== "true" || !process.env.KIWIFY_WEBHOOK_TOKEN) {
+  const config = getKiwifyWebhookConfig();
+
+  if (config.status === "disabled") {
     return NextResponse.json({ error: "Kiwify webhook not enabled" }, { status: 503 });
   }
-
-  const verification = verifyKiwifyDelivery();
-  if (!verification.ok) {
-    return NextResponse.json({ error: "Kiwify webhook verification not implemented" }, { status: 501 });
+  if (config.status === "misconfigured") {
+    return NextResponse.json({ error: "Kiwify webhook misconfigured", missing: config.missing }, { status: 503 });
   }
 
-  // Inalcançável enquanto a verificação não existir: nenhum Purchase é enviado.
-  return NextResponse.json({ received: true });
+  // Configurado, mas sem especificação oficial de verificação: recusa sempre.
+  return NextResponse.json({ error: KIWIFY_WEBHOOK_SPEC_REQUIRED }, { status: 501 });
 }

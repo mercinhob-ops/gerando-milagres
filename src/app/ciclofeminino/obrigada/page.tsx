@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { BookOpenCheck, Inbox, LogIn, Mail } from "lucide-react";
+import { BookOpenCheck, LogIn, NotebookPen, ShieldCheck } from "lucide-react";
 import { buttonVariants } from "@/components/design-system/button";
 import { cn } from "@/lib/utils";
 import { FunnelFooter } from "@/components/funnel/funnel-footer";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 const serif = "font-['Georgia',serif]";
 const darkGradient = { background: "linear-gradient(160deg, #4A2E26 0%, #6B4239 60%, #8B5E52 100%)" };
-const stepIcons = [Mail, Inbox, LogIn] as const;
+const stepIcons = [LogIn, BookOpenCheck, NotebookPen, ShieldCheck] as const;
 
 /**
  * Botão da área de membros: só existe se a URL real estiver configurada.
@@ -70,7 +70,7 @@ export default function ObrigadaPage() {
           <h2 className={`${serif} text-2xl md:text-3xl font-bold text-dark-brown text-center mb-8`}>
             {c.nextSteps.heading}
           </h2>
-          <ol className="grid gap-3 md:grid-cols-3 md:gap-5">
+          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
             {c.nextSteps.steps.map(({ title }, i) => {
               const Icon = stepIcons[i] ?? BookOpenCheck;
               return (

@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import PrivacidadePage from "@/app/privacidade/page";
 import { PremiumFooter } from "@/components/marketing/premium-footer";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import CicloFemininoPage from "@/app/ciclofeminino/page";
 import OfertaEspecialPage from "@/app/ciclofeminino/oferta-especial/page";
 import SuplementacaoPage from "@/app/ciclofeminino/suplementacao/page";
@@ -439,11 +441,8 @@ describe("/ciclofeminino/obrigada", () => {
 
   it("copy final, sem afirmar produtos comprados, sem WhatsApp e sem link falso", () => {
     render(<ObrigadaPage />);
-    expect(screen.getByText(/pronto 💛/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 1, name: /seu próximo passo agora é acessar o seu conteúdo/i })
-    ).toBeInTheDocument();
-    expect(screen.getByText(/verifique o e-mail usado na compra/i)).toBeInTheDocument();
+    expect(screen.getByText(/pronto\. agora é hora de começar/i)).toBeInTheDocument();
+    expect(screen.getByText(/acesse sua área de membros da kiwify/i)).toBeInTheDocument();
     expect(screen.getByText(/promoções, atualizações e spam/i)).toBeInTheDocument();
     const text = document.body.textContent ?? "";
     expect(text).not.toMatch(/ciclos desbloqueados|suplementação para|R\$|desafio|consulta|Dra\./i);
@@ -509,5 +508,97 @@ describe("Rodapé e links do Funil 01", () => {
     expect(text).toMatch(/Kiwify/);
     expect(text).toMatch(/LGPD|13\.709/);
     expect(text).not.toMatch(/CNPJ|Ltda|razão social|endereço:/i);
+  });
+});
+
+// ─── Estrutura do funil, SEO, script e imagens ─────────────────────────────
+
+describe("Estrutura e destinos do funil", () => {
+  const routes = cicloFemininoFunnelRoutes();
+  function cicloFemininoFunnelRoutes() {
+    return ["/ciclofeminino", "/ciclofeminino/oferta-especial", "/ciclofeminino/suplementacao", "/ciclofeminino/obrigada"];
+  }
+  const routeFile = (r: string) => path.join(process.cwd(), "src/app", r, "page.tsx");
+
+  it("1/6) todas as rotas do funil existem e todo destino aponta para rota existente", () => {
+    for (const r of routes) expect(existsSync(routeFile(r))).toBe(true);
+    for (const p of Object.values(cicloFemininoProducts) as FunnelProduct[]) {
+      expect(routes).toContain(p.nextPath);
+    }
+  });
+
+  it("5) nenhum upsell aponta para si mesmo e o fluxo termina na /obrigada", () => {
+    const { cicloFeminino, ciclosDesbloqueados, suplementacao } = cicloFemininoProducts;
+    expect(cicloFeminino.nextPath).toBe("/ciclofeminino/oferta-especial");
+    expect(ciclosDesbloqueados.nextPath).not.toBe("/ciclofeminino/oferta-especial");
+    expect(suplementacao.nextPath).not.toBe("/ciclofeminino/suplementacao");
+    expect(suplementacao.nextPath).toBe("/ciclofeminino/obrigada");
+  });
+
+  it("15) páginas internas noindex/nofollow; entrada indexável", async () => {
+    const lp = await import("@/app/ciclofeminino/page");
+    const up1 = await import("@/app/ciclofeminino/oferta-especial/page");
+    const up2 = await import("@/app/ciclofeminino/suplementacao/page");
+    const ob = await import("@/app/ciclofeminino/obrigada/page");
+    expect(lp.metadata.robots).toMatchObject({ index: true });
+    for (const m of [up1, up2, ob]) expect(m.metadata.robots).toMatchObject({ index: false, follow: false });
+  });
+
+  it("12) script Kiwify ausente na LP, na /obrigada e nas upsells sem token", async () => {
+    const lp = renderToString(<CicloFemininoPage />);
+    const ob = renderToString(<ObrigadaPage />);
+    const up1 = renderToString(await OfertaEspecialPage({ searchParams: Promise.resolve({}) }));
+    for (const html of [lp, ob, up1]) {
+      expect(html).not.toContain("snippets.kiwify.com");
+      expect(html).not.toContain("kiwify-upsell-trigger");
+    }
+  });
+
+  it("17) imagens oficiais: quando configuradas, existem em /public e pertencem ao produto certo", () => {
+    const expected: Record<string, string> = {
+      cicloFeminino: "ciclo-feminino-descomplicado",
+      suplementacao: "suplementacao-fertilidade-feminina",
+    };
+    for (const [key, slug] of Object.entries(expected)) {
+      const img = cicloFemininoProducts[key as keyof typeof cicloFemininoProducts].coverImage;
+      if (img === null) continue; // arte ainda não instalada (pendência externa)
+      expect(img).toContain(slug);
+      expect(existsSync(path.join(process.cwd(), "public", img))).toBe(true);
+    }
+    expect(cicloFemininoProducts.ciclosDesbloqueados.coverImage).toBeNull(); // sem capa oficial
+  });
+});
+
+describe("/obrigada — copy final", () => {
+  it("eyebrow, headline e os 4 próximos passos; sem afirmar upsells nem vender", () => {
+    render(<ObrigadaPage />);
+    expect(screen.getByText(/pronto\. agora é hora de começar\./i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /transformar informação em uma preparação mais consciente/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /seus próximos passos/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem").length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByText(/não substituem avaliação individual de saúde/i)).toBeInTheDocument();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/ciclos desbloqueados|suplementação para|R\$|desafio|consulta|acompanhamento de|420|790|147/i);
+  });
+});
+
+describe("Acessibilidade da recusa oficial", () => {
+  it("Enter/Espaço na recusa da Kiwify acionam o clique (UpsellDecline)", async () => {
+    go("/ciclofeminino/oferta-especial?token=T");
+    render(await pageEl(OfertaEspecialPage));
+    const cancel = await waitFor(() => {
+      const el = document.getElementById("kiwify-upsell-cancel-trigger-AQyRq5m");
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    expect(cancel).toHaveAttribute("role", "button");
+    expect(cancel).toHaveAttribute("tabindex", "0");
+    const clicked = vi.fn();
+    cancel.addEventListener("click", clicked);
+    fireEvent.keyDown(cancel, { key: "Enter" });
+    expect(clicked).toHaveBeenCalledTimes(1);
+    expect(pixelCalls("UpsellDecline").length).toBe(1);
   });
 });

@@ -49,6 +49,16 @@ Componente: `src/components/funnel/upsell-actions.tsx`.
 | Upsell (fallback) recusa → próxima | `token` + atribuição | |
 | Qualquer outro parâmetro | descartado | ex.: `foo` |
 
+### O que é garantido, o que depende da Kiwify
+
+| Item | Responsável | Garantia |
+|---|---|---|
+| UTMs/src/sck/fbclid da LP → checkout `aktchfx` | nosso código | garantido (após hidratação; teste automatizado) |
+| Parâmetros na URL de retorno Kiwify → /oferta-especial | Kiwify | `token` documentado; demais **só confirmáveis em compra real** |
+| `data-upsell-url`/`data-downsell-url` com atribuição | nosso código | garantido no HTML |
+| Redirecionamento após aceite/recusa no 1 clique | script oficial Kiwify | depende do script (anexa o próprio contexto) — confirmar em compra real |
+| Recusa/aceite no modo checkout (sem token) | nosso código | garantido (token + atribuição na recusa; atribuição no checkout) |
+
 ## Eventos Meta por etapa
 
 Pixel (browser) + CAPI (`/api/meta-conversions`) com o **mesmo eventID** (`trackConversionEvent`). `custom_data`: `value`, `currency: BRL`, `content_name`, `content_ids`, `content_type`, `product`, `step`, `funnel_id`.
@@ -84,12 +94,12 @@ Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, 
 
 ## Imagens
 
-| Produto | Caminho esperado | Uso | Recomendado |
+| Produto | Arquivo aprovado (origem) | Destino no projeto | Uso |
 |---|---|---|---|
-| Ciclo Feminino Descomplicado | `public/images/ciclofeminino/ciclo-feminino-descomplicado.png` → `coverImage: "/images/ciclofeminino/ciclo-feminino-descomplicado.png"` | card do produto na LP | PNG transparente, 1200×1600 (3:4) |
-| Suplementação para a Fertilidade da Mulher | `public/images/ciclofeminino/suplementacao-fertilidade-feminina.png` | card da oferta 2 | idem |
+| Ciclo Feminino Descomplicado | `Ciclo Feminino_ Guia e Bem-Estar (1).png` | `public/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png` | card do produto em /ciclofeminino |
+| Suplementação para a Fertilidade da Mulher | `Guia de Fertilidade em Tons Naturais (1).png` | `public/images/funil-ciclo-feminino/suplementacao-fertilidade-feminina.png` | card da oferta em /ciclofeminino/suplementacao |
 
-Sem arte, as páginas usam capa tipográfica (`ProductCover`). Ciclos Desbloqueados: capas tipográficas dos 3 materiais.
+**Status: arquivos não disponíveis no ambiente de desenvolvimento.** Ao copiar, preencher `coverImage` em `src/config/funnels/ciclo-feminino.ts` (ex.: `"/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png"`). `ProductCover` usa `next/image` em contêiner 3:4 com `object-contain` (sem distorção, sem texto sobre a arte, `alt` = nome do produto). O teste "17)" passa a exigir que o arquivo exista. Ciclos Desbloqueados não tem capa oficial: capas tipográficas da identidade, sem fingir arte final.
 
 ## Rodapé, autoridade e privacidade
 
@@ -110,11 +120,22 @@ Topo do botão em px; botão inteiro dentro da primeira dobra em todos os viewpo
 ## Configuração externa ainda necessária
 
 - Kiwify: página de obrigado do produto **aktchfx** → `https://gerandomilagres.com.br/ciclofeminino/oferta-especial`.
-- Kiwify: confirmar que as ofertas 1 clique AQyRq5m e Ttiul2X estão ativas para cartão e Pix.
+- Kiwify: ofertas 1 clique AQyRq5m e Ttiul2X ativas (cartão/Pix).
 - Kiwify: checkout comum de AQyRq5m é o mesmo de `/desbloqueandociclos` — a página de obrigado desse produto afeta quem compra por lá.
-- Meta: escolher a fonte de Purchase (nativo Kiwify **ou** webhook).
+- Purchase: escolher **uma** fonte — Pixel/CAPI nativo da Kiwify **ou** webhook (este exige `KIWIFY_WEBHOOK_SPEC_REQUIRED`: contrato oficial de payload/assinatura).
 - Netlify: `NEXT_PUBLIC_META_PIXEL_ID` e `META_CONVERSIONS_TOKEN`.
-- Área de membros: `src/app/ciclofeminino/obrigada/config.ts` → `membersAreaUrl` (opcional; sem ela a página orienta pelo e-mail da Kiwify).
+- Imagens oficiais: copiar os 2 arquivos (seção Imagens).
+- Nome do upsell 2: confirmar o nome oficial no painel Kiwify ("…da Mulher" na config x "…Feminina" em uma das especificações).
+
+## Tabela técnica final
+
+| Etapa | URL | Produto | Preço | Kiwify ID | Aceite | Recusa | Evento Meta | Status |
+|---|---|---|---|---|---|---|---|---|
+| Entrada | /ciclofeminino | Ciclo Feminino Descomplicado | R$ 39,90 | checkout `aktchfx` | checkout Kiwify → (obrigado do produto na Kiwify) /ciclofeminino/oferta-especial | — | PageView, ViewContent, InitiateCheckout | código pronto; redirect pós-compra depende da Kiwify |
+| Upsell 1 | /ciclofeminino/oferta-especial | Ciclos Desbloqueados | R$ 67,00 | `AQyRq5m` | 1 clique → /ciclofeminino/suplementacao | → /ciclofeminino/suplementacao | PageView, UpsellView, UpsellAccept, UpsellDecline (+InitiateCheckout só no fallback) | código pronto; validar em compra real |
+| Upsell 2 | /ciclofeminino/suplementacao | Suplementação para a Fertilidade da Mulher | R$ 47,90 | `Ttiul2X` | 1 clique → /ciclofeminino/obrigada | → /ciclofeminino/obrigada | PageView, UpsellView, UpsellAccept, UpsellDecline (+InitiateCheckout só no fallback) | código pronto; validar em compra real |
+| Final | /ciclofeminino/obrigada | — | — | — | — | — | PageView (sem Purchase) | pronto |
+| Purchase | /api/webhooks/kiwify | (transação real) | valor real | — | — | — | Purchase | **KIWIFY_WEBHOOK_SPEC_REQUIRED** — desligado |
 
 ## Checklist de QA (compra real, cartão e Pix)
 
