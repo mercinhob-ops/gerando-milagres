@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { CheckCircle2, Lock, Sparkles } from "lucide-react";
-import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 import { FadeInSection } from "@/components/marketing/fade-in-section";
 import { Ticker } from "@/components/marketing/ticker";
-import { CheckoutCta } from "@/components/marketing/checkout-cta";
 import { TestimonialsGrid } from "@/components/marketing/testimonials-grid";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { GuaranteeSection } from "@/components/marketing/guarantee-section";
 import { PremiumFooter } from "@/components/marketing/premium-footer";
-
-const CHECKOUT_URL = "https://pay.kiwify.com.br/AQyRq5m";
-const PRICE_VALUE = 67;
-const PRODUCT_NAME = "Desbloqueando Ciclos";
 
 export const metadata: Metadata = {
   title: "Desbloqueando Ciclos — Dra. Camilla Freitas",
@@ -98,8 +92,6 @@ const faqs = [
 export default function DesbloqueandoCiclosPage() {
   return (
     <div className="overflow-x-hidden">
-      <StickyHeaderCheckout checkoutUrl={CHECKOUT_URL} eventValue={PRICE_VALUE} />
-
       {/* ─── HERO ───────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden"
@@ -127,12 +119,6 @@ export default function DesbloqueandoCiclosPage() {
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3 items-center justify-center md:justify-start">
-              <CheckoutCta
-                href={CHECKOUT_URL}
-                value={PRICE_VALUE}
-                productName={PRODUCT_NAME}
-                label="Quero desbloquear meu ciclo →"
-              />
               <p className="font-sans text-xs text-brown/50">Garantia de 7 dias · Acesso imediato</p>
             </div>
           </div>
@@ -254,14 +240,6 @@ export default function DesbloqueandoCiclosPage() {
                 <p className="font-sans text-xs text-brown/60">Acesso imediato após a confirmação</p>
               </div>
 
-              <CheckoutCta
-                href={CHECKOUT_URL}
-                value={PRICE_VALUE}
-                productName={PRODUCT_NAME}
-                label="Quero desbloquear meu ciclo →"
-                className="w-full justify-center text-base"
-              />
-
               <div className="flex items-center justify-center gap-1.5 text-gray-400 mt-4">
                 <Lock className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="font-sans text-xs">Pagamento 100% seguro · SSL</span>
@@ -322,15 +300,6 @@ export default function DesbloqueandoCiclosPage() {
               Um protocolo simples, científico e acolhedor para você entender
               o seu corpo e dar o próximo passo com clareza.
             </p>
-            <div className="pt-2">
-              <CheckoutCta
-                href={CHECKOUT_URL}
-                value={PRICE_VALUE}
-                productName={PRODUCT_NAME}
-                label="Quero desbloquear meu ciclo →"
-                className="text-lg px-10 py-5"
-              />
-            </div>
             <p className="font-sans text-xs text-nude/40">
               Garantia de 7 dias · Acesso imediato · Pagamento seguro
             </p>

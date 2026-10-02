@@ -8,34 +8,13 @@ describe("DesbloqueandoCiclosPage", () => {
     expect(screen.getByRole("heading", { name: /desbloqueando\s*ciclos/i })).toBeInTheDocument();
   });
 
-  it("todos os CTAs apontam para o checkout Kiwify correto", () => {
+  it("não exibe nenhum CTA de compra/checkout", () => {
     render(<DesbloqueandoCiclosPage />);
-    const links = screen
-      .getAllByRole("link")
+    const checkoutLinks = screen
+      .queryAllByRole("link")
       .filter((link) => link.getAttribute("href")?.includes("pay.kiwify.com.br"));
-    expect(links.length).toBeGreaterThanOrEqual(3);
-    links.forEach((link) => {
-      expect(link).toHaveAttribute("href", "https://pay.kiwify.com.br/AQyRq5m");
-      expect(link).toHaveAttribute("target", "_blank");
-    });
-  });
-
-  it("dispara InitiateCheckout com valor 67 ao clicar em um CTA", () => {
-    const fbq = vi.fn();
-    window.fbq = fbq;
-
-    render(<DesbloqueandoCiclosPage />);
-    const links = screen
-      .getAllByRole("link")
-      .filter((link) => link.getAttribute("href")?.includes("pay.kiwify.com.br"));
-    fireEvent.click(links[0]);
-
-    expect(fbq).toHaveBeenCalledWith(
-      "track",
-      "InitiateCheckout",
-      expect.objectContaining({ value: 67, currency: "BRL" }),
-      expect.any(Object)
-    );
+    expect(checkoutLinks).toHaveLength(0);
+    expect(screen.queryByText(/quero desbloquear meu ciclo/i)).not.toBeInTheDocument();
   });
 
   it("mostra a hierarquia de preço 2x de R$33,50 / R$67 à vista", () => {
