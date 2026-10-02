@@ -55,6 +55,19 @@ async function pageEl(Page: AsyncPage) {
   return await Page({ searchParams: Promise.resolve(params) });
 }
 
+/**
+ * Simula o script oficial da Kiwify terminando de carregar (jsdom não
+ * baixa scripts externos). next/script passa a considerar o src carregado e
+ * chama onReady; montagens seguintes já ficam prontas.
+ */
+async function kiwifyScriptLoaded() {
+  const script = document.querySelector(`script[src="${KIWIFY_UPSELL_SCRIPT_SRC}"]`);
+  script?.dispatchEvent(new Event("load"));
+  await waitFor(() =>
+    expect(document.querySelector(".kiwify-upsell-host")?.getAttribute("data-kiwify-ready")).toBe("true")
+  );
+}
+
 function allHrefs() {
   return Array.from(document.querySelectorAll("a")).map((a) => a.getAttribute("href") ?? "");
 }
@@ -327,6 +340,7 @@ describe.each(UPSELLS)("$label", (u) => {
       expect(el).not.toBeNull();
       return el!;
     });
+    await kiwifyScriptLoaded();
     fireEvent.click(trigger);
     fireEvent.click(trigger);
     const accept = pixelCalls("UpsellAccept");
@@ -334,8 +348,20 @@ describe.each(UPSELLS)("$label", (u) => {
     expect(accept[0][0]).toBe("trackCustom");
     expect(accept[0][2]).toMatchObject({ step: u.step, product: u.product, value: u.value, currency: "BRL" });
     expect(pixelCalls("InitiateCheckout").length).toBe(0); // 1 clique não é checkout novo
+    // Depois do aceite, a recusa fica travada (sem ação conflitante).
     fireEvent.click(document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!);
-    expect(pixelCalls("UpsellDecline")[0][2]).toMatchObject({ step: u.step, value: u.value });
+    expect(pixelCalls("UpsellDecline").length).toBe(0);
+  });
+
+  it("recusa no 1 clique dispara UpsellDecline com step/valor", async () => {
+    go(`${u.path}?token=TK1`);
+    render(await pageEl(u.Page));
+    await kiwifyScriptLoaded();
+    fireEvent.click(document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!);
+    fireEvent.click(document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!);
+    const decline = pixelCalls("UpsellDecline");
+    expect(decline.length).toBe(1);
+    expect(decline[0][2]).toMatchObject({ step: u.step, value: u.value });
   });
 
   it("5/6) sem token: página não quebra; aceitar → checkout oficial, recusar → próxima etapa", async () => {
@@ -377,7 +403,8 @@ describe.each(UPSELLS)("$label", (u) => {
     for (const k of ["token", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "src", "sck", "fbclid"]) {
       expect(decline.searchParams.getAll(k).length).toBe(1);
     }
-    expect(decline.searchParams.has("foo")).toBe(false);
+    // Parâmetros desconhecidos (ex.: da Kiwify) nunca são removidos.
+    expect(decline.searchParams.get("foo")).toBe("bar");
   });
 
   it("M) UpsellView uma única vez (Strict Mode) com step/produto/valor corretos", async () => {
@@ -597,8 +624,43 @@ describe("Acessibilidade da recusa oficial", () => {
     expect(cancel).toHaveAttribute("tabindex", "0");
     const clicked = vi.fn();
     cancel.addEventListener("click", clicked);
+    await kiwifyScriptLoaded();
     fireEvent.keyDown(cancel, { key: "Enter" });
     expect(clicked).toHaveBeenCalledTimes(1);
     expect(pixelCalls("UpsellDecline").length).toBe(1);
+  });
+});
+
+describe("Checklist final (COMANDO MESTRE)", () => {
+  it("17) nenhuma página do funil oferece R$ 147, consulta R$ 420 ou acompanhamento R$ 790", async () => {
+    for (const mount of [
+      async () => render(<CicloFemininoPage />),
+      async () => render(await pageEl(OfertaEspecialPage)),
+      async () => render(await pageEl(SuplementacaoPage)),
+      async () => render(<ObrigadaPage />),
+    ]) {
+      const { unmount } = await mount();
+      const text = document.body.textContent ?? "";
+      expect(text).not.toMatch(/R\$\s*147|R\$\s*420|R\$\s*790|Prontas para Gerar/i);
+      unmount();
+    }
+  });
+
+  it.each([
+    ["só R$ 39,90", "token=A"],
+    ["39,90 + 67", "token=A&utm_source=meta"],
+    ["39,90 + 47,90", "token=B&payment_type=pix"],
+    ["39,90 + 67 + 47,90", "token=C&sck=S&kw_extra=1"],
+    ["acesso direto", ""],
+  ])("18) /obrigada idêntica e sem Purchase em qualquer combinação (%s)", async (_, q) => {
+    go(`/ciclofeminino/obrigada${q ? `?${q}` : ""}`);
+    const html = renderToString(<ObrigadaPage />);
+    const { unmount } = render(<ObrigadaPage />);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(html).toBe(renderToString(<ObrigadaPage />));
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(pixelCalls("Purchase")).toEqual([]);
+    expect(capiEvents().some((e) => e.eventName === "Purchase")).toBe(false);
+    unmount();
   });
 });

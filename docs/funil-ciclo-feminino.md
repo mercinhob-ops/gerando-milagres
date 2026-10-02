@@ -28,12 +28,15 @@ Suplementação para a Fertilidade da Mulher · R$ 47,90 · 1-click Ttiul2X
 
 ## Integração Kiwify (1 clique)
 
-Componente: `src/components/funnel/upsell-actions.tsx`.
+Componentes: `src/components/funnel/upsell-actions.tsx` (decide o modo) e `src/components/funnel/kiwify-upsell.tsx` (**componente reutilizável do 1 clique oficial**: props `containerId`, `triggerId`, `cancelTriggerId`, `acceptUrl`, `declineUrl`, `acceptLabel`, `declineLabel`, `tracking.onAccept/onDecline`, `onUnavailable`).
 
 - **Com contexto** (`?token=` na URL — o sinal que a Kiwify envia ao redirecionar após a compra e que a própria documentação usa para teste, `?token=123`) **e** IDs configurados: a página renderiza a **marcação oficial do gerador** (container `kiwify-upsell-<código>` com `data-upsell-url`/`data-downsell-url`, `<button id="kiwify-upsell-trigger-…">`, `<div id="kiwify-upsell-cancel-trigger-…">`) via `innerHTML` — React não controla esses nós — e carrega **uma vez** `https://snippets.kiwify.com/upsell-v2/upsell.min.js` (`next/script`, `id="kiwify-upsell-v2"`). Cobrança e redirecionamento (aceite e recusa) são da Kiwify.
 - `data-upsell-url` = `data-downsell-url` = origem atual + próxima etapa + parâmetros de atribuição, **sem** `token` (o script anexa o próprio contexto ao redirecionar — evitar token duplicado).
 - Cores do botão: variáveis CSS do script (`--kiwify-upsell-accept-bg:#C4867A` etc.) + estilo base da marca sem `!important` (o CSS do script prevalece quando carrega).
 - **Sem contexto** (acesso direto) ou **se o script falhar ao carregar** (`onError`): aceitar abre o checkout oficial do produto com UTMs; recusar segue para a próxima etapa com token/UTMs. A página nunca quebra.
+- **Prontidão do script:** até o `upsell.min.js` carregar (`onLoad`/`onReady` do next/script), o host fica com `data-kiwify-ready="false"` + `aria-busy`: botões com `pointer-events:none`, opacidade reduzida e cliques/teclado interceptados na fase de captura — nenhum clique "morto" e nenhum UpsellAccept/Decline sem ação real. Se o script não ficar pronto em **12 s** (ou falhar), a página troca para o modo checkout.
+- **Duplo clique:** depois de um aceite ou recusa, novos cliques nos dois botões ficam bloqueados por 10 s (evita cobrança dupla ou ação conflitante); a trava expira para permitir nova tentativa se a Kiwify recusar o pagamento.
+- **Sem conflito React × Kiwify:** a prop `dangerouslySetInnerHTML` é um objeto memoizado; re-renderizações (ex.: virar "pronto") não reescrevem o DOM que o script já ligou (o React 19 reaplica `innerHTML` quando a referência muda).
 - A detecção usa apenas a presença de `token`; não bloqueia o script quando o contexto existe.
 - A detecção acontece **no servidor** (`searchParams` da página → `initialSearch`): o HTML já sai no modo certo, sem troca de botão após a hidratação (evita clique no botão errado em conexões lentas e salto de layout). Por isso as duas upsells são rotas dinâmicas (ƒ); a LP e a /obrigada continuam estáticas.
 - `data-upsell-url`/`data-downsell-url` usam o domínio oficial (`SITE_URL`), como no HTML gerado pela Kiwify.
@@ -46,8 +49,8 @@ Componente: `src/components/funnel/upsell-actions.tsx`.
 | Kiwify → upsell 1 | o que a Kiwify enviar (`token` documentado) | UTMs após o checkout dependem da Kiwify — verificar na compra teste |
 | Upsell (1 clique) → próxima | URLs data-* levam os de atribuição; o script anexa o contexto | |
 | Upsell (fallback) → checkout | atribuição | sem `token` |
-| Upsell (fallback) recusa → próxima | `token` + atribuição | |
-| Qualquer outro parâmetro | descartado | ex.: `foo` |
+| Upsell (fallback) recusa → próxima | **query inteira** (token, `payment_type`, UTMs e qualquer parâmetro Kiwify desconhecido) | `forwardParams` |
+| Checkout e URLs data-* | somente atribuição | parâmetros desconhecidos não vão para o checkout nem para o script |
 
 ### O que é garantido, o que depende da Kiwify
 
@@ -57,7 +60,7 @@ Componente: `src/components/funnel/upsell-actions.tsx`.
 | Parâmetros na URL de retorno Kiwify → /oferta-especial | Kiwify | `token` documentado; demais **só confirmáveis em compra real** |
 | `data-upsell-url`/`data-downsell-url` com atribuição | nosso código | garantido no HTML |
 | Redirecionamento após aceite/recusa no 1 clique | script oficial Kiwify | depende do script (anexa o próprio contexto) — confirmar em compra real |
-| Recusa/aceite no modo checkout (sem token) | nosso código | garantido (token + atribuição na recusa; atribuição no checkout) |
+| Recusa/aceite no modo checkout (sem token) | nosso código | garantido (query inteira na recusa; atribuição no checkout) |
 
 ## Eventos Meta por etapa
 
@@ -98,6 +101,8 @@ Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, 
 |---|---|---|---|
 | Ciclo Feminino Descomplicado | `Ciclo Feminino_ Guia e Bem-Estar (1).png` | `public/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png` | card do produto em /ciclofeminino |
 | Suplementação para a Fertilidade da Mulher | `Guia de Fertilidade em Tons Naturais (1).png` | `public/images/funil-ciclo-feminino/suplementacao-fertilidade-feminina.png` | card da oferta em /ciclofeminino/suplementacao |
+
+Nomes alternativos aceitos (sugestão do comando mestre): `public/images/ciclo-feminino-descomplicado.webp` e `public/images/suplementacao-fertilidade-feminina.webp`. Basta apontar `coverImage` para o caminho escolhido.
 
 **Status: arquivos não disponíveis no ambiente de desenvolvimento.** Ao copiar, preencher `coverImage` em `src/config/funnels/ciclo-feminino.ts` (ex.: `"/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png"`). `ProductCover` usa `next/image` em contêiner 3:4 com `object-contain` (sem distorção, sem texto sobre a arte, `alt` = nome do produto). O teste "17)" passa a exigir que o arquivo exista. Ciclos Desbloqueados não tem capa oficial: capas tipográficas da identidade, sem fingir arte final.
 

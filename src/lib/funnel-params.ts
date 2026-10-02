@@ -7,6 +7,10 @@
  *   nas URLs data-upsell-url/data-downsell-url (o script oficial da Kiwify
  *   anexa o próprio token ao redirecionar).
  *
+ * - Entre páginas internas do funil a query recebida é repassada INTEIRA
+ *   (forwardParams): parâmetros que a Kiwify adicionar e que não conhecemos
+ *   (ex.: payment_type) nunca são removidos.
+ *
  * Nada aqui loga valores.
  */
 export const ATTRIBUTION_PARAMS = [
@@ -52,15 +56,29 @@ export function appendParams(url: string, params: URLSearchParams): string {
 }
 
 /**
+ * Toda a query recebida (valores não vazios; repetidos: o primeiro), para
+ * repassar entre páginas internas do funil sem perder parâmetros Kiwify
+ * desconhecidos.
+ */
+export function forwardParams(search: string): URLSearchParams {
+  const current = new URLSearchParams(search);
+  const out = new URLSearchParams();
+  for (const [key, value] of current) {
+    if (value && !out.has(key)) out.set(key, value);
+  }
+  return out;
+}
+
+/**
  * Converte o `searchParams` de uma página do App Router (já resolvido) em
- * query string, mantendo só as chaves do funil. Valores repetidos: o primeiro.
+ * query string, preservando TODAS as chaves (inclusive parâmetros Kiwify
+ * desconhecidos). Valores repetidos: o primeiro.
  */
 export function searchParamsToQuery(
   params: Record<string, string | string[] | undefined> | undefined
 ): string {
   const out = new URLSearchParams();
-  for (const key of FUNNEL_PARAMS) {
-    const raw = params?.[key];
+  for (const [key, raw] of Object.entries(params ?? {})) {
     const value = Array.isArray(raw) ? raw[0] : raw;
     if (value) out.set(key, value);
   }
