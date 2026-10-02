@@ -117,6 +117,8 @@ export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduc
 
 export const cicloFemininoFunnel = {
   id: "funil-01-ciclo-feminino",
+  /** Identificador curto usado no parâmetro `funnel` do CheckoutClick. */
+  slug: "ciclo-feminino",
   products: cicloFemininoProducts,
   routes: cicloFemininoRoutes,
 } as const;

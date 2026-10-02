@@ -220,16 +220,52 @@ describe("/ciclofeminino", () => {
     expect(pixel[0][3].eventID).toBe(capi.eventId);
   });
 
-  it("InitiateCheckout 39,90 BRL no clique; clique duplo conta uma vez", () => {
+  it("CheckoutClick (custom) no clique, com os parâmetros exatos; clique duplo conta uma vez; nenhum InitiateCheckout", () => {
     render(<CicloFemininoPage />);
-    const cta = document.querySelector("[data-funnel-checkout]")!;
-    cta.addEventListener("click", (e) => e.preventDefault());
+    const ctas = document.querySelectorAll("[data-funnel-checkout]");
+    ctas.forEach((el) => el.addEventListener("click", (e) => e.preventDefault()));
+    const cta = ctas[0];
     fireEvent.click(cta);
     fireEvent.click(cta);
-    const calls = pixelCalls("InitiateCheckout");
+    fireEvent.click(ctas[ctas.length - 1]); // outro CTA no mesmo instante
+    const calls = pixelCalls("CheckoutClick");
     expect(calls.length).toBe(1);
-    expect(calls[0][2]).toMatchObject({ value: 39.9, currency: "BRL" });
-    expect(capiEvents().filter((e) => e.eventName === "InitiateCheckout")[0].eventId).toBe(calls[0][3].eventID);
+    expect(calls[0][0]).toBe("trackCustom");
+    expect(calls[0][2]).toEqual({
+      content_name: "Ciclo Feminino Descomplicado",
+      content_type: "product",
+      value: 39.9,
+      currency: "BRL",
+      funnel: "ciclo-feminino",
+      step: "entry",
+    });
+    const capi = capiEvents().filter((e) => e.eventName === "CheckoutClick");
+    expect(capi.length).toBe(1);
+    expect(capi[0].eventId).toBe(calls[0][3].eventID); // dedup Pixel + CAPI
+    expect(pixelCalls("InitiateCheckout")).toEqual([]);
+    expect(capiEvents().some((e) => e.eventName === "InitiateCheckout")).toBe(false);
+    // O usuário continua indo para o checkout oficial da Kiwify.
+    expect(cta.getAttribute("href")).toMatch(/^https:\/\/pay\.kiwify\.com\.br\/aktchfx/);
+  });
+
+  it("header fixo da LP dispara CheckoutClick (nunca InitiateCheckout)", async () => {
+    const { StickyHeader } = await import("@/components/ui/sticky-header");
+    render(
+      <>
+        <StickyHeader />
+        <CicloFemininoPage />
+      </>
+    );
+    const headerCta = await waitFor(() => {
+      const el = document.querySelector('header a[href*="pay.kiwify.com.br/aktchfx"]');
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    headerCta.addEventListener("click", (e) => e.preventDefault());
+    fireEvent.click(headerCta);
+    expect(pixelCalls("CheckoutClick").length).toBe(1);
+    expect(pixelCalls("CheckoutClick")[0][2]).toMatchObject({ funnel: "ciclo-feminino", step: "entry" });
+    expect(pixelCalls("InitiateCheckout")).toEqual([]);
   });
 
   it("copy: hero, sem promessa e sem citar as ofertas seguintes", () => {
@@ -348,6 +384,7 @@ describe.each(UPSELLS)("$label", (u) => {
     expect(accept[0][0]).toBe("trackCustom");
     expect(accept[0][2]).toMatchObject({ step: u.step, product: u.product, value: u.value, currency: "BRL" });
     expect(pixelCalls("InitiateCheckout").length).toBe(0); // 1 clique não é checkout novo
+    expect(pixelCalls("CheckoutClick").length).toBe(0);
     // Depois do aceite, a recusa fica travada (sem ação conflitante).
     fireEvent.click(document.getElementById(`kiwify-upsell-cancel-trigger-${u.code}`)!);
     expect(pixelCalls("UpsellDecline").length).toBe(0);
@@ -379,6 +416,20 @@ describe.each(UPSELLS)("$label", (u) => {
     expect(decline.getAttribute("href")).toBe(`${u.next}?utm_source=meta&sck=SCK`);
     expect(document.getElementById(`kiwify-upsell-trigger-${u.code}`)).toBeNull();
     expect(allHrefs()).not.toContain(GLOBAL_CHECKOUT);
+  });
+
+  it("modo checkout (sem token): aceite = UpsellAccept + CheckoutClick; nunca InitiateCheckout", async () => {
+    go(u.path);
+    render(await pageEl(u.Page));
+    const accept = await waitFor(() => screen.getByRole("link", { name: u.accept }));
+    accept.addEventListener("click", (e) => e.preventDefault());
+    fireEvent.click(accept);
+    fireEvent.click(accept);
+    expect(pixelCalls("UpsellAccept").length).toBe(1);
+    const click = pixelCalls("CheckoutClick");
+    expect(click.length).toBe(1);
+    expect(click[0][2]).toMatchObject({ funnel: "ciclo-feminino", step: u.step, value: u.value, currency: "BRL" });
+    expect(pixelCalls("InitiateCheckout")).toEqual([]);
   });
 
   it("I) recusa sem 1 clique preserva token e atribuição", async () => {

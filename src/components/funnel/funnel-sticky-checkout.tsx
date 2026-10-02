@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+import { trackFunnelCheckoutClick } from "@/lib/funnel-tracking";
 import { StickyHeaderCheckout } from "@/components/ui/sticky-header-checkout";
 import type { FunnelProduct } from "@/config/funnels/ciclo-feminino";
 import { useCheckoutHref } from "./entry-checkout-cta";
@@ -11,6 +13,8 @@ import { useCheckoutHref } from "./entry-checkout-cta";
  */
 export function FunnelStickyCheckout({ product }: { product: FunnelProduct }) {
   const href = useCheckoutHref(product);
+  // CheckoutClick (nunca InitiateCheckout — ver funnel-tracking.ts).
+  const onCheckoutClick = useCallback(() => trackFunnelCheckoutClick(product, "entry"), [product]);
   if (!href) return null;
-  return <StickyHeaderCheckout checkoutUrl={href} eventValue={product.price} />;
+  return <StickyHeaderCheckout checkoutUrl={href} eventValue={product.price} onCheckoutClick={onCheckoutClick} />;
 }

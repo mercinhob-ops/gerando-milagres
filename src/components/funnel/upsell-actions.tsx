@@ -12,7 +12,7 @@ import {
   type OneClickConfig,
 } from "@/config/funnels/ciclo-feminino";
 import {
-  trackFunnelInitiateCheckout,
+  trackFunnelCheckoutClick,
   trackUpsellAccept,
   trackUpsellDecline,
   type FunnelStep,
@@ -98,7 +98,7 @@ export function UpsellActions({
       if (!target?.closest) return;
       if (target.closest('[data-funnel-action="accept"]')) {
         trackUpsellAccept(product, funnelId, step);
-        trackFunnelInitiateCheckout(product, funnelId, step);
+        trackFunnelCheckoutClick(product, step);
       } else if (target.closest('[data-funnel-action="decline"]')) {
         trackUpsellDecline(product, funnelId, step);
       }

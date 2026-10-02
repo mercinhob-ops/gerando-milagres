@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/design-system/button";
 import { FUNNEL_CTA_CLASS } from "./cta-styles";
 import { cn } from "@/lib/utils";
 import { isCheckoutReady, type FunnelProduct } from "@/config/funnels/ciclo-feminino";
-import { trackFunnelInitiateCheckout } from "@/lib/funnel-tracking";
+import { trackFunnelCheckoutClick } from "@/lib/funnel-tracking";
 import { ATTRIBUTION_PARAMS, appendParams, pickParams } from "@/lib/funnel-params";
 
 /** Checkout do produto + UTMs/src/sck/fbclid da visita (sem duplicar). */
@@ -26,18 +26,19 @@ export function useCheckoutHref(product: FunnelProduct) {
 /**
  * CTA de compra da página de entrada. Leva exclusivamente ao checkout do
  * produto configurado em src/config/funnels (nunca ao checkout global) e
- * dispara InitiateCheckout (Pixel + CAPI, mesmo eventID; clique duplo
- * ignorado pela janela de deduplicação). Abre na mesma aba para que o
- * pós-compra da Kiwify continue o funil na aba da cliente.
+ * dispara o evento personalizado CheckoutClick (Pixel + CAPI, mesmo eventID;
+ * clique duplo ignorado). InitiateCheckout fica a cargo do Pixel da Kiwify.
+ * Abre na mesma aba para que o pós-compra da Kiwify continue o funil na aba
+ * da cliente.
  */
 export function EntryCheckoutCta({
   product,
-  funnelId,
   label,
   className,
 }: {
   product: FunnelProduct;
-  funnelId: string;
+  /** Não usado pelo tracking (CheckoutClick usa `cicloFemininoFunnel.slug`); mantido por compatibilidade. */
+  funnelId?: string;
   label: string;
   className?: string;
 }) {
@@ -48,7 +49,7 @@ export function EntryCheckoutCta({
     <a
       href={href}
       data-funnel-checkout={product.id}
-      onClick={() => trackFunnelInitiateCheckout(product, funnelId, "entry")}
+      onClick={() => trackFunnelCheckoutClick(product, "entry")}
       className={cn(
         buttonVariants({ variant: "primary", size: "lg" }),
         FUNNEL_CTA_CLASS,

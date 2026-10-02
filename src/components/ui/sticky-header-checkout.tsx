@@ -6,14 +6,16 @@ import { setStickyHeaderCheckout } from "./sticky-header-store";
 export function StickyHeaderCheckout({
   checkoutUrl,
   eventValue,
+  onCheckoutClick,
 }: {
   checkoutUrl: string;
   eventValue?: number;
+  onCheckoutClick?: () => void;
 }) {
   useEffect(() => {
-    setStickyHeaderCheckout({ checkoutUrl, eventValue });
+    setStickyHeaderCheckout({ checkoutUrl, eventValue, onCheckoutClick });
     return () => setStickyHeaderCheckout(null);
-  }, [checkoutUrl, eventValue]);
+  }, [checkoutUrl, eventValue, onCheckoutClick]);
 
   return null;
 }

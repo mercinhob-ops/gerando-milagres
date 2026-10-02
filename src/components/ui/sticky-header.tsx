@@ -41,6 +41,10 @@ export function StickyHeader({
     : (registeredCheckout ?? { checkoutUrl: siteConfig.checkoutUrl, eventValue: undefined });
 
   function handleClick() {
+    if (registeredCheckout?.onCheckoutClick && !checkoutUrl) {
+      registeredCheckout.onCheckoutClick();
+      return;
+    }
     if (resolved.eventValue === undefined) return;
     trackConversionEvent({
       eventName: "InitiateCheckout",

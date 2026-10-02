@@ -1,5 +1,5 @@
 import { trackConversionEvent } from "@/lib/meta-conversions";
-import type { FunnelProduct } from "@/config/funnels/ciclo-feminino";
+import { cicloFemininoFunnel, type FunnelProduct } from "@/config/funnels/ciclo-feminino";
 
 /**
  * Eventos do funil. Todos passam por `trackConversionEvent`, que envia
@@ -8,10 +8,15 @@ import type { FunnelProduct } from "@/config/funnels/ciclo-feminino";
  *
  * Purchase NÃO é disparado no frontend: só a confirmação real da Kiwify
  * (integração nativa da Kiwify ou webhook server-side) representa compra.
+ *
+ * InitiateCheckout NÃO é disparado pelo FUNIL 01: o Pixel configurado na
+ * Kiwify já o dispara ao abrir o checkout, e não há deduplicação entre os
+ * dois. O clique nos CTAs que levam ao checkout vira o evento personalizado
+ * `CheckoutClick`.
  */
 export const FUNNEL_EVENTS = {
   viewContent: "ViewContent", // padrão Meta
-  initiateCheckout: "InitiateCheckout", // padrão Meta
+  checkoutClick: "CheckoutClick", // custom (no lugar de InitiateCheckout)
   upsellView: "UpsellView", // custom
   upsellAccept: "UpsellAccept", // custom
   upsellDecline: "UpsellDecline", // custom
@@ -74,7 +79,8 @@ export function waitForFbq(timeoutMs = FBQ_WAIT_MS): Promise<void> {
 
 function fire(eventName: string, product: FunnelProduct, funnelId: string, step: FunnelStep, custom = false) {
   if (!shouldFire(`${eventName}:${product.id}:${step}`)) return;
-  trackConversionEvent({ eventName, customData: productData(product, funnelId, step), custom });
+  // keepalive: aceite/recusa navegam logo após o clique; a CAPI não pode ser cancelada.
+  trackConversionEvent({ eventName, customData: productData(product, funnelId, step), custom, keepalive: true });
 }
 
 export async function trackFunnelViewContent(product: FunnelProduct, funnelId: string, step: FunnelStep) {
@@ -89,8 +95,26 @@ export async function trackUpsellView(product: FunnelProduct, funnelId: string, 
   fire(FUNNEL_EVENTS.upsellView, product, funnelId, step, true);
 }
 
-export function trackFunnelInitiateCheckout(product: FunnelProduct, funnelId: string, step: FunnelStep) {
-  fire(FUNNEL_EVENTS.initiateCheckout, product, funnelId, step);
+/**
+ * Clique em um CTA que abre o checkout Kiwify (LP, header fixo da LP e
+ * aceite no modo checkout das upsells). Uma chave de deduplicação por
+ * produto/etapa: clique duplo ou CTA + header no mesmo instante = 1 evento.
+ */
+export function trackFunnelCheckoutClick(product: FunnelProduct, step: FunnelStep) {
+  if (!shouldFire(`${FUNNEL_EVENTS.checkoutClick}:${product.id}:${step}`)) return;
+  trackConversionEvent({
+    eventName: FUNNEL_EVENTS.checkoutClick,
+    customData: {
+      content_name: product.name,
+      content_type: "product",
+      value: product.price,
+      currency: "BRL",
+      funnel: cicloFemininoFunnel.slug,
+      step,
+    },
+    custom: true,
+    keepalive: true, // o clique navega para a Kiwify na mesma aba
+  });
 }
 
 export function trackUpsellAccept(product: FunnelProduct, funnelId: string, step: FunnelStep) {

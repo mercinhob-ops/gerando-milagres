@@ -70,11 +70,13 @@ Pixel (browser) + CAPI (`/api/meta-conversions`) com o **mesmo eventID** (`track
 |---|---|---|---|
 | todas | PageView | padrão | script do Pixel (layout global), 1x por carregamento |
 | /ciclofeminino | ViewContent (39,90, step `entry`) | padrão | ao carregar, após o Pixel existir (espera até 4 s) |
-| /ciclofeminino | InitiateCheckout (39,90) | padrão | clique em CTA (header fixo: evento do componente global, só `value`) |
+| /ciclofeminino | **CheckoutClick** (custom) — `content_name`, `content_type: product`, `value: 39.9`, `currency: BRL`, `funnel: ciclo-feminino`, `step: entry` | custom (`trackCustom`) | clique em qualquer CTA de compra, inclusive o header fixo |
 | oferta-especial | UpsellView / UpsellAccept / UpsellDecline (67, `upsell-1`) | custom (`trackCustom`) | carregar / aceitar / recusar |
 | suplementacao | UpsellView / UpsellAccept / UpsellDecline (47,90, `upsell-2`) | custom | carregar / aceitar / recusar |
-| upsell (fallback) | + InitiateCheckout | padrão | só quando aceitar abre checkout comum |
+| upsell (fallback) | + CheckoutClick (`step` da upsell) | custom | só quando aceitar abre checkout comum |
 | /obrigada | — | — | **nenhum** evento de conversão |
+
+**InitiateCheckout não é disparado pelo FUNIL 01.** O Pixel configurado na Kiwify já dispara InitiateCheckout ao abrir o checkout e não há deduplicação entre os dois. Kiwify = fonte de InitiateCheckout e de Purchase.
 
 Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, remount, clique duplo) em `src/lib/funnel-tracking.ts`. Nenhum `preventDefault` — o script da Kiwify não é afetado.
 
@@ -93,7 +95,27 @@ Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, 
 |---|---|---|
 | `NEXT_PUBLIC_META_PIXEL_ID` | público | Pixel |
 | `META_CONVERSIONS_TOKEN` | **servidor** | CAPI (sem ele `/api/meta-conversions` responde 503) |
-| `KIWIFY_WEBHOOK_ENABLED`, `KIWIFY_WEBHOOK_TOKEN` | servidor | só ao ativar o webhook |
+| `KIWIFY_WEBHOOK_ENABLED`, `KIWIFY_WEBHOOK_TOKEN` | servidor | **não cadastrar agora** (webhook desligado) |
+
+## Hardening de `/api/meta-conversions`
+
+Validação em `src/lib/meta-capi-validation.ts` (a rota é pública por natureza; nenhuma camada sozinha é autenticação e nenhum secret vai ao navegador):
+
+| Camada | Regra | Resposta |
+|---|---|---|
+| Content-Type | `application/json` obrigatório (chamadas de outros sites exigem preflight CORS, que a rota não autoriza) | 415 |
+| Origem | `Origin` (ou `Referer`) = `gerandomilagres.com.br`/`www`, o próprio host do deploy (previews Netlify) ou `localhost` fora de produção | 403 |
+| Tamanho | corpo ≤ 4 KB | 413 |
+| Evento | lista fechada: PageView, ViewContent, InitiateCheckout (outros funis), Lead, CheckoutClick, UpsellView, UpsellAccept, UpsellDecline | 422 |
+| Campos | `eventId` 8–64 `[A-Za-z0-9-]`; `eventSourceUrl` do próprio site; `customData` só com chaves conhecidas, `value` 0–100 000, `currency` ISO; `fbc`/`fbp` no formato `fb.N.N.x` | 422 |
+| Resposta | erro da Meta não é repassado (502 genérico); `Cache-Control: no-store`; timeout de 5 s | — |
+| Logs | nenhum `console.*` na rota | — |
+
+Limite conhecido: Origin/Referer só barra navegadores; um script de servidor pode forjar cabeçalhos. A lista fechada + validação limita o que dá para enviar. Rate limiting exigiria infraestrutura externa (não implementado).
+
+## Consentimento (LGPD) — gap documentado
+
+Auditoria: **não existe** mecanismo de consentimento no projeto (sem banner, sem preferência de cookies, sem estado de consentimento). `analytics-provider.tsx` carrega o Pixel sempre que `NEXT_PUBLIC_META_PIXEL_ID` existe; o comentário do `.env.example` ("ativados somente com consentimento") não corresponde ao código. Por decisão, **nada foi improvisado**: condicionar o Pixel exige primeiro definir a UX de consentimento (banner, textos, opção de recusar/revogar, persistência) — para todo o site, não só o FUNIL 01. Até lá a `/privacidade` informa o uso do Pixel/CAPI e como bloquear cookies.
 
 ## Imagens
 
@@ -139,9 +161,9 @@ Topo do botão em px; botão inteiro dentro da primeira dobra em todos os viewpo
 
 | Etapa | URL | Produto | Preço | Kiwify ID | Aceite | Recusa | Evento Meta | Status |
 |---|---|---|---|---|---|---|---|---|
-| Entrada | /ciclofeminino | Ciclo Feminino Descomplicado | R$ 39,90 | checkout `aktchfx` | checkout Kiwify → (obrigado do produto na Kiwify) /ciclofeminino/oferta-especial | — | PageView, ViewContent, InitiateCheckout | código pronto; redirect pós-compra depende da Kiwify |
-| Upsell 1 | /ciclofeminino/oferta-especial | Ciclos Desbloqueados | R$ 67,00 | `AQyRq5m` | 1 clique → /ciclofeminino/suplementacao | → /ciclofeminino/suplementacao | PageView, UpsellView, UpsellAccept, UpsellDecline (+InitiateCheckout só no fallback) | código pronto; validar em compra real |
-| Upsell 2 | /ciclofeminino/suplementacao | Suplementação para a Fertilidade da Mulher | R$ 47,90 | `Ttiul2X` | 1 clique → /ciclofeminino/obrigada | → /ciclofeminino/obrigada | PageView, UpsellView, UpsellAccept, UpsellDecline (+InitiateCheckout só no fallback) | código pronto; validar em compra real |
+| Entrada | /ciclofeminino | Ciclo Feminino Descomplicado | R$ 39,90 | checkout `aktchfx` | checkout Kiwify → (obrigado do produto na Kiwify) /ciclofeminino/oferta-especial | — | PageView, ViewContent, CheckoutClick (InitiateCheckout/Purchase: Kiwify) | código pronto; redirect pós-compra depende da Kiwify |
+| Upsell 1 | /ciclofeminino/oferta-especial | Ciclos Desbloqueados | R$ 67,00 | `AQyRq5m` | 1 clique → /ciclofeminino/suplementacao | → /ciclofeminino/suplementacao | PageView, UpsellView, UpsellAccept, UpsellDecline (+CheckoutClick só no fallback) | código pronto; validar em compra real |
+| Upsell 2 | /ciclofeminino/suplementacao | Suplementação para a Fertilidade da Mulher | R$ 47,90 | `Ttiul2X` | 1 clique → /ciclofeminino/obrigada | → /ciclofeminino/obrigada | PageView, UpsellView, UpsellAccept, UpsellDecline (+CheckoutClick só no fallback) | código pronto; validar em compra real |
 | Final | /ciclofeminino/obrigada | — | — | — | — | — | PageView (sem Purchase) | pronto |
 | Purchase | /api/webhooks/kiwify | (transação real) | valor real | — | — | — | Purchase | **KIWIFY_WEBHOOK_SPEC_REQUIRED** — desligado |
 
