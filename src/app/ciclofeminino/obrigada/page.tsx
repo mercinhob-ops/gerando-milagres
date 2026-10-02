@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { BookOpenCheck, LogIn, NotebookPen, ShieldCheck } from "lucide-react";
 import { buttonVariants } from "@/components/design-system/button";
+import { FUNNEL_CTA_CLASS } from "@/components/funnel/cta-styles";
 import { cn } from "@/lib/utils";
 import { FunnelFooter } from "@/components/funnel/funnel-footer";
 import { obrigadaContent as c } from "./content";
@@ -31,6 +32,7 @@ function MembersAreaCta() {
         rel="noopener noreferrer"
         className={cn(
           buttonVariants({ variant: "primary", size: "lg" }),
+          FUNNEL_CTA_CLASS,
           "w-full sm:w-auto justify-center text-sm md:text-base tracking-wide px-8 py-4 shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
         )}
       >

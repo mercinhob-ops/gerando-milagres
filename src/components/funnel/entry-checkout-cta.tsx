@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/design-system/button";
+import { FUNNEL_CTA_CLASS } from "./cta-styles";
 import { cn } from "@/lib/utils";
 import { isCheckoutReady, type FunnelProduct } from "@/config/funnels/ciclo-feminino";
 import { trackFunnelInitiateCheckout } from "@/lib/funnel-tracking";
@@ -50,7 +51,8 @@ export function EntryCheckoutCta({
       onClick={() => trackFunnelInitiateCheckout(product, funnelId, "entry")}
       className={cn(
         buttonVariants({ variant: "primary", size: "lg" }),
-        "inline-flex bg-salmon hover:bg-salmon/90 shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5",
+        FUNNEL_CTA_CLASS,
+        "inline-flex shadow-[0_10px_30px_rgba(196,134,122,0.45)] hover:shadow-[0_14px_36px_rgba(196,134,122,0.55)] transition-all duration-200 hover:-translate-y-0.5",
         className
       )}
     >

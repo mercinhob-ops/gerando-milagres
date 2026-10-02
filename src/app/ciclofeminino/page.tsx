@@ -302,7 +302,12 @@ export default function CicloFemininoPage() {
               title={product.name}
               image={product.coverImage}
               eyebrow="Guia digital"
-              className="w-40 md:w-full max-w-[260px] mx-auto"
+              className={
+                product.coverImage
+                  ? "w-full max-w-[320px] mx-auto"
+                  : "w-40 md:w-full max-w-[260px] mx-auto"
+              }
+              sizes="(max-width: 768px) 320px, 340px"
               titleClassName="text-lg md:text-3xl"
             />
           </div>

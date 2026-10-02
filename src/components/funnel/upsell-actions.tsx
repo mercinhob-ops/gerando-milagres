@@ -25,6 +25,7 @@ import {
   pickParams,
 } from "@/lib/funnel-params";
 import { KiwifyUpsell } from "./kiwify-upsell";
+import { FUNNEL_CTA_CLASS } from "./cta-styles";
 
 /**
  * Aceitar/recusar de uma oferta pós-compra do Funil 01.
@@ -118,6 +119,7 @@ export function UpsellActions({
 
   const acceptClass = cn(
     buttonVariants({ variant: "primary", size: "lg" }),
+    FUNNEL_CTA_CLASS,
     "w-full justify-center text-center text-[15px] px-4 leading-snug shadow-[0_10px_30px_rgba(196,134,122,0.45)]"
   );
 

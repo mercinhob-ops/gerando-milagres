@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import type { FunnelCoverImage } from "@/config/funnels/ciclo-feminino";
 
 const TONES = {
   dark: "from-[#6B4239] to-[#4A2E26] text-white",
@@ -9,7 +10,8 @@ const TONES = {
 
 /**
  * Capa de produto do funil.
- * - Com `image` (arte instalada em /public): mostra a arte, sem alterá-la.
+ * - Com `image` (arte oficial em /public): mostra a arte inteira, sem
+ *   cortar nem distorcer, com width/height reais (sem CLS).
  * - Sem `image`: capa tipográfica na identidade do funil (não é placeholder
  *   técnico; é a apresentação definitiva até a arte existir).
  */
@@ -23,7 +25,7 @@ export function ProductCover({
   titleClassName,
 }: {
   title: string;
-  image?: string | null;
+  image?: FunnelCoverImage | null;
   eyebrow?: string;
   tone?: keyof typeof TONES;
   className?: string;
@@ -32,8 +34,15 @@ export function ProductCover({
 }) {
   if (image) {
     return (
-      <div className={cn("relative aspect-[3/4]", className)}>
-        <Image src={image} alt={title} fill className="object-contain drop-shadow-xl" sizes={sizes} />
+      <div className={cn("overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5", className)}>
+        <Image
+          src={image.src}
+          alt={image.alt}
+          width={image.width}
+          height={image.height}
+          sizes={sizes}
+          className="block h-auto w-full"
+        />
       </div>
     );
   }

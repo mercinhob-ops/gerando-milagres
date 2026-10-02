@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
 import { KIWIFY_UPSELL_SCRIPT_SRC } from "@/config/funnels/ciclo-feminino";
+import { FUNNEL_CTA_BG } from "./cta-styles";
 
 /**
  * Upsell de 1 clique OFICIAL da Kiwify (script v2), reutilizável.
@@ -51,7 +52,7 @@ export interface KiwifyUpsellProps {
 }
 
 const KIWIFY_STYLE_VARS =
-  "--kiwify-upsell-accept-bg:#C4867A;--kiwify-upsell-accept-color:#FFFFFF;" +
+  `--kiwify-upsell-accept-bg:${FUNNEL_CTA_BG};--kiwify-upsell-accept-color:#FFFFFF;` +
   "--kiwify-upsell-decline-color:#6B7280;--kiwify-upsell-width:100%;--kiwify-upsell-font:inherit";
 
 /**
@@ -61,7 +62,8 @@ const KIWIFY_STYLE_VARS =
  * visualmente aguardando e sem ponteiro.
  */
 export const KIWIFY_HOST_CSS = `
-.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:15px 14px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:.95rem;letter-spacing:.01em;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(196,134,122,.45);transition:opacity .2s}
+.kiwify-upsell-host [id^="kiwify-upsell-trigger-"]{display:block;width:100%;border:0;border-radius:9999px;padding:15px 14px;background:var(--kiwify-upsell-accept-bg);color:var(--kiwify-upsell-accept-color);font:inherit;font-weight:600;font-size:.95rem;letter-spacing:.01em;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(166,100,88,.4);transition:opacity .2s,background-color .2s}
+.kiwify-upsell-host[data-kiwify-ready="true"] [id^="kiwify-upsell-trigger-"]:hover{filter:brightness(.92)}
 .kiwify-upsell-host [id^="kiwify-upsell-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px}
 .kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]:focus-visible{outline:2px solid #6B4239;outline-offset:3px;border-radius:6px}
 .kiwify-upsell-host [id^="kiwify-upsell-cancel-trigger-"]{margin-top:18px;text-align:center;color:var(--kiwify-upsell-decline-color);font-size:.875rem;text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:8px 0}

@@ -81,7 +81,32 @@ export default async function SuplementacaoPage({
           </div>
 
           <div className="order-3 md:col-start-1 md:row-start-2 space-y-5">
-            <div className="flex gap-4 items-start">
+            {product.coverImage ? (
+              <>
+                <ProductCover
+                  title={product.name}
+                  image={product.coverImage}
+                  className="w-full max-w-[420px] mx-auto md:mx-0"
+                  sizes="(max-width: 768px) 92vw, 420px"
+                />
+                <div>
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-salmon mb-2.5">
+                    {c.offer.nutrientsLabel}
+                  </p>
+                  <ul className="flex flex-wrap gap-1.5">
+                    {c.offer.nutrients.map((n) => (
+                      <li
+                        key={n}
+                        className="font-sans text-xs md:text-sm font-semibold text-brown bg-cream border border-nude-dark/50 rounded-full px-3 py-1"
+                      >
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <div className="flex gap-4 items-start">
               <ProductCover
                 title={product.name}
                 image={product.coverImage}
@@ -107,6 +132,7 @@ export default async function SuplementacaoPage({
                 </ul>
               </div>
             </div>
+            )}
             <p className="font-sans text-sm text-gray-600 leading-relaxed">{c.offer.care}</p>
           </div>
         </div>

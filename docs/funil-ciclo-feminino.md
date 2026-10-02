@@ -97,14 +97,17 @@ Proteções: ref por montagem + janela de deduplicação de 1,5 s (Strict Mode, 
 
 ## Imagens
 
-| Produto | Arquivo aprovado (origem) | Destino no projeto | Uso |
+| Produto | Arquivo instalado | Origem | Uso |
 |---|---|---|---|
-| Ciclo Feminino Descomplicado | `Ciclo Feminino_ Guia e Bem-Estar (1).png` | `public/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png` | card do produto em /ciclofeminino |
-| Suplementação para a Fertilidade da Mulher | `Guia de Fertilidade em Tons Naturais (1).png` | `public/images/funil-ciclo-feminino/suplementacao-fertilidade-feminina.png` | card da oferta em /ciclofeminino/suplementacao |
+| Ciclo Feminino Descomplicado | `public/images/ciclo-feminino-descomplicado.webp` (1134×1387, 172 KB) | mockup tablet + celular enviado em 01/10/2026 | card do produto em /ciclofeminino |
+| Suplementação para a Fertilidade da Mulher | `public/images/suplementacao-fertilidade-feminina.webp` (1134×1387, 203 KB) | mockup tablet + frasco enviado em 01/10/2026 | bloco do produto em /ciclofeminino/suplementacao |
+| Ciclos Desbloqueados | — | sem arte oficial | capas tipográficas dos 3 materiais |
 
-Nomes alternativos aceitos (sugestão do comando mestre): `public/images/ciclo-feminino-descomplicado.webp` e `public/images/suplementacao-fertilidade-feminina.webp`. Basta apontar `coverImage` para o caminho escolhido.
+Conversão PNG → WebP (qualidade 88; PSNR ≈ 40 dB, sem perda visual perceptível; ~90 % menor). `coverImage` na config guarda `src`, `width`, `height` e `alt`; `ProductCover` usa `next/image` com as dimensões reais (sem distorção, sem corte, sem CLS).
 
-**Status: arquivos não disponíveis no ambiente de desenvolvimento.** Ao copiar, preencher `coverImage` em `src/config/funnels/ciclo-feminino.ts` (ex.: `"/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png"`). `ProductCover` usa `next/image` em contêiner 3:4 com `object-contain` (sem distorção, sem texto sobre a arte, `alt` = nome do produto). O teste "17)" passa a exigir que o arquivo exista. Ciclos Desbloqueados não tem capa oficial: capas tipográficas da identidade, sem fingir arte final.
+## Cor dos CTAs (somente FUNIL 01)
+
+`#A66458` com texto branco = **4,58:1** (WCAG AA). O salmão da marca (`#C4867A`) dava 2,98:1. Aplicado em `src/components/funnel/cta-styles.ts` → CTAs da LP, header fixo em /ciclofeminino, aceite das upsells (modo checkout e variável `--kiwify-upsell-accept-bg` do 1 clique) e CTA opcional da /obrigada. O botão padrão do restante do site não muda.
 
 ## Rodapé, autoridade e privacidade
 
@@ -126,7 +129,7 @@ Topo do botão em px; botão inteiro dentro da primeira dobra em todos os viewpo
 
 - Kiwify: página de obrigado do produto **aktchfx** → `https://gerandomilagres.com.br/ciclofeminino/oferta-especial`.
 - Kiwify: ofertas 1 clique AQyRq5m e Ttiul2X ativas (cartão/Pix).
-- Kiwify: checkout comum de AQyRq5m é o mesmo de `/desbloqueandociclos` — a página de obrigado desse produto afeta quem compra por lá.
+- `/desbloqueandociclos` é **página legada** (sem tráfego e sem divulgação, decisão de 01/10/2026). O FUNIL 01 é a jornada comercial oficial de Ciclos Desbloqueados (`AQyRq5m`); não foi criado produto/oferta separado. Em `origin/main` (commit `e6a57f6`) a página legada já não tem CTAs de compra nem referência a `AQyRq5m`; o redirect pós-compra do produto (→ `/ciclofeminino/suplementacao`) passa a valer só para o FUNIL 01.
 - Purchase: escolher **uma** fonte — Pixel/CAPI nativo da Kiwify **ou** webhook (este exige `KIWIFY_WEBHOOK_SPEC_REQUIRED`: contrato oficial de payload/assinatura).
 - Netlify: `NEXT_PUBLIC_META_PIXEL_ID` e `META_CONVERSIONS_TOKEN`.
 - Imagens oficiais: copiar os 2 arquivos (seção Imagens).

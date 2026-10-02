@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
+import { FUNNEL_CTA_CLASS } from "@/components/funnel/cta-styles";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import {
   getStickyHeaderCheckout,
@@ -82,7 +83,9 @@ export function StickyHeader({
           onClick={handleClick}
           className={cn(
             buttonVariants({ variant: "primary", size: "sm" }),
-            "inline-flex shrink-0"
+            "inline-flex shrink-0",
+            // FUNIL 01: CTA com contraste AA (somente /ciclofeminino).
+            pathname?.startsWith("/ciclofeminino") && FUNNEL_CTA_CLASS
           )}
           tabIndex={visible ? 0 : -1}
         >

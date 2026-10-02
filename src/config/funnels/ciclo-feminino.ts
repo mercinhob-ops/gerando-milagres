@@ -14,6 +14,15 @@
  * Ver docs/funil-ciclo-feminino.md.
  */
 
+export interface FunnelCoverImage {
+  /** Caminho em /public. */
+  src: string;
+  width: number;
+  height: number;
+  /** Texto alternativo descritivo. */
+  alt: string;
+}
+
 export interface FunnelProduct {
   /** Identificador interno estável (usado em content_ids e eventos). */
   id: string;
@@ -36,10 +45,10 @@ export interface FunnelProduct {
   /** Próxima etapa do funil (aceite e recusa levam para cá). */
   nextPath: string | null;
   /**
-   * Capa/mockup do produto em /public. `null` = arte ainda não instalada:
-   * a página usa uma capa tipográfica na identidade do funil.
+   * Arte oficial do produto em /public. `null` = sem arte oficial: a página
+   * usa uma capa tipográfica na identidade do funil.
    */
-  coverImage: string | null;
+  coverImage: FunnelCoverImage | null;
 }
 
 export const SITE_URL = "https://gerandomilagres.com.br";
@@ -68,9 +77,12 @@ export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduc
     oneClickCancelTriggerId: null,
     // Pós-compra configurado NA KIWIFY (página de obrigado do produto):
     nextPath: cicloFemininoRoutes.upsell,
-    // Arte oficial: "Ciclo Feminino_ Guia e Bem-Estar (1).png" → copiar para
-    // public/images/funil-ciclo-feminino/ciclo-feminino-descomplicado.png e preencher abaixo.
-    coverImage: null,
+    coverImage: {
+      src: "/images/ciclo-feminino-descomplicado.webp",
+      width: 1134,
+      height: 1387,
+      alt: "Guia Ciclo Feminino Descomplicado aberto em um tablet, ao lado de um celular com as fases do ciclo",
+    },
   },
   ciclosDesbloqueados: {
     id: "ciclos-desbloqueados",
@@ -94,9 +106,12 @@ export const cicloFemininoProducts: Record<CicloFemininoProductKey, FunnelProduc
     oneClickTriggerId: "kiwify-upsell-trigger-Ttiul2X",
     oneClickCancelTriggerId: "kiwify-upsell-cancel-trigger-Ttiul2X",
     nextPath: cicloFemininoRoutes.thankYou,
-    // Arte oficial: "Guia de Fertilidade em Tons Naturais (1).png" → copiar para
-    // public/images/funil-ciclo-feminino/suplementacao-fertilidade-feminina.png e preencher abaixo.
-    coverImage: null,
+    coverImage: {
+      src: "/images/suplementacao-fertilidade-feminina.webp",
+      width: 1134,
+      height: 1387,
+      alt: "Guia de suplementação para a fertilidade feminina aberto em um tablet, ao lado de um frasco de suplemento",
+    },
   },
 };
 

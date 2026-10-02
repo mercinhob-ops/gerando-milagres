@@ -588,9 +588,12 @@ describe("Estrutura e destinos do funil", () => {
     };
     for (const [key, slug] of Object.entries(expected)) {
       const img = cicloFemininoProducts[key as keyof typeof cicloFemininoProducts].coverImage;
-      if (img === null) continue; // arte ainda não instalada (pendência externa)
-      expect(img).toContain(slug);
-      expect(existsSync(path.join(process.cwd(), "public", img))).toBe(true);
+      expect(img).not.toBeNull(); // artes oficiais instaladas
+      expect(img!.src).toBe(`/images/${slug}.webp`);
+      expect(existsSync(path.join(process.cwd(), "public", img!.src))).toBe(true);
+      expect(img!.width).toBeGreaterThan(0);
+      expect(img!.height).toBeGreaterThan(0);
+      expect(img!.alt.length).toBeGreaterThan(20);
     }
     expect(cicloFemininoProducts.ciclosDesbloqueados.coverImage).toBeNull(); // sem capa oficial
   });
@@ -662,5 +665,68 @@ describe("Checklist final (COMANDO MESTRE)", () => {
     expect(pixelCalls("Purchase")).toEqual([]);
     expect(capiEvents().some((e) => e.eventName === "Purchase")).toBe(false);
     unmount();
+  });
+});
+
+describe("Imagens oficiais nas páginas", () => {
+  it("LP e Upsell 2 exibem a arte via next/image com alt; Upsell 1 continua com capas tipográficas", async () => {
+    const { unmount } = render(<CicloFemininoPage />);
+    const lpImg = screen.getByAltText(cicloFemininoProducts.cicloFeminino.coverImage!.alt);
+    expect(lpImg.getAttribute("src")).toContain("ciclo-feminino-descomplicado.webp");
+    expect(lpImg).toHaveAttribute("width", "1134");
+    expect(lpImg).toHaveAttribute("height", "1387");
+    unmount();
+
+    const up2 = render(await pageEl(SuplementacaoPage));
+    const supImg = screen.getByAltText(cicloFemininoProducts.suplementacao.coverImage!.alt);
+    expect(supImg.getAttribute("src")).toContain("suplementacao-fertilidade-feminina.webp");
+    expect(document.querySelector('[data-product-cover="typographic"]')).toBeNull();
+    up2.unmount();
+
+    render(await pageEl(OfertaEspecialPage));
+    expect(document.querySelectorAll('[data-product-cover="typographic"]').length).toBeGreaterThan(0);
+    expect(document.querySelector('img[src*="ciclos-desbloqueados"]')).toBeNull();
+  });
+});
+
+describe("Contraste dos CTAs do FUNIL 01", () => {
+  function luminance(hex: string) {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  it("#A66458 com branco atinge WCAG AA (≥ 4,5:1)", async () => {
+    const { FUNNEL_CTA_BG, FUNNEL_CTA_HOVER_BG } = await import("@/components/funnel/cta-styles");
+    for (const bg of [FUNNEL_CTA_BG, FUNNEL_CTA_HOVER_BG]) {
+      expect(1.05 / (luminance(bg) + 0.05)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("CTAs da LP e das upsells usam a cor AA; o botão padrão do site continua salmão", async () => {
+    const { buttonVariants } = await import("@/components/design-system/button");
+    expect(buttonVariants({ variant: "primary" })).toContain("bg-salmon");
+
+    go("/ciclofeminino");
+    const lp = render(<CicloFemininoPage />);
+    await waitFor(() => expect(document.querySelector("[data-funnel-checkout]")).not.toBeNull());
+    for (const a of document.querySelectorAll("[data-funnel-checkout]")) {
+      expect(a.className).toContain("bg-[#A66458]");
+      expect(a.className).not.toMatch(/(^|\s)bg-salmon(\s|$)/);
+    }
+    lp.unmount();
+
+    go("/ciclofeminino/oferta-especial");
+    const up = render(await pageEl(OfertaEspecialPage));
+    const accept = await waitFor(() => document.querySelector('[data-funnel-action="accept"]')!);
+    expect(accept.className).toContain("bg-[#A66458]");
+    up.unmount();
+
+    go("/ciclofeminino/suplementacao?token=T");
+    render(await pageEl(SuplementacaoPage));
+    const container = await waitFor(() => document.getElementById("kiwify-upsell-Ttiul2X")!);
+    expect(container.getAttribute("style")).toContain("--kiwify-upsell-accept-bg:#A66458");
   });
 });
