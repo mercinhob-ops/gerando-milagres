@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/env";
 import { buttonVariants } from "@/components/design-system/button";
+import { FUNNEL_CTA_CLASS } from "@/components/funnel/cta-styles";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import {
   getStickyHeaderCheckout,
@@ -40,6 +41,10 @@ export function StickyHeader({
     : (registeredCheckout ?? { checkoutUrl: siteConfig.checkoutUrl, eventValue: undefined });
 
   function handleClick() {
+    if (registeredCheckout?.onCheckoutClick && !checkoutUrl) {
+      registeredCheckout.onCheckoutClick();
+      return;
+    }
     if (resolved.eventValue === undefined) return;
     trackConversionEvent({
       eventName: "InitiateCheckout",
@@ -51,6 +56,11 @@ export function StickyHeader({
     pathname?.startsWith("/quizfertilidade") ||
     pathname?.startsWith("/casalgm1") ||
     pathname?.startsWith("/casalgm3") ||
+    pathname?.startsWith("/privacidade") ||
+    // Funil 01: etapas pós-compra nunca mostram o header; a entrada só mostra
+    // quando a própria página registrou seu checkout (nunca o checkout global).
+    pathname?.startsWith("/ciclofeminino/") ||
+    (pathname?.startsWith("/ciclofeminino") && !checkoutUrl && !registeredCheckout) ||
     pathname?.startsWith("/desbloqueandociclos")
   )
     return null;
@@ -78,7 +88,9 @@ export function StickyHeader({
           onClick={handleClick}
           className={cn(
             buttonVariants({ variant: "primary", size: "sm" }),
-            "inline-flex shrink-0"
+            "inline-flex shrink-0",
+            // FUNIL 01: CTA com contraste AA (somente /ciclofeminino).
+            pathname?.startsWith("/ciclofeminino") && FUNNEL_CTA_CLASS
           )}
           tabIndex={visible ? 0 : -1}
         >

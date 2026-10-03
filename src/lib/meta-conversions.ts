@@ -7,9 +7,20 @@ declare global {
 interface ConversionOptions {
   eventName: string;
   customData?: Record<string, unknown>;
+  /**
+   * Eventos fora da lista padrão da Meta (ex.: "UpsellView") devem ir por
+   * `fbq('trackCustom')`. Padrão `false` mantém o comportamento existente.
+   */
+  custom?: boolean;
+  /**
+   * Mantém o envio à CAPI mesmo se a página navegar logo em seguida (clique
+   * que leva ao checkout/próxima etapa). Opt-in: padrão `false` mantém o
+   * comportamento existente dos demais funis.
+   */
+  keepalive?: boolean;
 }
 
-export function trackConversionEvent({ eventName, customData }: ConversionOptions) {
+export function trackConversionEvent({ eventName, customData, custom = false, keepalive = false }: ConversionOptions) {
   const eventId = crypto.randomUUID();
   const eventSourceUrl = window.location.href;
 
@@ -24,6 +35,7 @@ export function trackConversionEvent({ eventName, customData }: ConversionOption
   fetch("/api/meta-conversions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    ...(keepalive && { keepalive: true }),
     body: JSON.stringify({
       eventName,
       eventSourceUrl,
@@ -38,6 +50,6 @@ export function trackConversionEvent({ eventName, customData }: ConversionOption
 
   // Client-side pixel com mesmo eventID para deduplicação no Events Manager
   if (typeof window.fbq === "function") {
-    window.fbq("track", eventName, customData ?? {}, { eventID: eventId });
+    window.fbq(custom ? "trackCustom" : "track", eventName, customData ?? {}, { eventID: eventId });
   }
 }

@@ -79,6 +79,27 @@ describe("sendServerConversionEvent", () => {
     expect(userData.ph).toBe(createHash("sha256").update("81981396005").digest("hex"));
   });
 
+  it("aceita action_source website, user agent, IP e event_time opcionais", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(new Response("{}"));
+
+    const { sendServerConversionEvent } = await importFresh();
+    await sendServerConversionEvent({
+      eventName: "Purchase",
+      eventId: "evt-4",
+      eventSourceUrl: "https://example.com",
+      actionSource: "website",
+      clientUserAgent: "UA/1.0",
+      clientIpAddress: "1.2.3.4",
+      eventTime: 1700000000,
+    });
+
+    const [, options] = fetchSpy.mock.calls[0];
+    const event = JSON.parse(String((options as RequestInit).body)).data[0];
+    expect(event.action_source).toBe("website");
+    expect(event.event_time).toBe(1700000000);
+    expect(event.user_data).toMatchObject({ client_user_agent: "UA/1.0", client_ip_address: "1.2.3.4" });
+  });
+
   it("nunca lança mesmo se o fetch falhar (fire-and-forget)", async () => {
     vi.spyOn(global, "fetch").mockRejectedValue(new Error("network down"));
 

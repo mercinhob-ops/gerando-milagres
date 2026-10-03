@@ -1,6 +1,11 @@
 interface StickyHeaderCheckout {
   checkoutUrl: string;
   eventValue?: number;
+  /**
+   * Tracking próprio do clique. Quando presente, substitui o InitiateCheckout
+   * padrão do header (usado pelo FUNIL 01 → CheckoutClick).
+   */
+  onCheckoutClick?: () => void;
 }
 
 let currentCheckout: StickyHeaderCheckout | null = null;
