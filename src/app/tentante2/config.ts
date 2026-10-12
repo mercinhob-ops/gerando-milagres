@@ -5,8 +5,7 @@ export const tentante2Config: TentantesConfig = {
   page: "tentante2",
   storageKey: "tentante2_lead",
   contentName: "Material Tentante 2",
-  // TODO: substituir pelo link real do material
-  materialUrl: "#MATERIAL_TENTANTE2_URL",
+  materialUrl: "https://drive.google.com/file/d/1GaIyWbWukU_ISG3Sw-14J3nxq1k8fFUF/view?usp=sharing",
   texts: {
     intro: {
       title: "Me conta um pouco sobre você 🌸",

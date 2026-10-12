@@ -104,7 +104,10 @@ describe("Tentante2Page", () => {
     });
 
     expect(screen.getByRole("heading", { name: /pronto, joana! seu material está aqui 🌸/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /baixar o material/i })).toHaveAttribute("href", "#MATERIAL_TENTANTE2_URL");
+    expect(screen.getByRole("link", { name: /baixar o material/i })).toHaveAttribute(
+      "href",
+      "https://drive.google.com/file/d/1GaIyWbWukU_ISG3Sw-14J3nxq1k8fFUF/view?usp=sharing"
+    );
     expect(
       screen.getByRole("heading", { name: /a dra\. camilla quer te ajudar! chama ela no whatsapp 💛/i })
     ).toBeInTheDocument();
