@@ -8,8 +8,7 @@ import { submitLead } from "@/lib/submit-lead";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 
-// TODO: substituir pelo link real do material
-const MATERIAL_TENTANTES_URL = "#MATERIAL_TENTANTES_URL";
+const MATERIAL_TENTANTES_URL = "https://drive.google.com/file/d/1-hYOOYsaGRkt3jfs8KmiJ1eXA3f0WYpE/view?usp=sharing";
 const WHATSAPP_NUMBER = "5581981396005";
 const LEAD_STORAGE_KEY = "tentantes_lead";
 const TOTAL_QUESTIONS = 11;

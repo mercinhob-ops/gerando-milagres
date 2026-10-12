@@ -126,7 +126,10 @@ describe("TentantesPage", () => {
       }),
     });
     expect(screen.getByRole("heading", { name: /pronto, maria! 🌸/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /baixar o material/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /baixar o material/i })).toHaveAttribute(
+      "href",
+      "https://drive.google.com/file/d/1-hYOOYsaGRkt3jfs8KmiJ1eXA3f0WYpE/view?usp=sharing"
+    );
     expect(screen.getByRole("heading", { name: /vamos olhar o seu caso juntas\?/i })).toBeInTheDocument();
 
     const href = screen.getByRole("link", { name: /falar com a dra\. camilla no whatsapp/i }).getAttribute("href")!;
