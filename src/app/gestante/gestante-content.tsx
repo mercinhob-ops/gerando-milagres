@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
-import { Check } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
@@ -28,28 +27,12 @@ interface GestanteLead {
   capturedAt: string;
 }
 
-const trimestres = [
-  {
-    label: "1º trimestre",
-    text: "O que priorizar na formação do bebê e como lidar com enjoo e falta de apetite.",
-  },
-  {
-    label: "2º trimestre",
-    text: "Nutrientes-chave para o crescimento, energia no dia a dia e ganho de peso saudável.",
-  },
-  {
-    label: "3º trimestre",
-    text: "Alimentação para a reta final, preparo para o parto e para a amamentação.",
-  },
-] as const;
-
 export function GestanteContent() {
   const [lead, setLead] = useState<GestanteLead | null>(null);
 
   return (
     <div className="overflow-x-hidden bg-white">
       <HeroSection />
-      <MaterialSection />
       <AboutSection />
       {lead ? (
         <RevealOnMount>
@@ -130,36 +113,7 @@ function HeroSection() {
   );
 }
 
-/* ─────────────────────────── 2 — O que ela vai receber ─────────────────────────── */
-
-function MaterialSection() {
-  return (
-    <section className="px-6 py-12 md:py-16 bg-white">
-      <div className="max-w-lg mx-auto">
-        <h2 className="font-['Georgia',serif] text-2xl font-bold text-dark-brown text-center leading-snug mb-3">
-          O que você vai receber
-        </h2>
-        <p className="font-sans text-sm text-brown/70 text-center leading-relaxed mb-8">
-          Um material sobre alimentação dividido por trimestre, para você saber o que priorizar em cada fase.
-        </p>
-
-        <ul className="space-y-4">
-          {trimestres.map((item) => (
-            <li key={item.label} className="flex items-start gap-3 rounded-2xl bg-cream px-5 py-4">
-              <Check className="w-5 h-5 text-salmon shrink-0 mt-0.5" aria-hidden="true" />
-              <div>
-                <p className="font-sans text-sm font-bold text-dark-brown">{item.label}</p>
-                <p className="font-sans text-sm text-brown/80 leading-snug">{item.text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────── 3 — Sobre a Dra. Camilla ─────────────────────────── */
+/* ─────────────────────────── 2 — Sobre a Dra. Camilla ─────────────────────────── */
 
 function AboutSection() {
   return (
@@ -186,7 +140,7 @@ function AboutSection() {
   );
 }
 
-/* ─────────────────────────────── 4 — Questionário ─────────────────────────────── */
+/* ─────────────────────────────── 3 — Questionário ─────────────────────────────── */
 
 const inputClassName =
   "w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon";
@@ -429,7 +383,7 @@ function QuestionnaireSection({ onSubmitted }: { onSubmitted: (lead: GestanteLea
   );
 }
 
-/* ─────────────────────────────── 5 — Após envio ─────────────────────────────── */
+/* ─────────────────────────────── 4 — Após envio ─────────────────────────────── */
 
 function SuccessSection({ lead }: { lead: GestanteLead }) {
   const nome = firstName(lead.nome);

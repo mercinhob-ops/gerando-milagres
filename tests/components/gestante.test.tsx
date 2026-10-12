@@ -24,14 +24,14 @@ describe("GestantePage", () => {
     window.history.replaceState({}, "", "/gestante");
   });
 
-  it("mostra chamada, material, Dra. Camilla e questionário", () => {
+  it("mostra chamada, Dra. Camilla e questionário", () => {
     render(<GestantePage />);
     expect(
       screen.getByRole("heading", {
         name: /o seu bebê muda a cada trimestre\. a sua alimentação também deveria\./i,
       })
     ).toBeInTheDocument();
-    expect(screen.getByText(/o que você vai receber/i)).toBeInTheDocument();
+    expect(screen.queryByText(/o que você vai receber/i)).not.toBeInTheDocument();
     expect(screen.getByAltText(/dra\. camilla freitas/i)).toHaveAttribute(
       "src",
       expect.stringContaining("camilla-zap.jpg")
