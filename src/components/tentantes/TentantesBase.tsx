@@ -8,164 +8,102 @@ import { submitLead } from "@/lib/submit-lead";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 
-const MATERIAL_TENTANTES_URL = "https://drive.google.com/file/d/1-hYOOYsaGRkt3jfs8KmiJ1eXA3f0WYpE/view?usp=sharing";
+/*
+ * Questionário "uma pergunta por tela" compartilhado por /tentantes e /tentante2.
+ * Todo o COMPORTAMENTO (ordem, regras, validação, P6 condicional, convite forte,
+ * Lead, envio ao Supabase) vive aqui. Cada rota passa só DADOS: textos,
+ * link do material e identificadores — mudanças aqui refletem nas duas.
+ *
+ * Textos aceitam marcadores: {total}, {numero}, {nome}, {tempo}, {itens}.
+ */
+
 const WHATSAPP_NUMBER = "5581981396005";
-const LEAD_STORAGE_KEY = "tentantes_lead";
-const TOTAL_QUESTIONS = 11;
 const PREFER_NOT_TO_SAY = "prefiro-nao-dizer";
 
-type QuestionId =
-  | "nome"
-  | "whatsapp"
-  | "idade"
-  | "tempoTentando"
-  | "exames"
-  | "identificado"
-  | "marido"
-  | "perda"
-  | "preocupacao"
-  | "inicio"
-  | "investimento";
+/** Valores das opções (gravados no localStorage). Os rótulos vêm de cada rota. */
+const OPTION_VALUES = {
+  idade: ["ate-30", "31-35", "36-39", "40-mais"],
+  tempoTentando: ["menos-6-meses", "6-meses-1-ano", "1-2-anos", "mais-2-anos"],
+  exames: ["normal", "encontraram-algo", "nao-fizemos", "tratamento"],
+  identificado: ["sop", "endometriose", "baixa-reserva", "fator-masculino", "tireoide", "outro", PREFER_NOT_TO_SAY],
+  marido: ["muito-presente", "mais-ou-menos", "nao-conversamos"],
+  perda: ["nao", "1-vez", "2-ou-mais", "prefiro-nao-responder"],
+  preocupacao: ["idade", "nao-sei-investigar", "tentei-de-tudo", "emocional", "marido"],
+  inicio: ["agora", "proximos-meses", "pesquisando"],
+  investimento: ["ate-100", "100-300", "300-600", "acima-600"],
+} as const;
+
+type ChoiceQuestionId = keyof typeof OPTION_VALUES;
+type TextQuestionId = "nome" | "whatsapp";
+type QuestionId = TextQuestionId | ChoiceQuestionId;
 
 type Answers = Partial<Record<QuestionId, string | string[]>>;
 
-interface Option {
-  value: string;
-  label: string;
-}
-
-interface Question {
+interface QuestionRule {
   id: QuestionId;
-  number: number;
-  title: string;
   kind: "text" | "tel" | "single" | "multi";
-  options?: readonly Option[];
-  placeholder?: string;
   skippable?: boolean;
   showIf?: (answers: Answers) => boolean;
 }
 
-const questions: readonly Question[] = [
-  { id: "nome", number: 1, title: "Qual é o seu nome completo?", kind: "text", placeholder: "Seu nome completo" },
-  { id: "whatsapp", number: 2, title: "Qual é o seu WhatsApp com DDD?", kind: "tel", placeholder: "(81) 99999-9999" },
-  {
-    id: "idade",
-    number: 3,
-    title: "Qual é a sua idade?",
-    kind: "single",
-    options: [
-      { value: "ate-30", label: "Até 30 anos" },
-      { value: "31-35", label: "31 a 35 anos" },
-      { value: "36-39", label: "36 a 39 anos" },
-      { value: "40-mais", label: "40 anos ou mais" },
-    ],
-  },
-  {
-    id: "tempoTentando",
-    number: 4,
-    title: "Há quanto tempo vocês tentam engravidar?",
-    kind: "single",
-    options: [
-      { value: "menos-6-meses", label: "Menos de 6 meses" },
-      { value: "6-meses-1-ano", label: "6 meses a 1 ano" },
-      { value: "1-2-anos", label: "1 a 2 anos" },
-      { value: "mais-2-anos", label: "Mais de 2 anos" },
-    ],
-  },
-  {
-    id: "exames",
-    number: 5,
-    title: "Vocês já fizeram exames de fertilidade?",
-    kind: "single",
-    options: [
-      { value: "normal", label: "Sim, e está tudo normal" },
-      { value: "encontraram-algo", label: "Sim, e encontraram algo" },
-      { value: "nao-fizemos", label: "Ainda não fizemos" },
-      { value: "tratamento", label: "Já faço tratamento (indutor, IIU ou FIV)" },
-    ],
-  },
+const QUESTION_RULES: readonly QuestionRule[] = [
+  { id: "nome", kind: "text" },
+  { id: "whatsapp", kind: "tel" },
+  { id: "idade", kind: "single" },
+  { id: "tempoTentando", kind: "single" },
+  { id: "exames", kind: "single" },
   {
     id: "identificado",
-    number: 6,
-    title: "O que foi identificado?",
     kind: "multi",
-    options: [
-      { value: "sop", label: "SOP (Síndrome dos Ovários Policísticos)" },
-      { value: "endometriose", label: "Endometriose" },
-      { value: "baixa-reserva", label: "Baixa reserva ovariana" },
-      { value: "fator-masculino", label: "Fator masculino" },
-      { value: "tireoide", label: "Tireoide" },
-      { value: "outro", label: "Outro" },
-      { value: PREFER_NOT_TO_SAY, label: "Prefiro não dizer" },
-    ],
     showIf: (answers) => answers.exames === "encontraram-algo" || answers.exames === "tratamento",
   },
-  {
-    id: "marido",
-    number: 7,
-    title: "O seu marido está envolvido nessa jornada?",
-    kind: "single",
-    options: [
-      { value: "muito-presente", label: "Sim, muito presente" },
-      { value: "mais-ou-menos", label: "Mais ou menos" },
-      { value: "nao-conversamos", label: "Ainda não conversamos sobre isso" },
-    ],
-  },
-  {
-    id: "perda",
-    number: 8,
-    title: "Vocês já tiveram alguma perda gestacional?",
-    kind: "single",
-    skippable: true,
-    options: [
-      { value: "nao", label: "Não" },
-      { value: "1-vez", label: "Sim, 1 vez" },
-      { value: "2-ou-mais", label: "Sim, 2 ou mais vezes" },
-      { value: "prefiro-nao-responder", label: "Prefiro não responder" },
-    ],
-  },
-  {
-    id: "preocupacao",
-    number: 9,
-    title: "O que mais te preocupa hoje?",
-    kind: "single",
-    skippable: true,
-    options: [
-      { value: "idade", label: "A idade" },
-      { value: "nao-sei-investigar", label: "Não saber o que investigar" },
-      { value: "tentei-de-tudo", label: "Já tentei de tudo" },
-      { value: "emocional", label: "O lado emocional" },
-      { value: "marido", label: "O envolvimento do meu marido" },
-    ],
-  },
-  {
-    id: "inicio",
-    number: 10,
-    title: "Quando você quer começar?",
-    kind: "single",
-    options: [
-      { value: "agora", label: "Agora, estou pronta" },
-      { value: "proximos-meses", label: "Nos próximos meses" },
-      { value: "pesquisando", label: "Ainda estou pesquisando" },
-    ],
-  },
-  {
-    id: "investimento",
-    number: 11,
-    title: "Quanto você pode investir por mês no cuidado com a sua fertilidade?",
-    kind: "single",
-    options: [
-      { value: "ate-100", label: "Até R$100" },
-      { value: "100-300", label: "Entre R$100 e R$300" },
-      { value: "300-600", label: "Entre R$300 e R$600" },
-      { value: "acima-600", label: "Acima de R$600" },
-    ],
-  },
+  { id: "marido", kind: "single" },
+  { id: "perda", kind: "single", skippable: true },
+  { id: "preocupacao", kind: "single", skippable: true },
+  { id: "inicio", kind: "single" },
+  { id: "investimento", kind: "single" },
 ];
 
+const TOTAL_QUESTIONS = QUESTION_RULES.length;
 const INTRO_STEP = -1;
-const LGPD_STEP = questions.length;
-const DONE_STEP = questions.length + 1;
+const LGPD_STEP = QUESTION_RULES.length;
+const DONE_STEP = QUESTION_RULES.length + 1;
+
+/* ─────────────────────────── Configuração por rota ─────────────────────────── */
+
+type TextQuestionCopy = { title: string; placeholder: string };
+type ChoiceQuestionCopy<K extends ChoiceQuestionId> = {
+  title: string;
+  options: Record<(typeof OPTION_VALUES)[K][number], string>;
+};
+
+export interface TentantesTexts {
+  intro: { title: string; subtitle: string; start: string };
+  nav: { back: string; next: string; skip: string; questionLabel: string; multiHint: string };
+  questions: { [K in TextQuestionId]: TextQuestionCopy } & { [K in ChoiceQuestionId]: ChoiceQuestionCopy<K> };
+  errors: { nome: string; whatsapp: string; single: string; multi: string; lgpd: string };
+  lgpd: { title: string; consent: string; submit: string };
+  final: {
+    title: string;
+    subtitle: string;
+    download: string;
+    strongTitle: string;
+    strongText: string;
+    strongButton: string;
+    lightText: string;
+    lightLink: string;
+  };
+  whatsapp: { greeting: string; tempo: string; identificado: string; strongClosing: string; lightClosing: string };
+}
+
+export interface TentantesConfig {
+  /** Identificador da página no Supabase (`leads.page`) e no filtro do /admin. */
+  page: string;
+  storageKey: string;
+  contentName: string;
+  materialUrl: string;
+  texts: TentantesTexts;
+}
 
 interface TentantesLead {
   nome: string;
@@ -185,38 +123,43 @@ interface TentantesLead {
 
 /* ─────────────────────────── Helpers ─────────────────────────── */
 
-function isVisible(question: Question, answers: Answers) {
-  return !question.showIf || question.showIf(answers);
+function fill(template: string, vars: Record<string, string | number>) {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in vars ? String(vars[key]) : match));
 }
 
-function labelFor(id: QuestionId, value: string) {
-  return questions.find((q) => q.id === id)?.options?.find((o) => o.value === value)?.label ?? value;
+function isVisible(rule: QuestionRule, answers: Answers) {
+  return !rule.showIf || rule.showIf(answers);
+}
+
+function isChoice(id: QuestionId): id is ChoiceQuestionId {
+  return id in OPTION_VALUES;
+}
+
+function labelFor(texts: TentantesTexts, id: ChoiceQuestionId, value: string) {
+  const options = texts.questions[id].options as Record<string, string>;
+  return options[value] ?? value;
 }
 
 function firstName(fullName: string) {
   return fullName.trim().split(/\s+/)[0];
 }
 
-function validate(question: Question, value: string | string[] | undefined): string | null {
-  if (question.kind === "text") {
-    return typeof value === "string" && value.trim() ? null : "Digite o seu nome completo, por favor.";
-  }
-  if (question.kind === "tel") {
+function validate(rule: QuestionRule, value: string | string[] | undefined, errors: TentantesTexts["errors"]) {
+  if (rule.kind === "text") return typeof value === "string" && value.trim() ? null : errors.nome;
+  if (rule.kind === "tel") {
     const digits = typeof value === "string" ? value.replace(/\D/g, "") : "";
-    return digits.length >= 10 && digits.length <= 13 ? null : "Digite um WhatsApp válido, com DDD.";
+    return digits.length >= 10 && digits.length <= 13 ? null : errors.whatsapp;
   }
-  if (question.kind === "multi") {
-    return Array.isArray(value) && value.length > 0 ? null : "Selecione pelo menos uma opção.";
-  }
-  return value ? null : "Selecione uma opção para continuar.";
+  if (rule.kind === "multi") return Array.isArray(value) && value.length > 0 ? null : errors.multi;
+  return value ? null : errors.single;
 }
 
 function buildLead(answers: Answers): TentantesLead {
   const str = (id: QuestionId) => (typeof answers[id] === "string" ? (answers[id] as string) : "");
   const optional = (id: QuestionId) => str(id) || null;
-  const identificadoQuestion = questions.find((q) => q.id === "identificado")!;
+  const identificadoRule = QUESTION_RULES.find((rule) => rule.id === "identificado")!;
   const identificado =
-    isVisible(identificadoQuestion, answers) && Array.isArray(answers.identificado) ? answers.identificado : [];
+    isVisible(identificadoRule, answers) && Array.isArray(answers.identificado) ? answers.identificado : [];
 
   return {
     nome: str("nome").trim(),
@@ -235,37 +178,43 @@ function buildLead(answers: Answers): TentantesLead {
   };
 }
 
-function buildWhatsAppUrl(lead: TentantesLead, strong: boolean) {
+function isStrongInvite(lead: TentantesLead) {
+  return lead.inicio === "agora" || lead.tempoTentando === "mais-2-anos";
+}
+
+function buildWhatsAppUrl(texts: TentantesTexts, lead: TentantesLead, strong: boolean) {
+  const copy = texts.whatsapp;
   const parts = [
-    `Olá, Dra. Camilla! Sou ${lead.nome}.`,
-    `Estamos tentando engravidar há: ${labelFor("tempoTentando", lead.tempoTentando).toLowerCase()}.`,
+    fill(copy.greeting, { nome: lead.nome }),
+    fill(copy.tempo, { tempo: labelFor(texts, "tempoTentando", lead.tempoTentando).toLowerCase() }),
   ];
   const identificado = lead.identificado.filter((value) => value !== PREFER_NOT_TO_SAY);
   if (identificado.length > 0) {
-    parts.push(`Nos exames foi identificado: ${identificado.map((v) => labelFor("identificado", v)).join(", ")}.`);
+    parts.push(
+      fill(copy.identificado, { itens: identificado.map((v) => labelFor(texts, "identificado", v)).join(", ") })
+    );
   }
-  parts.push(
-    strong ? "Quero que você olhe o meu caso." : "Baixei o material para tentantes e gostaria de conversar."
-  );
+  parts.push(strong ? copy.strongClosing : copy.lightClosing);
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(parts.join(" "))}`;
 }
 
 /* ─────────────────────────── Page ─────────────────────────── */
 
-export function TentantesContent() {
+export function TentantesBase({ config }: { config: TentantesConfig }) {
+  const { texts } = config;
   const [step, setStep] = useState(INTRO_STEP);
   const [answers, setAnswers] = useState<Answers>({});
   const [lead, setLead] = useState<TentantesLead | null>(null);
 
   function goNext() {
     let next = step + 1;
-    while (next < questions.length && !isVisible(questions[next], answers)) next++;
+    while (next < QUESTION_RULES.length && !isVisible(QUESTION_RULES[next], answers)) next++;
     setStep(next);
   }
 
   function goBack() {
     let prev = step - 1;
-    while (prev >= 0 && !isVisible(questions[prev], answers)) prev--;
+    while (prev >= 0 && !isVisible(QUESTION_RULES[prev], answers)) prev--;
     setStep(Math.max(prev, INTRO_STEP));
   }
 
@@ -277,7 +226,7 @@ export function TentantesContent() {
     const newLead = buildLead(answers);
 
     try {
-      window.localStorage.setItem(LEAD_STORAGE_KEY, JSON.stringify(newLead));
+      window.localStorage.setItem(config.storageKey, JSON.stringify(newLead));
     } catch {
       // localStorage indisponível (modo privado, etc.) — não bloqueia o fluxo
     }
@@ -285,22 +234,22 @@ export function TentantesContent() {
     trackConversionEvent({
       eventName: "Lead",
       customData: {
-        content_name: "Material Tentantes",
+        content_name: config.contentName,
         tempo_tentando: newLead.tempoTentando,
         inicio: newLead.inicio,
       },
     });
 
-    const label = (id: QuestionId, value: string | null) => (value ? labelFor(id, value) : "Pulou");
+    const label = (id: ChoiceQuestionId, value: string | null) => (value ? labelFor(texts, id, value) : "Pulou");
     submitLead({
-      page: "tentantes",
+      page: config.page,
       name: newLead.nome,
       whatsapp: newLead.whatsapp,
       data: {
         Idade: label("idade", newLead.idade),
         "Tempo tentando": label("tempoTentando", newLead.tempoTentando),
         "Exames de fertilidade": label("exames", newLead.exames),
-        "O que foi identificado": newLead.identificado.map((v) => labelFor("identificado", v)),
+        "O que foi identificado": newLead.identificado.map((v) => labelFor(texts, "identificado", v)),
         "Marido envolvido": label("marido", newLead.marido),
         "Perda gestacional": label("perda", newLead.perda),
         "Maior preocupação": label("preocupacao", newLead.preocupacao),
@@ -314,8 +263,8 @@ export function TentantesContent() {
     setStep(DONE_STEP);
   }
 
-  const currentQuestion = step >= 0 && step < questions.length ? questions[step] : null;
-  const progressNumber = currentQuestion ? currentQuestion.number : step === LGPD_STEP ? TOTAL_QUESTIONS : 0;
+  const currentRule = step >= 0 && step < QUESTION_RULES.length ? QUESTION_RULES[step] : null;
+  const progressNumber = currentRule ? step + 1 : step === LGPD_STEP ? TOTAL_QUESTIONS : 0;
   const showChrome = step !== INTRO_STEP && step !== DONE_STEP;
 
   return (
@@ -332,7 +281,7 @@ export function TentantesContent() {
                 onClick={goBack}
                 className="font-sans text-sm text-brown/60 hover:text-brown transition-colors"
               >
-                ← Voltar
+                {texts.nav.back}
               </button>
               <span className="font-sans text-xs font-semibold text-brown/70">
                 {progressNumber}/{TOTAL_QUESTIONS}
@@ -358,21 +307,23 @@ export function TentantesContent() {
       <main className="flex-1 flex items-center justify-center px-5 py-10">
         <div className="max-w-md w-full">
           <Fade key={step}>
-            {step === INTRO_STEP && <IntroScreen onStart={() => setStep(0)} />}
-            {currentQuestion && (
+            {step === INTRO_STEP && <IntroScreen texts={texts} onStart={() => setStep(0)} />}
+            {currentRule && (
               <QuestionScreen
-                question={currentQuestion}
-                value={answers[currentQuestion.id]}
-                onChange={(value) => setAnswer(currentQuestion.id, value)}
+                rule={currentRule}
+                number={step + 1}
+                texts={texts}
+                value={answers[currentRule.id]}
+                onChange={(value) => setAnswer(currentRule.id, value)}
                 onNext={goNext}
                 onSkip={() => {
-                  setAnswer(currentQuestion.id, undefined);
+                  setAnswer(currentRule.id, undefined);
                   goNext();
                 }}
               />
             )}
-            {step === LGPD_STEP && <LgpdScreen onSubmit={handleSubmit} />}
-            {step === DONE_STEP && lead && <FinalScreen lead={lead} />}
+            {step === LGPD_STEP && <LgpdScreen texts={texts} onSubmit={handleSubmit} />}
+            {step === DONE_STEP && lead && <FinalScreen config={config} lead={lead} />}
           </Fade>
         </div>
       </main>
@@ -416,7 +367,7 @@ const primaryButtonClassName = cn(
 
 /* ─────────────────────────── Tela inicial ─────────────────────────── */
 
-function IntroScreen({ onStart }: { onStart: () => void }) {
+function IntroScreen({ texts, onStart }: { texts: TentantesTexts; onStart: () => void }) {
   return (
     <div className="text-center">
       <p className="font-['Georgia',serif] italic text-sm font-bold text-dark-brown mb-1">Gerando Milagres</p>
@@ -436,14 +387,14 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
       </div>
 
       <h1 className="font-['Georgia',serif] text-2xl md:text-3xl font-bold text-dark-brown leading-snug mb-3">
-        Vamos entender a sua jornada para engravidar?
+        {texts.intro.title}
       </h1>
       <p className="font-sans text-sm text-brown/80 leading-relaxed mb-8">
-        Responda {TOTAL_QUESTIONS} perguntas rápidas e receba o material da Dra. Camilla para tentantes.
+        {fill(texts.intro.subtitle, { total: TOTAL_QUESTIONS })}
       </p>
 
       <button type="button" onClick={onStart} className={primaryButtonClassName}>
-        Começar →
+        {texts.intro.start}
       </button>
     </div>
   );
@@ -452,24 +403,32 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
 /* ─────────────────────────── Pergunta ─────────────────────────── */
 
 function QuestionScreen({
-  question,
+  rule,
+  number,
+  texts,
   value,
   onChange,
   onNext,
   onSkip,
 }: {
-  question: Question;
+  rule: QuestionRule;
+  number: number;
+  texts: TentantesTexts;
   value: string | string[] | undefined;
   onChange: (value: string | string[]) => void;
   onNext: () => void;
   onSkip: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const titleId = `pergunta-${question.id}`;
+  const titleId = `pergunta-${rule.id}`;
+  const copy = texts.questions[rule.id];
+  const options = isChoice(rule.id)
+    ? OPTION_VALUES[rule.id].map((optionValue) => ({ value: optionValue, label: labelFor(texts, rule.id as ChoiceQuestionId, optionValue) }))
+    : [];
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const validationError = validate(question, value);
+    const validationError = validate(rule, value, texts.errors);
     if (validationError) return setError(validationError);
     setError(null);
     onNext();
@@ -490,46 +449,42 @@ function QuestionScreen({
   return (
     <form onSubmit={handleSubmit} noValidate>
       <p className="font-sans text-xs font-semibold text-salmon uppercase tracking-widest mb-2">
-        Pergunta {question.number}
+        {fill(texts.nav.questionLabel, { numero: number })}
       </p>
       <h2 id={titleId} className="font-['Georgia',serif] text-2xl font-bold text-dark-brown leading-snug mb-2">
-        {question.title}
+        {copy.title}
       </h2>
-      {question.kind === "multi" && (
-        <p className="font-sans text-sm text-brown/70 mb-4">Você pode marcar mais de uma opção.</p>
-      )}
+      {rule.kind === "multi" && <p className="font-sans text-sm text-brown/70 mb-4">{texts.nav.multiHint}</p>}
 
       <div className="mt-6 mb-6">
-        {(question.kind === "text" || question.kind === "tel") && (
+        {(rule.kind === "text" || rule.kind === "tel") && (
           <input
             aria-labelledby={titleId}
-            type={question.kind === "tel" ? "tel" : "text"}
-            inputMode={question.kind === "tel" ? "tel" : undefined}
-            autoComplete={question.kind === "tel" ? "tel-national" : "name"}
+            type={rule.kind === "tel" ? "tel" : "text"}
+            inputMode={rule.kind === "tel" ? "tel" : undefined}
+            autoComplete={rule.kind === "tel" ? "tel-national" : "name"}
             value={typeof value === "string" ? value : ""}
             onChange={(event) => {
               onChange(event.target.value);
               setError(null);
             }}
-            placeholder={question.placeholder}
+            placeholder={"placeholder" in copy ? copy.placeholder : undefined}
             className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-4 font-sans text-lg text-dark-brown placeholder:text-brown/40 outline-none transition-colors focus:border-salmon"
           />
         )}
 
-        {(question.kind === "single" || question.kind === "multi") && (
+        {(rule.kind === "single" || rule.kind === "multi") && (
           <div role="group" aria-labelledby={titleId} className="space-y-3">
-            {question.options!.map((option) => {
+            {options.map((option) => {
               const selected =
-                question.kind === "multi"
-                  ? Array.isArray(value) && value.includes(option.value)
-                  : value === option.value;
+                rule.kind === "multi" ? Array.isArray(value) && value.includes(option.value) : value === option.value;
               return (
                 <button
                   key={option.value}
                   type="button"
                   aria-pressed={selected}
                   onClick={() => {
-                    if (question.kind === "multi") {
+                    if (rule.kind === "multi") {
                       toggleMulti(option.value);
                     } else {
                       onChange(option.value);
@@ -547,7 +502,7 @@ function QuestionScreen({
                     aria-hidden="true"
                     className={cn(
                       "shrink-0 w-5 h-5 flex items-center justify-center border-2 transition-colors",
-                      question.kind === "multi" ? "rounded" : "rounded-full",
+                      rule.kind === "multi" ? "rounded" : "rounded-full",
                       selected ? "bg-salmon border-salmon" : "border-nude-dark/60"
                     )}
                   >
@@ -568,16 +523,16 @@ function QuestionScreen({
       )}
 
       <button type="submit" className={primaryButtonClassName}>
-        Próximo →
+        {texts.nav.next}
       </button>
 
-      {question.skippable && (
+      {rule.skippable && (
         <button
           type="button"
           onClick={onSkip}
           className="w-full mt-3 py-3 font-sans text-sm font-semibold text-brown/70 hover:text-brown transition-colors"
         >
-          Pular
+          {texts.nav.skip}
         </button>
       )}
     </form>
@@ -586,20 +541,20 @@ function QuestionScreen({
 
 /* ─────────────────────────── Autorização LGPD ─────────────────────────── */
 
-function LgpdScreen({ onSubmit }: { onSubmit: () => void }) {
+function LgpdScreen({ texts, onSubmit }: { texts: TentantesTexts; onSubmit: () => void }) {
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!accepted) return setError("Para receber o material, marque a autorização acima.");
+    if (!accepted) return setError(texts.errors.lgpd);
     onSubmit();
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate>
       <h2 className="font-['Georgia',serif] text-2xl font-bold text-dark-brown leading-snug mb-6">
-        Falta só a sua autorização
+        {texts.lgpd.title}
       </h2>
 
       <label className="flex items-start gap-3 cursor-pointer rounded-2xl bg-white px-5 py-4 mb-6">
@@ -612,10 +567,7 @@ function LgpdScreen({ onSubmit }: { onSubmit: () => void }) {
           }}
           className="mt-0.5 w-5 h-5 shrink-0 accent-salmon"
         />
-        <span className="font-sans text-sm text-dark-brown/90 leading-snug">
-          Autorizo a Dra. Camilla Freitas a entrar em contato comigo pelo WhatsApp informado. Meus dados serão
-          usados apenas para esse fim, conforme a LGPD.
-        </span>
+        <span className="font-sans text-sm text-dark-brown/90 leading-snug">{texts.lgpd.consent}</span>
       </label>
 
       {error && (
@@ -625,7 +577,7 @@ function LgpdScreen({ onSubmit }: { onSubmit: () => void }) {
       )}
 
       <button type="submit" className={primaryButtonClassName}>
-        Enviar e receber o material →
+        {texts.lgpd.submit}
       </button>
     </form>
   );
@@ -633,34 +585,33 @@ function LgpdScreen({ onSubmit }: { onSubmit: () => void }) {
 
 /* ─────────────────────────── Tela final ─────────────────────────── */
 
-function FinalScreen({ lead }: { lead: TentantesLead }) {
-  const strong = lead.inicio === "agora" || lead.tempoTentando === "mais-2-anos";
-  const whatsappUrl = buildWhatsAppUrl(lead, strong);
+function FinalScreen({ config, lead }: { config: TentantesConfig; lead: TentantesLead }) {
+  const copy = config.texts.final;
+  const strong = isStrongInvite(lead);
+  const whatsappUrl = buildWhatsAppUrl(config.texts, lead, strong);
 
   return (
     <div className="text-center">
       <h2 className="font-['Georgia',serif] text-3xl font-bold text-dark-brown mb-3">
-        Pronto, {firstName(lead.nome)}! 🌸
+        {fill(copy.title, { nome: firstName(lead.nome) })}
       </h2>
-      <p className="font-sans text-sm text-brown/80 leading-relaxed mb-6">O seu material já está liberado.</p>
+      <p className="font-sans text-sm text-brown/80 leading-relaxed mb-6">{copy.subtitle}</p>
 
       <a
-        href={MATERIAL_TENTANTES_URL}
+        href={config.materialUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={cn(primaryButtonClassName, "mb-10")}
       >
-        Baixar o material
+        {copy.download}
       </a>
 
       {strong ? (
         <div className="rounded-2xl bg-salmon px-6 py-8 shadow-[0_10px_30px_rgba(196,134,122,0.45)]">
           <h3 className="font-['Georgia',serif] text-2xl font-bold text-white leading-snug mb-3">
-            Vamos olhar o seu caso juntas?
+            {copy.strongTitle}
           </h3>
-          <p className="font-sans text-sm text-white/90 leading-relaxed mb-6">
-            Me chama no WhatsApp e me conta um pouco mais da sua história.
-          </p>
+          <p className="font-sans text-sm text-white/90 leading-relaxed mb-6">{copy.strongText}</p>
           <a
             href={whatsappUrl}
             target="_blank"
@@ -670,21 +621,19 @@ function FinalScreen({ lead }: { lead: TentantesLead }) {
               "bg-white text-dark-brown hover:bg-cream w-full justify-center text-base"
             )}
           >
-            Falar com a Dra. Camilla no WhatsApp →
+            {copy.strongButton}
           </a>
         </div>
       ) : (
         <div className="rounded-2xl bg-white/70 px-6 py-6">
-          <p className="font-sans text-sm text-brown/80 leading-relaxed mb-3">
-            Se quiser tirar alguma dúvida sobre a sua jornada, a Dra. Camilla está no WhatsApp.
-          </p>
+          <p className="font-sans text-sm text-brown/80 leading-relaxed mb-3">{copy.lightText}</p>
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="font-sans text-sm font-semibold text-salmon underline underline-offset-4"
           >
-            Falar no WhatsApp
+            {copy.lightLink}
           </a>
         </div>
       )}

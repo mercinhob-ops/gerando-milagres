@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { TentantesContent } from "./tentantes-content";
+import { TentantesBase } from "@/components/tentantes/TentantesBase";
+import { tentantesConfig } from "./config";
 
 export const metadata: Metadata = {
   title: "Questionário para Tentantes — Dra. Camilla Freitas",
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function TentantesPage() {
-  return <TentantesContent />;
+  return <TentantesBase config={tentantesConfig} />;
 }

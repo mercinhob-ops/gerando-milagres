@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Tentante2Content } from "./tentante2-content";
+import { TentantesBase } from "@/components/tentantes/TentantesBase";
+import { tentante2Config } from "./config";
 
 export const metadata: Metadata = {
   title: "Me conta um pouco sobre você — Dra. Camilla Freitas",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function Tentante2Page() {
-  return <Tentante2Content />;
+  return <TentantesBase config={tentante2Config} />;
 }
