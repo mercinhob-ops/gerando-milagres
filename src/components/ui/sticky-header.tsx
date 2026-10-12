@@ -61,7 +61,8 @@ export function StickyHeader({
     // quando a própria página registrou seu checkout (nunca o checkout global).
     pathname?.startsWith("/ciclofeminino/") ||
     (pathname?.startsWith("/ciclofeminino") && !checkoutUrl && !registeredCheckout) ||
-    pathname?.startsWith("/desbloqueandociclos")
+    pathname?.startsWith("/desbloqueandociclos") ||
+    pathname?.startsWith("/gestante")
   )
     return null;
 
