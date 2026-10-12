@@ -19,13 +19,38 @@ function mockApi(password = "certa") {
 }
 
 async function login(password: string) {
-  fireEvent.change(await screen.findByLabelText(/senha/i), { target: { value: password } });
+  fireEvent.change(await screen.findByLabelText(/^senha$/i), { target: { value: password } });
   fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
 }
 
 describe("AdminPage", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
+  });
+
+  it("mostra e oculta a senha digitada pelo ícone de olho", async () => {
+    mockApi();
+    render(<AdminPage />);
+    const input = await screen.findByLabelText(/^senha$/i);
+    fireEvent.change(input, { target: { value: "minha-senha" } });
+    expect(input).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: /mostrar senha/i }));
+    expect(input).toHaveAttribute("type", "text");
+    expect(input).toHaveValue("minha-senha");
+
+    fireEvent.click(screen.getByRole("button", { name: /ocultar senha/i }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+
+  it("'Esqueci a senha' mostra a orientação de contato com o suporte", async () => {
+    mockApi();
+    render(<AdminPage />);
+    expect(screen.queryByText(/suporte técnico/i)).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: /esqueci a senha/i }));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Entre em contato com o suporte técnico para redefinir"
+    );
   });
 
   it("mostra erro com senha errada e não guarda sessão", async () => {
@@ -53,7 +78,7 @@ describe("AdminPage", () => {
     expect(screen.getByText("2º trimestre")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /sair/i }));
-    expect(await screen.findByLabelText(/senha/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/^senha$/i)).toBeInTheDocument();
     expect(window.sessionStorage.length).toBe(0);
   });
 

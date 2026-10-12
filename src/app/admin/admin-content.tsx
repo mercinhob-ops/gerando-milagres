@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 import { formatLeadDate, leadsToCsv, type LeadRow } from "@/lib/leads";
@@ -101,6 +102,8 @@ function LoginScreen({ onLogin }: { onLogin: (password: string) => Promise<strin
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgotMessage, setShowForgotMessage] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,17 +125,29 @@ function LoginScreen({ onLogin }: { onLogin: (password: string) => Promise<strin
           <label htmlFor="admin-password" className="font-sans text-sm font-semibold text-brown/80">
             Senha
           </label>
-          <input
-            id="admin-password"
-            type="password"
-            autoComplete="current-password"
-            value={value}
-            onChange={(event) => {
-              setValue(event.target.value);
-              setError(null);
-            }}
-            className="w-full rounded-xl border-2 border-nude-dark/40 bg-white px-4 py-3 font-sans text-base text-dark-brown outline-none focus:border-salmon"
-          />
+          <div className="relative">
+            <input
+              id="admin-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={value}
+              onChange={(event) => {
+                setValue(event.target.value);
+                setError(null);
+              }}
+              className="w-full rounded-xl border-2 border-nude-dark/40 bg-white py-3 pl-4 pr-12 font-sans text-base text-dark-brown outline-none focus:border-salmon"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              aria-pressed={showPassword}
+              aria-controls="admin-password"
+              className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-brown/60 hover:text-dark-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-salmon/50"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
         {error && (
           <p role="alert" className="font-sans text-sm text-red-600">
@@ -146,6 +161,20 @@ function LoginScreen({ onLogin }: { onLogin: (password: string) => Promise<strin
         >
           {loading ? "Entrando…" : "Entrar"}
         </button>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setShowForgotMessage(true)}
+            className="font-sans text-sm font-semibold text-salmon underline underline-offset-4 hover:text-brown"
+          >
+            Esqueci a senha
+          </button>
+          {showForgotMessage && (
+            <p role="status" className="mt-3 rounded-xl bg-cream px-4 py-3 font-sans text-sm text-dark-brown">
+              Entre em contato com o suporte técnico para redefinir
+            </p>
+          )}
+        </div>
       </form>
     </div>
   );
