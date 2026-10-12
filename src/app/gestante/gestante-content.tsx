@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { trackConversionEvent } from "@/lib/meta-conversions";
+import { submitLead } from "@/lib/submit-lead";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 
@@ -262,6 +263,22 @@ function QuestionnaireSection({ onSubmitted }: { onSubmitted: (lead: GestanteLea
         trimestre,
         quer_avaliacao: querAvaliacao === "sim",
         ...(lead.origem ? { origem: lead.origem } : {}),
+      },
+    });
+
+    const simNao = (value: SimNao) => (value === "sim" ? "Sim" : "Não");
+    submitLead({
+      page: "gestante",
+      name: lead.nome,
+      whatsapp: lead.whatsapp,
+      data: {
+        Trimestre: `${lead.trimestre} trimestre`,
+        "Restrição alimentar": simNao(lead.restricaoAlimentar),
+        "Diabetes gestacional": simNao(lead.diabetesGestacional),
+        "Cirurgia bariátrica": simNao(lead.bariatrica),
+        "Quer avaliação individual": lead.querAvaliacao === "sim" ? "Sim, quero avaliação" : "Não por enquanto",
+        Origem: lead.origem,
+        "Autorização LGPD": "Sim",
       },
     });
 

@@ -63,7 +63,8 @@ export function StickyHeader({
     (pathname?.startsWith("/ciclofeminino") && !checkoutUrl && !registeredCheckout) ||
     pathname?.startsWith("/desbloqueandociclos") ||
     pathname?.startsWith("/gestante") ||
-    pathname?.startsWith("/tentantes")
+    pathname?.startsWith("/tentantes") ||
+    pathname?.startsWith("/admin")
   )
     return null;
 

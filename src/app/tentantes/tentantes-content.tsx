@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { trackConversionEvent } from "@/lib/meta-conversions";
+import { submitLead } from "@/lib/submit-lead";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/design-system/button";
 
@@ -288,6 +289,25 @@ export function TentantesContent() {
         content_name: "Material Tentantes",
         tempo_tentando: newLead.tempoTentando,
         inicio: newLead.inicio,
+      },
+    });
+
+    const label = (id: QuestionId, value: string | null) => (value ? labelFor(id, value) : "Pulou");
+    submitLead({
+      page: "tentantes",
+      name: newLead.nome,
+      whatsapp: newLead.whatsapp,
+      data: {
+        Idade: label("idade", newLead.idade),
+        "Tempo tentando": label("tempoTentando", newLead.tempoTentando),
+        "Exames de fertilidade": label("exames", newLead.exames),
+        "O que foi identificado": newLead.identificado.map((v) => labelFor("identificado", v)),
+        "Marido envolvido": label("marido", newLead.marido),
+        "Perda gestacional": label("perda", newLead.perda),
+        "Maior preocupação": label("preocupacao", newLead.preocupacao),
+        "Quando quer começar": label("inicio", newLead.inicio),
+        "Investimento mensal": label("investimento", newLead.investimento),
+        "Autorização LGPD": "Sim",
       },
     });
 

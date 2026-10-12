@@ -91,6 +91,8 @@ describe("TentantesPage", () => {
   it("fluxo completo com convite forte: exige LGPD, dispara Lead e monta mensagem do WhatsApp", () => {
     const fbq = vi.fn();
     window.fbq = fbq;
+    const fetchMock = vi.fn(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
     render(<TentantesPage />);
 
     answerUntilExames();
@@ -108,6 +110,21 @@ describe("TentantesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /enviar e receber o material/i }));
 
     expect(fbq).toHaveBeenCalledWith("track", "Lead", expect.any(Object), expect.any(Object));
+
+    const leadCall = fetchMock.mock.calls.find((call) => (call as unknown[])[0] === "/api/leads") as unknown as
+      | [string, RequestInit]
+      | undefined;
+    expect(leadCall).toBeDefined();
+    expect(JSON.parse(leadCall![1].body as string)).toMatchObject({
+      page: "tentantes",
+      name: "Maria Clara Lima",
+      whatsapp: "81988887777",
+      data: expect.objectContaining({
+        "Tempo tentando": "Mais de 2 anos",
+        "O que foi identificado": ["SOP (Síndrome dos Ovários Policísticos)", "Endometriose"],
+        "Perda gestacional": "Pulou",
+      }),
+    });
     expect(screen.getByRole("heading", { name: /pronto, maria! 🌸/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /baixar o material/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /vamos olhar o seu caso juntas\?/i })).toBeInTheDocument();

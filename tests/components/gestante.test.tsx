@@ -63,6 +63,8 @@ describe("GestantePage", () => {
     const fbq = vi.fn();
     window.fbq = fbq;
     window.history.replaceState({}, "", "/gestante?origem=instagram");
+    const fetchMock = vi.fn(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<GestantePage />);
     fillForm();
@@ -74,6 +76,17 @@ describe("GestantePage", () => {
       expect.objectContaining({ trimestre: "2º", origem: "instagram" }),
       expect.any(Object)
     );
+
+    const leadCall = fetchMock.mock.calls.find((call) => (call as unknown[])[0] === "/api/leads") as unknown as
+      | [string, RequestInit]
+      | undefined;
+    expect(leadCall).toBeDefined();
+    expect(JSON.parse(leadCall![1].body as string)).toMatchObject({
+      page: "gestante",
+      name: "Ana Paula Souza",
+      whatsapp: "81999991234",
+      data: expect.objectContaining({ Trimestre: "2º trimestre", Origem: "instagram", "Quer avaliação individual": "Sim, quero avaliação" }),
+    });
 
     const saved = JSON.parse(window.localStorage.getItem("gestante_lead")!);
     expect(saved).toMatchObject({
