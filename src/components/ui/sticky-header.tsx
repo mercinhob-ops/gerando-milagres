@@ -64,6 +64,7 @@ export function StickyHeader({
     pathname?.startsWith("/desbloqueandociclos") ||
     pathname?.startsWith("/gestante") ||
     pathname?.startsWith("/tentantes") ||
+    pathname?.startsWith("/tentante2") ||
     pathname?.startsWith("/admin")
   )
     return null;

@@ -11,6 +11,7 @@ const PAGE_FILTERS = [
   { value: "todas", label: "Todas" },
   { value: "gestante", label: "Gestante" },
   { value: "tentantes", label: "Tentantes" },
+  { value: "tentante2", label: "Tentante 2" },
 ] as const;
 
 type PageFilter = (typeof PAGE_FILTERS)[number]["value"];
