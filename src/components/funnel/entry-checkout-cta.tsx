@@ -35,10 +35,13 @@ export function EntryCheckoutCta({
   product,
   label,
   className,
+  funnelSlug,
 }: {
   product: FunnelProduct;
-  /** Não usado pelo tracking (CheckoutClick usa `cicloFemininoFunnel.slug`); mantido por compatibilidade. */
+  /** Não usado pelo tracking (CheckoutClick usa `funnelSlug`); mantido por compatibilidade. */
   funnelId?: string;
+  /** Parâmetro `funnel` do CheckoutClick. Padrão: Funil 01 (ciclo-feminino). */
+  funnelSlug?: string;
   label: string;
   className?: string;
 }) {
@@ -49,7 +52,7 @@ export function EntryCheckoutCta({
     <a
       href={href}
       data-funnel-checkout={product.id}
-      onClick={() => trackFunnelCheckoutClick(product, "entry")}
+      onClick={() => trackFunnelCheckoutClick(product, "entry", funnelSlug)}
       className={cn(
         buttonVariants({ variant: "primary", size: "lg" }),
         FUNNEL_CTA_CLASS,

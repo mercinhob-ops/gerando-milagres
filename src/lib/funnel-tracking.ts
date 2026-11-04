@@ -99,8 +99,13 @@ export async function trackUpsellView(product: FunnelProduct, funnelId: string, 
  * Clique em um CTA que abre o checkout Kiwify (LP, header fixo da LP e
  * aceite no modo checkout das upsells). Uma chave de deduplicação por
  * produto/etapa: clique duplo ou CTA + header no mesmo instante = 1 evento.
+ * `funnelSlug` separa os funis nos relatórios; o padrão mantém o Funil 01.
  */
-export function trackFunnelCheckoutClick(product: FunnelProduct, step: FunnelStep) {
+export function trackFunnelCheckoutClick(
+  product: FunnelProduct,
+  step: FunnelStep,
+  funnelSlug: string = cicloFemininoFunnel.slug
+) {
   if (!shouldFire(`${FUNNEL_EVENTS.checkoutClick}:${product.id}:${step}`)) return;
   trackConversionEvent({
     eventName: FUNNEL_EVENTS.checkoutClick,
@@ -109,7 +114,7 @@ export function trackFunnelCheckoutClick(product: FunnelProduct, step: FunnelSte
       content_type: "product",
       value: product.price,
       currency: "BRL",
-      funnel: cicloFemininoFunnel.slug,
+      funnel: funnelSlug,
       step,
     },
     custom: true,
