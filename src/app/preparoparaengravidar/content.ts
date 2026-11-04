@@ -11,7 +11,7 @@
  *   documentada em docs/funil-ciclo-feminino.md).
  */
 
-export const PREVIEW_NOTICE = "Prévia — preço, materiais e checkout ainda em definição. Página não indexada.";
+export const PREVIEW_NOTICE = "Pré-lançamento — preço, materiais e condições de compra ainda em definição.";
 
 export const preparoParaEngravidarContent = {
   meta: {
