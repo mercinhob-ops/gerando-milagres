@@ -11,10 +11,13 @@ import { useCheckoutHref } from "./entry-checkout-cta";
  * parâmetros de atribuição da visita. Sem checkout pronto, não registra
  * nada (o header fica oculto nas rotas do funil — ver sticky-header.tsx).
  */
-export function FunnelStickyCheckout({ product }: { product: FunnelProduct }) {
+export function FunnelStickyCheckout({ product, funnelSlug }: { product: FunnelProduct; funnelSlug?: string }) {
   const href = useCheckoutHref(product);
   // CheckoutClick (nunca InitiateCheckout — ver funnel-tracking.ts).
-  const onCheckoutClick = useCallback(() => trackFunnelCheckoutClick(product, "entry"), [product]);
+  const onCheckoutClick = useCallback(
+    () => trackFunnelCheckoutClick(product, "entry", funnelSlug),
+    [product, funnelSlug]
+  );
   if (!href) return null;
   return <StickyHeaderCheckout checkoutUrl={href} eventValue={product.price} onCheckoutClick={onCheckoutClick} />;
 }

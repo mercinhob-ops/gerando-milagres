@@ -61,6 +61,8 @@ export function StickyHeader({
     // quando a própria página registrou seu checkout (nunca o checkout global).
     pathname?.startsWith("/ciclofeminino/") ||
     (pathname?.startsWith("/ciclofeminino") && !checkoutUrl && !registeredCheckout) ||
+    // Preparo para Engravidar: mesma regra — nunca exibe o checkout global.
+    (pathname?.startsWith("/preparoparaengravidar") && !checkoutUrl && !registeredCheckout) ||
     pathname?.startsWith("/desbloqueandociclos") ||
     pathname?.startsWith("/gestante") ||
     pathname?.startsWith("/tentantes") ||
@@ -93,8 +95,9 @@ export function StickyHeader({
           className={cn(
             buttonVariants({ variant: "primary", size: "sm" }),
             "inline-flex shrink-0",
-            // FUNIL 01: CTA com contraste AA (somente /ciclofeminino).
-            pathname?.startsWith("/ciclofeminino") && FUNNEL_CTA_CLASS
+            // Funis com página própria: CTA com contraste AA.
+            (pathname?.startsWith("/ciclofeminino") || pathname?.startsWith("/preparoparaengravidar")) &&
+              FUNNEL_CTA_CLASS
           )}
           tabIndex={visible ? 0 : -1}
         >
