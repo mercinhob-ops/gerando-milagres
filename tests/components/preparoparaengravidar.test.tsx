@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import PreparoParaEngravidarPage, { metadata } from "@/app/preparoparaengravidar/page";
 import { preparoParaEngravidarContent } from "@/app/preparoparaengravidar/content";
 import { cicloFemininoContent } from "@/app/ciclofeminino/content";
@@ -12,6 +12,8 @@ import {
 import { cicloFemininoProducts, formatPrice } from "@/config/funnels/ciclo-feminino";
 import { EntryCheckoutCta } from "@/components/funnel/entry-checkout-cta";
 import { __resetFunnelTrackingForTests, trackFunnelCheckoutClick } from "@/lib/funnel-tracking";
+import { validateCapiPayload } from "@/lib/meta-capi-validation";
+import { buildPurchaseEvent, findFunnelProductByOfferCode } from "@/lib/kiwify-purchase";
 
 const OTHER_CHECKOUTS = ["aktchfx", "AQyRq5m", "Ttiul2X", "uOSEIEm", "5IIyMsr", "OCUj5sd"];
 let fbqMock: ReturnType<typeof vi.fn>;
@@ -30,6 +32,11 @@ afterEach(() => {
 });
 
 const checkoutClicks = () => fbqMock.mock.calls.filter((call) => call[1] === "CheckoutClick");
+/** Corpos enviados à CAPI (/api/meta-conversions) pelo navegador. */
+const capiBodies = () =>
+  vi.mocked(fetch).mock.calls
+    .filter(([url]) => url === "/api/meta-conversions")
+    .map(([, init]) => JSON.parse(String((init as RequestInit).body)));
 
 /** Todas as strings de um objeto de conteúdo (recursivo). */
 function strings(value: unknown): string[] {
@@ -171,10 +178,31 @@ describe("Ativação pelo link oficial (simulada)", () => {
       expect(href).toContain("utm_source=meta");
       for (const other of OTHER_CHECKOUTS) expect(href).not.toContain(other);
     });
-    ctas[0].addEventListener("click", (e) => e.preventDefault());
+    ctas.forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
     fireEvent.click(ctas[0]);
+    fireEvent.click(ctas[0]); // clique duplo
+    fireEvent.click(ctas[2]); // outro CTA no mesmo instante
     expect(checkoutClicks()).toHaveLength(1);
-    expect(checkoutClicks()[0][2]).toMatchObject({ funnel: "preparo-para-engravidar", value: 77, content_name: "Preparo para Engravidar" });
+    expect(checkoutClicks()[0][0]).toBe("trackCustom");
+    expect(checkoutClicks()[0][2]).toEqual({
+      content_name: "Preparo para Engravidar",
+      content_type: "product",
+      value: 77,
+      currency: "BRL",
+      funnel: "preparo-para-engravidar",
+      step: "entry",
+    });
+    // CAPI: um único CheckoutClick, mesmo eventID do Pixel (deduplicação) e aceito pela validação do servidor.
+    const capi = capiBodies().filter((b) => b.eventName === "CheckoutClick");
+    expect(capi).toHaveLength(1);
+    expect(capi[0].eventId).toBe(checkoutClicks()[0][3].eventID);
+    // jsdom roda em localhost; a validação de produção só aceita o domínio oficial.
+    const official = { ...capi[0], eventSourceUrl: "https://gerandomilagres.com.br/preparoparaengravidar?utm_source=meta" };
+    expect(validateCapiPayload(official, "gerandomilagres.com.br", true).ok).toBe(true);
+    // Nunca dispara InitiateCheckout (fica com o Pixel da Kiwify) nem Purchase no navegador.
+    const names = [...fbqMock.mock.calls.map((c) => c[1]), ...capiBodies().map((b) => b.eventName)];
+    expect(names).not.toContain("InitiateCheckout");
+    expect(names).not.toContain("Purchase");
   });
 });
 
@@ -211,6 +239,34 @@ describe("Materiais e capa oficiais (simulados)", () => {
     });
     // Disponibilidade continua dependendo só do checkout: sem link, botões seguem desativados.
     expect(document.querySelectorAll("button[data-checkout-pending]")).toHaveLength(3);
+  });
+});
+
+describe("Rastreamento da visualização (Pixel + CAPI)", () => {
+  it("um único ViewContent do funil 02, com o mesmo eventID no Pixel e na CAPI e aceito pelo servidor", async () => {
+    window.history.replaceState({}, "", "/preparoparaengravidar");
+    render(<PreparoParaEngravidarPage />);
+    await waitFor(() => expect(capiBodies().filter((b) => b.eventName === "ViewContent")).toHaveLength(1));
+    const pixel = fbqMock.mock.calls.filter((c) => c[1] === "ViewContent");
+    expect(pixel).toHaveLength(1);
+    expect(pixel[0][2]).toMatchObject({
+      content_ids: ["preparo-para-engravidar"],
+      funnel_id: "funil-02-preparo-para-engravidar",
+      value: 77,
+      step: "entry",
+    });
+    const capi = capiBodies().find((b) => b.eventName === "ViewContent")!;
+    expect(capi.eventId).toBe(pixel[0][3].eventID);
+    expect(validateCapiPayload({ ...capi, eventSourceUrl: "https://gerandomilagres.com.br/preparoparaengravidar" }, "gerandomilagres.com.br", true).ok).toBe(true);
+    // Sem checkout: nenhum clique, início de checkout ou compra.
+    const names = [...fbqMock.mock.calls.map((c) => c[1]), ...capiBodies().map((b) => b.eventName)];
+    expect(names.filter((n) => ["CheckoutClick", "InitiateCheckout", "Purchase"].includes(n))).toEqual([]);
+  });
+
+  it("o site nunca gera Purchase para este produto (compra fica só com a Kiwify)", () => {
+    expect(findFunnelProductByOfferCode("preparo-para-engravidar")).toBeNull();
+    expect(findFunnelProductByOfferCode("TESTE")).toBeNull();
+    expect(buildPurchaseEvent({ offerCode: "TESTE", orderId: "pedido-1", amount: 77 } as Parameters<typeof buildPurchaseEvent>[0])).toBeNull();
   });
 });
 
