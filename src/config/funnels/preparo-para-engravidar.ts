@@ -12,7 +12,9 @@
  *   3. `price` final e `priceIsProvisional: false`.
  *   4. Cada material pronto: `ready: true` (+ `preview` com a imagem real).
  *   5. `coverImage` com a arte oficial, quando existir.
- *   6. Remover o aviso de prévia e o noindex em page.tsx.
+ *   6. `PURCHASE_TERMS`: garantia e forma de entrega confirmadas.
+ *   7. Depoimentos: somente reais, com autorização registrada.
+ *   8. Remover o aviso de prévia e o noindex em page.tsx.
  */
 import type { FunnelCoverImage, FunnelProduct } from "./ciclo-feminino";
 
@@ -54,6 +56,22 @@ export const preparoParaEngravidarMaterials: readonly PreparoMaterial[] = [
   { id: "roteiro-consulta", name: "Roteiro para Consulta", ready: false, preview: null },
   { id: "plano-final", name: "Plano Final de Preparação", ready: false, preview: null },
 ];
+
+/** Condições de compra confirmadas pelo proprietário. `null` = ainda não confirmado (a página diz isso). */
+export const PURCHASE_TERMS: { guarantee: string | null; delivery: string | null } = {
+  guarantee: null,
+  delivery: null,
+};
+
+export interface PreparoTestimonial {
+  name: string;
+  text: string;
+  /** Data (AAAA-MM-DD) da autorização de uso registrada. Obrigatória. */
+  authorizedOn: string;
+}
+
+/** Depoimentos reais e autorizados. Vazio = a seção de depoimentos não é exibida. */
+export const preparoParaEngravidarTestimonials: readonly PreparoTestimonial[] = [];
 
 export const preparoParaEngravidarFunnel = {
   id: "funil-02-preparo-para-engravidar",
