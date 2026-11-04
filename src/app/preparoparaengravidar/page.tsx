@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   // Prévia: fora dos buscadores até checkout, preço e materiais estarem confirmados.
   robots: { index: false, follow: false },
   alternates: { canonical: PAGE_URL },
-  // Sem imagem oficial do produto: nenhuma imagem de compartilhamento é declarada.
+  // Imagem de compartilhamento somente quando a capa oficial existir na configuração.
   openGraph: {
     title: c.meta.title,
     description: c.meta.description,
@@ -33,6 +33,16 @@ export const metadata: Metadata = {
     siteName: "Gerando Milagres",
     locale: "pt_BR",
     type: "website",
+    ...(product.coverImage && {
+      images: [
+        {
+          url: `${SITE_URL}${product.coverImage.src}`,
+          width: product.coverImage.width,
+          height: product.coverImage.height,
+          alt: product.coverImage.alt,
+        },
+      ],
+    }),
   },
 };
 

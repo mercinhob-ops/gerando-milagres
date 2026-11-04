@@ -178,6 +178,42 @@ describe("Ativação pelo link oficial (simulada)", () => {
   });
 });
 
+describe("Materiais e capa oficiais (simulados)", () => {
+  it("capa, imagens dos e-books e preço definitivo entram só pela configuração", async () => {
+    vi.resetModules();
+    vi.doMock("@/config/funnels/preparo-para-engravidar", async (importOriginal) => {
+      const original = await importOriginal<typeof import("@/config/funnels/preparo-para-engravidar")>();
+      const coverImage = { src: "/images/teste-capa.webp", width: 1200, height: 1500, alt: "Capa oficial" };
+      const product = { ...original.preparoParaEngravidarProduct, coverImage };
+      const materials = original.preparoParaEngravidarMaterials.map((m, i) =>
+        i === 0 ? { ...m, ready: true, preview: { src: "/images/teste-guia.webp", width: 1200, height: 900, alt: "Página do guia" } } : m
+      );
+      return {
+        ...original,
+        PRICE_IS_PROVISIONAL: false,
+        preparoParaEngravidarProduct: product,
+        preparoParaEngravidarMaterials: materials,
+        preparoParaEngravidarFunnel: { ...original.preparoParaEngravidarFunnel, product, materials },
+      };
+    });
+    const { default: Page, metadata: readyMetadata } = await import("@/app/preparoparaengravidar/page");
+    render(<Page />);
+
+    const srcs = Array.from(document.querySelectorAll("img")).map((img) => decodeURIComponent(img.getAttribute("src") ?? ""));
+    expect(srcs.some((src) => src.includes("/images/teste-capa.webp"))).toBe(true);
+    expect(srcs.some((src) => src.includes("/images/teste-guia.webp"))).toBe(true);
+    expect(document.querySelector('[data-product-cover="typographic"]')).toBeNull();
+    expect(document.querySelector('[data-material-status="ready"]')?.textContent).toBe(preparoParaEngravidarContent.materials.readyLabel);
+    expect(document.querySelectorAll('[data-material-status="pending"]')).toHaveLength(5);
+    expect(document.querySelectorAll("[data-price-provisional]")).toHaveLength(0);
+    expect(readyMetadata.openGraph).toMatchObject({
+      images: [{ url: "https://gerandomilagres.com.br/images/teste-capa.webp", width: 1200, height: 1500 }],
+    });
+    // Disponibilidade continua dependendo só do checkout: sem link, botões seguem desativados.
+    expect(document.querySelectorAll("button[data-checkout-pending]")).toHaveLength(3);
+  });
+});
+
 describe("Rastreamento por funil", () => {
   it("CheckoutClick identifica o funil preparo-para-engravidar quando informado", () => {
     const ready = { ...preparoParaEngravidarProduct, checkoutUrl: "https://pay.kiwify.com.br/teste", checkoutReady: true };
